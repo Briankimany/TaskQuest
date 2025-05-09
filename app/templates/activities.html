@@ -1,0 +1,675 @@
+{% extends 'base2.html' %}
+                        
+{% block title %}Manage Activities - Real-Life RPG System{% endblock %}
+
+{% block content %}
+
+    
+                <div class="row">
+    <div class="col-md-12">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Manage Activities</h5>
+                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newActivityModal">
+                    <i class="fas fa-plus"></i> New Activity
+                </button>
+                    </div>
+            <div class="card-body">
+                <div id="activities-container">
+                    {% if activities %}
+                        {% for activity in activities %}
+                            <div class="card mb-3 activity-card" data-id="{{ activity.id }}">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 activity-name">{{ activity.name }}</h5>
+                                    <div>
+                                        <button class="btn btn-sm btn-primary add-subactivity-btn" data-activity-id="{{ activity.id }}">
+                                            <i class="fas fa-plus"></i> Add Sub-Activity
+                                        </button>
+                                        <button class="btn btn-sm btn-warning edit-activity-btn" data-activity-id="{{ activity.id }}" data-activity-name="{{ activity.name }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger delete-activity-btn" data-activity-id="{{ activity.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="subactivities-list">
+                        {% if activity.sub_activities %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover text-nowrap w-100">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Scheduled Time</th>
+                                            <th>Difficulty</th>
+                                            <th>Base EXP</th>
+                                            <th>Attributes</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sub in activity.sub_activities %}
+                                            <tr data-id="{{ sub.id }}">
+                                                <td>{{ sub.name }}</td>
+                                                <td>{{ sub.scheduled_time }}</td>
+                                                <td>x{{ sub.difficulty_multiplier }}</td>
+                                                <td>{{ sub.base_exp }}</td>
+                                                <td>
+                                                    {% if sub.attribute_weights %}
+                                                        <div class="d-flex flex-wrap gap-1">
+                                                            {% for attr, weight in sub.attribute_weights.items() %}
+                                                                {% if weight > 0 %}
+                                                                    <span class="badge {{ attr }}-bg"
+                                                                          data-bs-toggle="tooltip"
+                                                                          title="{{ attr }}: {{ weight }}">
+                                                                        {{ attr }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-nowrap">
+                                                    <button class="btn btn-sm btn-warning edit-subactivity-btn mb-1"
+                                                            data-id="{{ sub.id }}"
+                                                            data-name="{{ sub.name }}"
+                                                            data-time="{{ sub.scheduled_time }}"
+                                                            data-difficulty="{{ sub.difficulty_multiplier }}"
+                                                            data-exp="{{ sub.base_exp }}"
+                                                            data-attributes="{{ sub.attribute_weights }}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger delete-subactivity-btn mb-1"
+                                                            data-id="{{ sub.id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No sub-activities found. Add your first sub-activity!</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-3">You haven't created any activities yet.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newActivityModal">Create Your First Activity</button>
+                        </div>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+<!-- Modal for new activity -->
+<div class="modal fade" id="newActivityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="activity-name" class="form-label">Activity Name</label>
+                    <input type="text" class="form-control" id="activity-name" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="create-activity-btn">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Modal for editing activity -->
+<div class="modal fade" id="editActivityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-activity-id">
+                <div class="mb-3">
+                    <label for="edit-activity-name" class="form-label">Activity Name</label>
+                    <input type="text" class="form-control" id="edit-activity-name" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="update-activity-btn">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for new sub-activity -->
+<div class="modal fade" id="newSubActivityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Sub-Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="parent-activity-id">
+                <div class="mb-3">
+                    <label for="subactivity-name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="subactivity-name" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="scheduled-time" class="form-label">Scheduled Time (min)</label>
+                        <input type="number" class="form-control" id="scheduled-time" min="1" value="60" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="difficulty-multiplier" class="form-label">Difficulty Multiplier</label>
+                        <input type="number" class="form-control" id="difficulty-multiplier" min="0.1" max="3" step="0.1" value="1.0" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="base-exp" class="form-label">Base EXP</label>
+                        <input type="number" class="form-control" id="base-exp" min="1" value="100" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Attribute Weights</label>
+                    <p class="text-muted small">Distribute points to determine how completing this activity affects your attributes.</p>
+                    <div class="row">
+                        <div class="col">
+                            <label for="int-weight" class="form-label">INT</label>
+                            <input type="number" class="form-control attribute-weight" id="int-weight" min="0" max="1" step="0.1" value="0.2">
+                        </div>
+                        <div class="col">
+                            <label for="sta-weight" class="form-label">STA</label>
+                            <input type="number" class="form-control attribute-weight" id="sta-weight" min="0" max="1" step="0.1" value="0.2">
+                        </div>
+                        <div class="col">
+                            <label for="fcs-weight" class="form-label">FCS</label>
+                            <input type="number" class="form-control attribute-weight" id="fcs-weight" min="0" max="1" step="0.1" value="0.2">
+                        </div>
+                        <div class="col">
+                            <label for="cha-weight" class="form-label">CHA</label>
+                            <input type="number" class="form-control attribute-weight" id="cha-weight" min="0" max="1" step="0.1" value="0.2">
+                        </div>
+                        <div class="col">
+                            <label for="dsc-weight" class="form-label">DSC</label>
+                            <input type="number" class="form-control attribute-weight" id="dsc-weight" min="0" max="1" step="0.1" value="0.2">
+                        </div>
+                    </div>
+                    <div class="progress mt-2" id="weight-progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <small class="text-muted" id="weight-total">Total: 1.0 (Recommended: 1.0)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="create-subactivity-btn">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for editing sub-activity -->
+<div class="modal fade" id="editSubActivityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Sub-Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-subactivity-id">
+                <div class="mb-3">
+                    <label for="edit-subactivity-name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="edit-subactivity-name" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="edit-scheduled-time" class="form-label">Scheduled Time (min)</label>
+                        <input type="number" class="form-control" id="edit-scheduled-time" min="1" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="edit-difficulty-multiplier" class="form-label">Difficulty Multiplier</label>
+                        <input type="number" class="form-control" id="edit-difficulty-multiplier" min="0.1" max="3" step="0.1" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="edit-base-exp" class="form-label">Base EXP</label>
+                        <input type="number" class="form-control" id="edit-base-exp" min="1" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Attribute Weights</label>
+                    <div class="row">
+                        <div class="col">
+                            <label for="edit-int-weight" class="form-label">INT</label>
+                            <input type="number" class="form-control edit-attribute-weight" id="edit-int-weight" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="col">
+                            <label for="edit-sta-weight" class="form-label">STA</label>
+                            <input type="number" class="form-control edit-attribute-weight" id="edit-sta-weight" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="col">
+                            <label for="edit-fcs-weight" class="form-label">FCS</label>
+                            <input type="number" class="form-control edit-attribute-weight" id="edit-fcs-weight" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="col">
+                            <label for="edit-cha-weight" class="form-label">CHA</label>
+                            <input type="number" class="form-control edit-attribute-weight" id="edit-cha-weight" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="col">
+                            <label for="edit-dsc-weight" class="form-label">DSC</label>
+                            <input type="number" class="form-control edit-attribute-weight" id="edit-dsc-weight" min="0" max="1" step="0.1">
+                        </div>
+                    </div>
+                    <div class="progress mt-2" id="edit-weight-progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <small class="text-muted" id="edit-weight-total">Total: 1.0 (Recommended: 1.0)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="update-subactivity-btn">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <span id="delete-item-name"></span>? This action cannot be undone.</p>
+                <input type="hidden" id="delete-item-id">
+                <input type="hidden" id="delete-item-type">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Create Activity
+    document.getElementById('create-activity-btn').addEventListener('click', function() {
+        const activityName = document.getElementById('activity-name').value;
+        
+        if (!activityName) {
+            showNotification('danger', 'Error', 'Activity name is required');
+            return;
+        }
+        
+        fetch('/api/activities', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: activityName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('newActivityModal')).hide();
+            
+            // Reload page to show new activity
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('danger', 'Error', 'Failed to create activity');
+        });
+    });
+    
+    // Edit Activity
+    const editActivityButtons = document.querySelectorAll('.edit-activity-btn');
+    editActivityButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const activityId = this.getAttribute('data-activity-id');
+            const activityName = this.getAttribute('data-activity-name');
+            
+            document.getElementById('edit-activity-id').value = activityId;
+            document.getElementById('edit-activity-name').value = activityName;
+            
+            new bootstrap.Modal(document.getElementById('editActivityModal')).show();
+        });
+    });
+    
+    // Update Activity
+    document.getElementById('update-activity-btn').addEventListener('click', function() {
+        const activityId = document.getElementById('edit-activity-id').value;
+        const activityName = document.getElementById('edit-activity-name').value;
+        
+        if (!activityName) {
+            showNotification('danger', 'Error', 'Activity name is required');
+            return;
+        }
+        
+        fetch(`/api/activity/${activityId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: activityName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editActivityModal')).hide();
+            
+            // Update activity name in UI
+            const activityCard = document.querySelector(`.activity-card[data-id="${activityId}"]`);
+            activityCard.querySelector('.activity-name').textContent = activityName;
+            
+            showNotification('success', 'Success', 'Activity updated successfully');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('danger', 'Error', 'Failed to update activity');
+        });
+    });
+    
+    // Delete Activity
+    const deleteActivityButtons = document.querySelectorAll('.delete-activity-btn');
+    deleteActivityButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const activityId = this.getAttribute('data-activity-id');
+            const activityName = this.closest('.card').querySelector('.activity-name').textContent;
+            
+            document.getElementById('delete-item-id').value = activityId;
+            document.getElementById('delete-item-type').value = 'activity';
+            document.getElementById('delete-item-name').textContent = `activity "${activityName}"`;
+            
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        });
+    });
+    
+    // Add Sub-Activity
+    const addSubActivityButtons = document.querySelectorAll('.add-subactivity-btn');
+    addSubActivityButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const activityId = this.getAttribute('data-activity-id');
+            document.getElementById('parent-activity-id').value = activityId;
+            
+            new bootstrap.Modal(document.getElementById('newSubActivityModal')).show();
+        });
+    });
+    
+    // Create Sub-Activity
+    document.getElementById('create-subactivity-btn').addEventListener('click', function() {
+        const activityId = document.getElementById('parent-activity-id').value;
+        const name = document.getElementById('subactivity-name').value;
+        const scheduledTime = document.getElementById('scheduled-time').value;
+        const difficultyMultiplier = document.getElementById('difficulty-multiplier').value;
+        const baseExp = document.getElementById('base-exp').value;
+        
+        // Get attribute weights
+        const attributeWeights = {
+            INT: parseFloat(document.getElementById('int-weight').value),
+            STA: parseFloat(document.getElementById('sta-weight').value),
+            FCS: parseFloat(document.getElementById('fcs-weight').value),
+            CHA: parseFloat(document.getElementById('cha-weight').value),
+            DSC: parseFloat(document.getElementById('dsc-weight').value)
+        };
+        
+        if (!name || !scheduledTime) {
+            showNotification('danger', 'Error', 'Name and scheduled time are required');
+            return;
+        }
+        
+        fetch('/api/subactivity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                activity_id: activityId,
+                name: name,
+                scheduled_time: parseInt(scheduledTime),
+                difficulty_multiplier: parseFloat(difficultyMultiplier),
+                base_exp: parseInt(baseExp),
+                attribute_weights: attributeWeights
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('newSubActivityModal')).hide();
+            
+            // Reload page to show new sub-activity
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('danger', 'Error', 'Failed to create sub-activity');
+        });
+    });
+    
+    // Edit Sub-Activity
+    const editSubActivityButtons = document.querySelectorAll('.edit-subactivity-btn');
+    editSubActivityButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const scheduledTime = this.getAttribute('data-time');
+            const difficultyMultiplier = this.getAttribute('data-difficulty');
+            const baseExp = this.getAttribute('data-exp');
+            const attributeWeights = this.getAttribute('data-attributes');
+   
+            document.getElementById('edit-subactivity-id').value = id;
+            document.getElementById('edit-subactivity-name').value = name;
+            document.getElementById('edit-scheduled-time').value = scheduledTime;
+            document.getElementById('edit-difficulty-multiplier').value = difficultyMultiplier;
+            document.getElementById('edit-base-exp').value = baseExp;
+            
+            // Set attribute weights
+            document.getElementById('edit-int-weight').value = attributeWeights.INT || 0.2;
+            document.getElementById('edit-sta-weight').value = attributeWeights.STA || 0.2;
+            document.getElementById('edit-fcs-weight').value = attributeWeights.FCS || 0.2;
+            document.getElementById('edit-cha-weight').value = attributeWeights.CHA || 0.2;
+            document.getElementById('edit-dsc-weight').value = attributeWeights.DSC || 0.2;
+            
+            updateEditWeightTotal();
+            
+            new bootstrap.Modal(document.getElementById('editSubActivityModal')).show();
+        });
+    });
+    
+    // Update Sub-Activity
+    document.getElementById('update-subactivity-btn').addEventListener('click', function() {
+        const id = document.getElementById('edit-subactivity-id').value;
+        const name = document.getElementById('edit-subactivity-name').value;
+        const scheduledTime = document.getElementById('edit-scheduled-time').value;
+        const difficultyMultiplier = document.getElementById('edit-difficulty-multiplier').value;
+        const baseExp = document.getElementById('edit-base-exp').value;
+        
+        // Get attribute weights
+        const attributeWeights = {
+            INT: parseFloat(document.getElementById('edit-int-weight').value),
+            STA: parseFloat(document.getElementById('edit-sta-weight').value),
+            FCS: parseFloat(document.getElementById('edit-fcs-weight').value),
+            CHA: parseFloat(document.getElementById('edit-cha-weight').value),
+            DSC: parseFloat(document.getElementById('edit-dsc-weight').value)
+        };
+        
+        if (!name || !scheduledTime) {
+            showNotification('danger', 'Error', 'Name and scheduled time are required');
+            return;
+        }
+        
+        fetch(`/api/subactivity/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                scheduled_time: parseInt(scheduledTime),
+                difficulty_multiplier: parseFloat(difficultyMultiplier),
+                base_exp: parseInt(baseExp),
+                attribute_weights: attributeWeights
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editSubActivityModal')).hide();
+            
+            // Reload page to reflect changes
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('danger', 'Error', 'Failed to update sub-activity');
+        });
+    });
+    
+    // Delete Sub-Activity
+    const deleteSubActivityButtons = document.querySelectorAll('.delete-subactivity-btn');
+    deleteSubActivityButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.closest('tr').querySelector('td:first-child').textContent;
+            
+            document.getElementById('delete-item-id').value = id;
+            document.getElementById('delete-item-type').value = 'subactivity';
+            document.getElementById('delete-item-name').textContent = `sub-activity "${name}"`;
+            
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        });
+    });
+    
+    // Confirm Delete (for both activity and sub-activity)
+    document.getElementById('confirm-delete-btn').addEventListener('click', function() {
+        const id = document.getElementById('delete-item-id').value;
+        const type = document.getElementById('delete-item-type').value;
+        
+        let url = type === 'activity' ? `/api/activity/${id}` : `/api/subactivity/${id}`;
+        
+        fetch(url, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                
+                // Remove element from DOM
+                if (type === 'activity') {
+                    document.querySelector(`.activity-card[data-id="${id}"]`).remove();
+                } else {
+                    document.querySelector(`tr[data-id="${id}"]`).remove();
+                }
+                
+                showNotification('success', 'Success', `${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`);
+                
+                // If no activities left, reload to show empty state
+                if (type === 'activity' && document.querySelectorAll('.activity-card').length === 0) {
+                    window.location.reload();
+                }
+            } else {
+                throw new Error('Failed to delete');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('danger', 'Error', `Failed to delete ${type}`);
+        });
+    });
+    
+    // Track attribute weight totals for new sub-activity
+    const attributeWeightInputs = document.querySelectorAll('.attribute-weight');
+    attributeWeightInputs.forEach(input => {
+        input.addEventListener('input', updateWeightTotal);
+    });
+    
+    function updateWeightTotal() {
+        const intWeight = parseFloat(document.getElementById('int-weight').value) || 0;
+        const staWeight = parseFloat(document.getElementById('sta-weight').value) || 0;
+        const fcsWeight = parseFloat(document.getElementById('fcs-weight').value) || 0;
+        const chaWeight = parseFloat(document.getElementById('cha-weight').value) || 0;
+        const dscWeight = parseFloat(document.getElementById('dsc-weight').value) || 0;
+        
+        const total = intWeight + staWeight + fcsWeight + chaWeight + dscWeight;
+        const totalFormatted = total.toFixed(1);
+        
+        document.getElementById('weight-total').textContent = `Total: ${totalFormatted} (Recommended: 1.0)`;
+        
+        // Update progress bar
+        const progressBar = document.querySelector('#weight-progress .progress-bar');
+        const widthPercentage = Math.min(total * 100, 100);
+        progressBar.style.width = `${widthPercentage}%`;
+        
+        // Change color based on total
+        if (total < 0.9) {
+            progressBar.className = 'progress-bar bg-warning';
+        } else if (total > 1.1) {
+            progressBar.className = 'progress-bar bg-danger';
+        } else {
+            progressBar.className = 'progress-bar bg-success';
+        }
+    }
+    
+    // Track attribute weight totals for edit sub-activity
+    const editAttributeWeightInputs = document.querySelectorAll('.edit-attribute-weight');
+    editAttributeWeightInputs.forEach(input => {
+        input.addEventListener('input', updateEditWeightTotal);
+    });
+    
+    function updateEditWeightTotal() {
+        const intWeight = parseFloat(document.getElementById('edit-int-weight').value) || 0;
+        const staWeight = parseFloat(document.getElementById('edit-sta-weight').value) || 0;
+        const fcsWeight = parseFloat(document.getElementById('edit-fcs-weight').value) || 0;
+        const chaWeight = parseFloat(document.getElementById('edit-cha-weight').value) || 0;
+        const dscWeight = parseFloat(document.getElementById('edit-dsc-weight').value) || 0;
+        
+        const total = intWeight + staWeight + fcsWeight + chaWeight + dscWeight;
+        const totalFormatted = total.toFixed(1);
+        
+        document.getElementById('edit-weight-total').textContent = `Total: ${totalFormatted} (Recommended: 1.0)`;
+        
+        // Update progress bar
+        const progressBar = document.querySelector('#edit-weight-progress .progress-bar');
+        const widthPercentage = Math.min(total * 100, 100);
+        progressBar.style.width = `${widthPercentage}%`;
+        
+        // Change color based on total
+        if (total < 0.9) {
+            progressBar.className = 'progress-bar bg-warning';
+        } else if (total > 1.1) {
+            progressBar.className = 'progress-bar bg-danger';
+        } else {
+            progressBar.className = 'progress-bar bg-success';
+        }
+    }
+});
+</script>
+{% endblock %}

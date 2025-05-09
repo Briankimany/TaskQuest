@@ -1,0 +1,351 @@
+/* Dashboard Gaming Theme CSS - Mobile First */
+
+/* Card styling with gaming theme */
+.card {
+    background: rgba(13, 13, 43, 0.9) !important;
+    border: 1px solid var(--accent-cyan) !important;
+    box-shadow: 0 0 10px var(--accent-violet);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet), var(--accent-cyan));
+    animation: gradient-shift 3s infinite linear;
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px var(--accent-cyan);
+}
+
+.card-header {
+    border-bottom: 1px solid var(--accent-cyan);
+    background: rgba(13, 13, 43, 0.9);
+}
+
+.card-header h5, .card-header h6 {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 5px var(--accent-cyan);
+}
+
+/* Stats cards */
+.stat-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: var(--accent-cyan);
+    text-shadow: 0 0 10px var(--accent-cyan);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-primary);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Progress bars */
+.progress {
+    background: rgba(13, 13, 43, 0.5);
+    border: 1px solid var(--accent-cyan);
+    height: 15px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 12px;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)) !important;
+    box-shadow: 0 0 10px var(--accent-cyan);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.2) 50%, 
+        transparent 100%);
+    animation: shine 2s infinite linear;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.progress-text {
+    color: var(--accent-cyan);
+    font-weight: bold;
+}
+
+/* Task lists */
+.task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    background: rgba(13, 13, 43, 0.7);
+    border-left: 3px solid var(--accent-violet);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.task-item:hover {
+    background: rgba(0, 255, 255, 0.1);
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-name {
+    color: var(--text-primary);
+}
+
+.task-status {
+    font-size: 0.9rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(0, 255, 255, 0.2);
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+}
+
+/* Charts and graphs */
+.chart-container {
+    position: relative;
+    margin: 20px 0;
+    height: 300px;
+}
+
+/* Calendar */
+.calendar-container {
+    padding: 15px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.calendar-day:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: var(--accent-cyan);
+}
+
+.calendar-day.active {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 5px var(--accent-cyan);
+}
+
+/* Buttons */
+.btn-primary {
+    background: rgba(0, 255, 255, 0.2);
+    border: 1px solid var(--accent-cyan);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0.75rem 1.25rem;
+}
+
+.btn-primary:hover {
+    background: rgba(0, 255, 255, 0.4);
+    box-shadow: 0 0 10px var(--accent-cyan);
+    transform: translateY(-2px);
+}
+
+/* Touch Optimization */
+.form-control {
+    font-size: 1rem;
+    padding: 0.75rem;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    
+    .col, .col-md-4, .col-md-6, .col-md-8, .col-md-12 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+    }
+    
+    .progress-label {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+    
+    .card-header h5 {
+        font-size: 1.1rem;
+    }
+    
+    .task-item {
+        padding: 0.75rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .calendar-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* For very small screens */
+@media (max-width: 576px) {
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .calendar-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2px;
+    }
+    
+    .calendar-day {
+        font-size: 0.8rem;
+    }
+    
+    .task-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .task-status {
+        margin-top: 5px;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+
+/* app/static/css/dashboard_gaming.css */
+.dashboard-text-content {
+    color: rgba(229, 229, 229, 0.95) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-heading {
+    background: linear-gradient(45deg, 
+        var(--accent-cyan), 
+        var(--accent-violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+}
+
+.dashboard-list li::before {
+    content: "▹";
+    color: var(--accent-cyan);
+    margin-right: 0.5rem;
+}
+
+.dashboard-figure {
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    background: rgba(13, 13, 43, 0.7);
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .dashboard-text-content {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .dashboard-heading {
+        font-size: 1.5rem;
+    }
+}

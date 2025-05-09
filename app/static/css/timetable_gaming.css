@@ -1,0 +1,333 @@
+/* Timetable Gaming Theme CSS - Mobile First Approach */
+
+/* Card styling with gaming theme */
+.card {
+    background: rgba(13, 13, 43, 0.85);
+    border: 1px solid var(--accent-cyan);
+    box-shadow: 0 0 10px var(--accent-violet);
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    border-bottom: 1px solid var(--accent-cyan);
+    background: rgba(13, 13, 43, 0.9);
+}
+
+.card-header h5, .card-header h6 {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 5px var(--accent-cyan);
+    font-size: 1rem;
+}
+
+/* Timetable slots with gaming theme */
+.timetable-slot {
+    min-height: 50px;
+    border: 1px solid var(--accent-cyan);
+    padding: 0.5rem;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    background: rgba(13, 13, 43, 0.8);
+    transition: all 0.3s ease;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.timetable-slot:hover {
+    background-color: rgba(13, 13, 43, 0.9);
+    box-shadow: 0 0 8px var(--accent-cyan);
+    transform: translateY(-2px);
+}
+
+.timetable-slot.assigned {
+    background-color: rgba(0, 255, 255, 0.15);
+    border-color: var(--accent-cyan);
+}
+
+/* Time column styling */
+.time-column {
+    text-align: right;
+    font-weight: bold;
+    padding-right: 0.5rem;
+    color: var(--accent-cyan);
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+    font-size: 0.9rem;
+}
+
+.hour-row {
+    height: auto;
+    min-height: 50px;
+    padding: 0.5rem 0;
+    border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+/* Current time marker */
+.current-time-marker {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 2px solid var(--accent-violet);
+    z-index: 1;
+    box-shadow: 0 0 10px var(--accent-violet);
+}
+
+.current-time-label {
+    position: absolute;
+    left: 5px;
+    background-color: var(--accent-violet);
+    color: white;
+    padding: 2px 5px;
+    font-size: 12px;
+    border-radius: 3px;
+    transform: translateY(-50%);
+    box-shadow: 0 0 5px var(--accent-violet);
+}
+
+/* Activity items */
+.activity-item {
+    padding: 0.75rem;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    cursor: move;
+    background-color: rgba(13, 13, 43, 0.8);
+    border-left: 5px solid var(--accent-violet);
+    transition: all 0.3s ease;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.activity-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 10px var(--accent-violet);
+}
+
+.sub-activity-item {
+    padding: 0.5rem;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    cursor: move;
+    font-size: 0.875rem;
+    background-color: rgba(13, 13, 43, 0.6);
+    border-left: 3px solid var(--accent-cyan);
+    transition: all 0.3s ease;
+    touch-action: manipulation;
+}
+
+.sub-activity-item:hover {
+    background-color: rgba(13, 13, 43, 0.9);
+    box-shadow: 0 0 5px var(--accent-cyan);
+}
+
+/* Calendar container */
+#calendar-container {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.calendar-date-picker {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(13, 13, 43, 0.7);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--accent-cyan);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.calendar-day {
+    background: rgba(13, 13, 43, 0.7);
+    border: 1px solid var(--accent-violet);
+}
+
+.calendar-date-picker button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--accent-cyan);
+    transition: all 0.3s ease;
+}
+
+.calendar-date-picker button:hover {
+    color: var(--accent-violet);
+    text-shadow: 0 0 5px var(--accent-violet);
+    transform: scale(1.1);
+}
+
+.calendar-current-date {
+    margin: 0 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
+
+/* Assigned activities */
+.assigned-activity {
+    color: var(--text-primary);
+}
+
+.assigned-activity strong {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 3px var(--accent-cyan);
+}
+
+.assigned-activity small {
+    color: rgba(229, 229, 229, 0.7);
+}
+
+/* Buttons */
+.btn-success {
+    background: rgba(0, 255, 255, 0.2);
+    border: 1px solid var(--accent-cyan);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background: rgba(0, 255, 255, 0.4);
+    box-shadow: 0 0 10px var(--accent-cyan);
+    transform: translateY(-2px);
+}
+
+.btn-link.text-danger {
+    color: #ff6b6b !important;
+}
+
+.btn-link.text-danger:hover {
+    text-shadow: 0 0 5px #ff6b6b;
+}
+
+/* Search input */
+#activity-search {
+    background: rgba(13, 13, 43, 0.7);
+    border: 1px solid var(--accent-cyan);
+    color: var(--text-primary);
+    border-radius: 20px;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+}
+
+#activity-search:focus {
+    box-shadow: 0 0 10px var(--accent-cyan);
+    outline: none;
+}
+
+/* Toggle buttons */
+.toggle-sub-activities {
+    color: var(--accent-cyan) !important;
+}
+
+.toggle-sub-activities:hover {
+    color: var(--accent-violet) !important;
+    text-shadow: 0 0 5px var(--accent-violet);
+}
+
+/* Responsive design for mobile */
+@media (min-width: 769px) {
+    /* Desktop overrides */
+    .timetable-slot {
+        min-height: 40px;
+        padding: 8px;
+    }
+    
+    .hour-row {
+        height: 60px;
+        padding: 0;
+    }
+    
+    .time-column {
+        font-size: 1rem;
+        padding-right: 10px;
+    }
+    
+    .card-header h5, .card-header h6 {
+        font-size: 1.25rem;
+    }
+    
+    .calendar-date-picker {
+        padding: 8px 15px;
+        flex-direction: row;
+    }
+    
+    .activity-item {
+        padding: 8px;
+    }
+    
+    .sub-activity-item {
+        padding: 5px 8px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    
+    .col-md-9, .col-md-3 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .assigned-activity strong {
+        font-size: 0.9rem;
+    }
+    
+    .assigned-activity small {
+        font-size: 0.7rem;
+    }
+    
+    .calendar-date-picker {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .calendar-current-date {
+        font-size: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .draggable-activity {
+        touch-action: manipulation;
+        user-select: none;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 576px) {
+    .col-1.time-column {
+        width: 15%;
+    }
+    
+    .col-11 {
+        width: 85%;
+    }
+    
+    .timetable-container {
+        overflow-x: hidden;
+    }
+    
+    .activity-item, .sub-activity-item {
+        font-size: 0.85rem;
+    }
+    
+    .timetable-slot {
+        min-height: 45px;
+        padding: 0.4rem;
+    }
+    
+    .calendar-date-picker button {
+        font-size: 1.2rem;
+    }
+    
+    .calendar-current-date {
+        font-size: 0.9rem;
+    }
+}

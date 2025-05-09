@@ -1,0 +1,524 @@
+{% extends 'base2.html' %}
+
+{% block title %}Timetable - Real-Life RPG System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timetable-slot {
+        min-height: 40px;
+        border: 1px solid #ddd;
+        padding: 8px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+    
+    .timetable-slot:hover {
+        background-color: #e9ecef;
+    }
+    
+    .timetable-slot.assigned {
+        background-color: #d1e7dd;
+        border-color: #badbcc;
+    }
+    
+    .time-column {
+        text-align: right;
+        font-weight: bold;
+        padding-right: 10px;
+    }
+    
+    .hour-row {
+        height: 60px;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .current-time-marker {
+        position: absolute;
+        left: 0;
+        right: 0;
+        border-top: 2px solid #dc3545;
+        z-index: 1;
+    }
+    
+    .current-time-label {
+        position: absolute;
+        left: 5px;
+        background-color: #dc3545;
+        color: white;
+        padding: 2px 5px;
+        font-size: 12px;
+        border-radius: 3px;
+        transform: translateY(-50%);
+    }
+    
+    .activity-item {
+        padding: 8px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        cursor: move;
+        background-color: #e2e3e5;
+        border-left: 5px solid #6c757d;
+    }
+    
+    .sub-activity-item {
+        padding: 5px 8px;
+        margin-bottom: 3px;
+        border-radius: 3px;
+        cursor: move;
+        font-size: 14px;
+    }
+    
+    #calendar-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .calendar-date-picker {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .calendar-date-picker button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    
+    .calendar-current-date {
+        margin: 0 15px;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Plan Your Day</h5>
+            </div>
+            <div class="card-body">
+                <div id="calendar-container">
+                    <div class="calendar-date-picker">
+                        <button id="prev-day-btn"><i class="fas fa-chevron-left"></i></button>
+                        <div class="calendar-current-date" id="current-date">Today</div>
+                        <button id="next-day-btn"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Daily Schedule</h6>
+                                    <button class="btn btn-sm btn-success" id="save-timetable-btn">
+                                        <i class="fas fa-save"></i> Save Schedule
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="timetable-container position-relative">
+                                    <!-- Current time marker will be inserted here by JS -->
+                                    <div id="timetable">
+                                        <!-- Timetable will be generated here by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Available Activities</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="activity-search" placeholder="Search activities...">
+                                </div>
+                                
+                                <div id="activity-list">
+                                    <!-- Activities will be loaded here -->
+                                    {% if activities %}
+                                        {% for activity in activities %}
+                                            <div class="activity-item">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <strong>{{ activity.name }}</strong>
+                                                    <button class="btn btn-sm btn-link toggle-sub-activities" data-activity-id="{{ activity.id }}">
+                                                        <i class="fas fa-chevron-down"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="sub-activities-container" id="sub-activities-{{ activity.id }}" style="display: none;">
+                                                    {% if activity.sub_activities %}
+                                                        {% for sub in activity.sub_activities %}
+                                                            <div class="sub-activity-item" 
+                                                                 data-id="{{ sub.id }}" 
+                                                                 data-name="{{ sub.name }}" 
+                                                                 data-time="{{ sub.scheduled_time }}" 
+                                                                 data-difficulty="{{ sub.difficulty_multiplier }}"
+                                                                 draggable="true">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>{{ sub.name }}</span>
+                                                                    <small class="text-muted">{{ sub.scheduled_time }} min</small>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <p class="text-muted small">No sub-activities found</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted">No activities found. <a href="{{ url_for('views.activities') }}">Create some activities</a> first.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Current date handling
+    let currentDate = new Date();
+    const dateDisplay = document.getElementById('current-date');
+    const prevDayBtn = document.getElementById('prev-day-btn');
+    const nextDayBtn = document.getElementById('next-day-btn');
+    
+    // Initialize date display
+    updateDateDisplay();
+    
+    // Date navigation
+    prevDayBtn.addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() - 1);
+        updateDateDisplay();
+        loadTimetable();
+    });
+    
+    nextDayBtn.addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() + 1);
+        updateDateDisplay();
+        loadTimetable();
+    });
+    
+    function updateDateDisplay() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = currentDate.toLocaleDateString('en-US', options);
+        const isToday = isDateToday(currentDate);
+        
+        dateDisplay.textContent = isToday ? `Today (${dateStr})` : dateStr;
+    }
+    
+    function isDateToday(date) {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+               date.getMonth() === today.getMonth() &&
+               date.getFullYear() === today.getFullYear();
+    }
+    
+    // Generate timetable structure
+    const timetableContainer = document.getElementById('timetable');
+    generateTimetable();
+    
+    function generateTimetable() {
+        const hours = 24;
+        let timetableHTML = '<div class="row">';
+        
+        // Time column
+        timetableHTML += '<div class="col-1 time-column">';
+        for (let i = 0; i < hours; i++) {
+            const displayHour = i % 12 === 0 ? 12 : i % 12;
+            const ampm = i < 12 ? 'AM' : 'PM';
+            timetableHTML += `
+                <div class="hour-row d-flex align-items-start">
+                    <div class="w-100 pt-1">${displayHour} ${ampm}</div>
+                </div>
+            `;
+        }
+        timetableHTML += '</div>';
+        
+        // Slots column
+        timetableHTML += '<div class="col-11">';
+        for (let i = 0; i < hours; i++) {
+            timetableHTML += `
+                <div class="hour-row" data-hour="${i}">
+                    <div class="timetable-slot" data-time="${i}:00" data-duration="60"></div>
+                </div>
+            `;
+        }
+        timetableHTML += '</div>';
+        
+        timetableHTML += '</div>';
+        timetableContainer.innerHTML = timetableHTML;
+        
+        // Add current time marker if viewing today
+        if (isDateToday(currentDate)) {
+            addCurrentTimeMarker();
+        }
+    }
+    
+    function addCurrentTimeMarker() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const totalMinutes = hours * 60 + minutes;
+        
+        // Calculate position as percentage of day
+        const percentage = (totalMinutes / (24 * 60)) * 100;
+        
+        // Create marker
+        const marker = document.createElement('div');
+        marker.className = 'current-time-marker';
+        marker.style.top = `${percentage}%`;
+        
+        // Create label
+        const label = document.createElement('div');
+        label.className = 'current-time-label';
+        label.textContent = `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+        
+        marker.appendChild(label);
+        document.querySelector('.timetable-container').appendChild(marker);
+    }
+    
+    // Load saved timetable
+    loadTimetable();
+    
+    function loadTimetable() {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        fetch(`/api/timetable?date=${dateStr}`)
+        .then(response => response.json())
+        .then(data => {
+            // Clear existing assignments
+            document.querySelectorAll('.timetable-slot').forEach(slot => {
+                slot.innerHTML = '';
+                slot.classList.remove('assigned');
+            });
+            
+            // Add scheduled activities
+            if (data.schedule) {
+                const schedule = data.schedule;
+                
+                for (const timeSlot in schedule) {
+                    const activity = schedule[timeSlot];
+                    const [hour, minute] = timeSlot.split(':').map(Number);
+                    
+                    // Find corresponding slot
+                    const slot = document.querySelector(`.timetable-slot[data-time="${hour}:${minute < 10 ? '0' + minute : minute}"]`);
+                    
+                    if (slot) {
+                        slot.innerHTML = `
+                            <div class="assigned-activity" data-id="${activity.id}">
+                                <strong>${activity.name}</strong><br>
+                                <small>${activity.duration} min</small>
+                                <button class="btn btn-sm btn-link text-danger remove-activity">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `;
+                        slot.classList.add('assigned');
+                    }
+                }
+                
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.remove-activity').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const slot = this.closest('.timetable-slot');
+                        slot.innerHTML = '';
+                        slot.classList.remove('assigned');
+                    });
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading timetable:', error);
+        });
+    }
+    
+    // Toggle sub-activities
+    const toggleButtons = document.querySelectorAll('.toggle-sub-activities');
+    toggleButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const activityId = this.getAttribute('data-activity-id');
+            const subActivitiesContainer = document.getElementById(`sub-activities-${activityId}`);
+            const icon = this.querySelector('i');
+            
+            if (subActivitiesContainer.style.display === 'none') {
+                subActivitiesContainer.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                subActivitiesContainer.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+    });
+    
+    // Drag and drop functionality
+    const subActivities = document.querySelectorAll('.sub-activity-item');
+    const timeSlots = document.querySelectorAll('.timetable-slot');
+    
+    subActivities.forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                id: this.getAttribute('data-id'),
+                name: this.getAttribute('data-name'),
+                time: this.getAttribute('data-time'),
+                difficulty: this.getAttribute('data-difficulty')
+            }));
+        });
+    });
+    
+    timeSlots.forEach(slot => {
+        slot.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('bg-light');
+        });
+        
+        slot.addEventListener('dragleave', function() {
+            this.classList.remove('bg-light');
+        });
+        
+        slot.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('bg-light');
+            
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            
+            this.innerHTML = `
+                <div class="assigned-activity" data-id="${data.id}">
+                    <strong>${data.name}</strong><br>
+                    <small>${data.time} min</small>
+                    <button class="btn btn-sm btn-link text-danger remove-activity">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            this.classList.add('assigned');
+            
+            // Add event listener to the remove button
+            this.querySelector('.remove-activity').addEventListener('click', function(e) {
+                e.stopPropagation();
+                const slot = this.closest('.timetable-slot');
+                slot.innerHTML = '';
+                slot.classList.remove('assigned');
+            });
+        });
+    });
+    
+    // Save timetable
+    document.getElementById('save-timetable-btn').addEventListener('click', function() {
+        const schedule = {};
+        const assignedSlots = document.querySelectorAll('.timetable-slot.assigned');
+        
+        assignedSlots.forEach(slot => {
+            const time = slot.getAttribute('data-time');
+            const activity = slot.querySelector('.assigned-activity');
+            const activityId = activity.getAttribute('data-id');
+            const activityName = activity.querySelector('strong').textContent;
+            const duration = parseInt(activity.querySelector('small').textContent);
+            
+            schedule[time] = {
+                id: activityId,
+                name: activityName,
+                duration: duration
+            };
+        });
+        
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        fetch('/api/timetable', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                date: dateStr,
+                schedule: schedule
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 400) {
+                    // If timetable already exists, update it instead
+                    return fetch('/api/timetable', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            date: dateStr,
+                            schedule: schedule
+                        })
+                    });
+                }
+                throw new Error('Failed to save timetable');
+            }
+            return response.json();
+        })
+        .then(data => {
+            showNotification('success', 'Success', 'Timetable saved successfully');
+        })
+        .catch(error => {
+            console.error('Error saving timetable:', error);
+            showNotification('danger', 'Error', 'Failed to save timetable');
+        });
+    });
+    
+    // Activity search
+    document.getElementById('activity-search').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const activities = document.querySelectorAll('.activity-item');
+        
+        activities.forEach(activity => {
+            const activityName = activity.querySelector('strong').textContent.toLowerCase();
+            const subActivities = activity.querySelectorAll('.sub-activity-item');
+            let subActivityMatch = false;
+            
+            subActivities.forEach(sub => {
+                const subName = sub.querySelector('span').textContent.toLowerCase();
+                if (subName.includes(searchTerm)) {
+                    subActivityMatch = true;
+                    sub.style.display = 'block';
+                } else {
+                    sub.style.display = 'none';
+                }
+            });
+            
+            if (activityName.includes(searchTerm) || subActivityMatch) {
+                activity.style.display = 'block';
+                if (subActivityMatch) {
+                    // Show sub-activities container
+                    const activityId = activity.querySelector('.toggle-sub-activities').getAttribute('data-activity-id');
+                    const subContainer = document.getElementById(`sub-activities-${activityId}`);
+                    subContainer.style.display = 'block';
+                    
+                    // Update icon
+                    const icon = activity.querySelector('.toggle-sub-activities i');
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            } else {
+                activity.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

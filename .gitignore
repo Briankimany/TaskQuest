@@ -1,0 +1,7 @@
+
+*.db
+__pycache__/
+.venv/
+*.log
+md-files/
+.python-version

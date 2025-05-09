@@ -1,0 +1,180 @@
+/* Solo Leveling Inspired Theme */
+:root {
+    --bg-primary: #0D0D2B;
+    --accent-cyan: #00FFFF;
+    --accent-violet: #8A2BE2;
+    --text-primary: #E5E5E5;
+    --font-gaming: 'Orbitron', sans-serif;
+}
+
+/* body {
+    background: var(--bg-primary) url('/static/assets/jinwoo-igris.gif') fixed;
+    color: var(--text-primary);
+    font-family: var(--font-gaming);
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+} */
+body {
+    position: relative;
+    color: var(--text-primary);
+    font-family: var(--font-gaming);
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary) url('/static/assets/suns-army.gif') fixed;
+    /* filter: blur(2px) brightness(0.7); */
+    /* filter: blur(4px) brightness(0.8); Subtle blur */
+
+    z-index: -1;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        rgba(13, 13, 43, 0.85),
+        rgba(43, 13, 43, 0.85)
+    );
+    z-index: -1;
+}
+
+
+body::before {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+}
+
+
+.card {
+    background: rgba(13, 13, 43, 0.9);
+    border: 2px solid var(--accent-cyan);
+    border-radius: 8px;
+    box-shadow: 0 0 15px var(--accent-violet);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        var(--accent-cyan),
+        var(--accent-violet),
+        var(--accent-cyan));
+    z-index: -1;
+    animation: border-glow 3s linear infinite;
+}
+
+@keyframes border-glow {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.btn-primary {
+    background: none;
+    border: 2px solid var(--accent-cyan);
+    color: var(--text-primary);
+    position: all var(--transition-speed);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 15px var(--accent-cyan);
+    transform: scale(1.05);
+}
+
+.progress-bar {
+    background: linear-gradient(90deg,
+        var(--accent-cyan),
+        var(--accent-violet));
+    position: all 0.5s ease-in-out;
+}
+
+.theme-bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+/* Dark Mode Navigation - Compatible with base_gaming.css */
+.theme-gaming .navbar {
+    background: rgba(13, 13, 43, 0.95) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--accent-cyan);
+    box-shadow: 0 2px 20px rgba(0, 255, 255, 0.1);
+}
+
+.theme-gaming .navbar-brand {
+    color: var(--accent-cyan) !important;
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+.theme-gaming .nav-link {
+    color: rgba(229, 229, 229, 0.9) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-gaming .nav-link i {
+    color: var(--accent-violet);
+    filter: drop-shadow(0 0 4px rgba(138, 43, 226, 0.3));
+}
+
+.theme-gaming .nav-link:hover {
+    color: var(--accent-cyan) !important;
+    transform: translateY(-1px);
+}
+
+.theme-gaming .nav-link:hover::after {
+    background: var(--accent-violet);
+    height: 3px;
+    bottom: -3px;
+}
+
+.theme-gaming .nav-link:hover i {
+    color: var(--accent-cyan);
+    filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.5));
+}
+
+/* Mobile Dark Mode */
+@media (max-width: 992px) {
+    .theme-gaming .navbar-collapse {
+        background: rgba(13, 13, 43, 0.98);
+        border: 1px solid var(--accent-violet);
+        box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
+    }
+    
+    .theme-gaming .navbar-toggler {
+        border-color: rgba(0, 255, 255, 0.3);
+    }
+    
+    .theme-gaming .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 255, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+}
+
+/* Hover Animation Sync with Gaming Theme */
+.theme-gaming .nav-link::after {
+    background: var(--accent-cyan);
+    height: 2px;
+    transition: width 0.3s ease, opacity 0.3s ease;
+}

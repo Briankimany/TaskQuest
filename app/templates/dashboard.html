@@ -1,0 +1,420 @@
+{% extends 'base2.html' %}
+
+{% block title %}Dashboard - Real-Life RPG System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Stats Panel -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Character Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <h2 class="mb-0 me-2">Level {{ user.level }}</h2>
+                    <small class="text-muted">{{ user.username }}</small>
+                </div>
+                
+                <!-- EXP Progress Bar -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>EXP: {{ user.total_exp }}</small>
+                        <small>Next: {{ user.total_exp + exp_to_next_level }}</small>
+                    </div>
+                    {% set progress_percentage = (100 - (exp_to_next_level / (exp_to_next_level + 1) * 100))|round if exp_to_next_level > 0 else 100 %}
+                    <div class="progress exp-progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress_percentage }}%"></div>
+                    </div>
+                    <small class="text-muted mt-1 d-block">{{ exp_to_next_level }} EXP to level {{ user.level + 1 }}</small>
+                </div>
+                
+                <!-- Discipline Factor -->
+                <div class="mb-3">
+                    <h6>Daily Discipline Factor</h6>
+                    {% set dcp_percentage = (dcp * 100)|round %}
+                    <div class="progress">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ dcp_percentage }}%" 
+                            data-bs-toggle="tooltip" data-bs-placement="top" 
+                            title="Completed {{ dcp_percentage }}% of scheduled activities">
+                            {{ dcp_percentage }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attributes -->
+                <h6>Core Attributes</h6>
+                <div class="row">
+                    <div class="col-6 mb-2">
+                        <span class="attribute-badge INT-bg" data-bs-toggle="tooltip" title="Intelligence: Affects learning and cognitive tasks">INT</span>
+                        {{ user.INT }}
+                    </div>
+                    <div class="col-6 mb-2">
+                        <span class="attribute-badge STA-bg" data-bs-toggle="tooltip" title="Stamina: Affects physical endurance and health">STA</span>
+                        {{ user.STA }}
+                    </div>
+                    <div class="col-6 mb-2">
+                        <span class="attribute-badge FCS-bg" data-bs-toggle="tooltip" title="Focus: Affects concentration and attention to detail">FCS</span>
+                        {{ user.FCS }}
+                    </div>
+                    <div class="col-6 mb-2">
+                        <span class="attribute-badge CHA-bg" data-bs-toggle="tooltip" title="Charisma: Affects social skills and interactions">CHA</span>
+                        {{ user.CHA }}
+                    </div>
+                    <div class="col-6 mb-2">
+                        <span class="attribute-badge DSC-bg" data-bs-toggle="tooltip" title="Discipline: Affects consistency and habit formation">DSC</span>
+                        {{ user.DSC }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity Tracker -->
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Today's Quests</h5>
+                <a href="{{ url_for('views.activities') }}" class="btn btn-sm btn-outline-light">Manage Activities</a>
+            </div>
+            <div class="card-body">
+                {% if activities %}
+                    <div id="activity-container">
+                        {% for activity in activities %}
+                            <div class="activity-card card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" 
+                                     data-bs-target="#activity-{{ activity.id }}" role="button">
+                                    <h6 class="mb-0">{{ activity.name }}</h6>
+                                    <span class="badge bg-secondary">{{ activity.sub_activities|length }} sub-activities</span>
+                                </div>
+                                <div class="collapse show" id="activity-{{ activity.id }}">
+                                    <div class="card-body">
+                                        {% if activity.sub_activities %}
+                                            {% for sub in activity.sub_activities %}
+                                                {% set log = today_logs|selectattr('sub_activity_id', 'eq', sub.id)|first %}
+                                                {% set status = log.status if log else 'pending' %}
+                                                {% set status_class = 'completed' if status == 'completed' else ('overdue' if status == 'skipped' else 'pending') %}
+                                                
+                                                <div class="sub-activity {{ status_class }}" data-id="{{ sub.id }}">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1">{{ sub.name }}</h6>
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-clock"></i> {{ sub.scheduled_time }} min
+                                                                <i class="fas fa-star ms-2"></i> x{{ sub.difficulty_multiplier }}
+                                                            </small>
+                                                        </div>
+                                                        <div>
+                                                            {% if status == 'pending' %}
+                                                                <button class="btn btn-sm btn-success complete-btn" 
+                                                                        data-id="{{ sub.id }}" 
+                                                                        data-bs-toggle="tooltip" 
+                                                                        title="Mark as completed">
+                                                                    <i class="fas fa-check"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-warning partial-btn" 
+                                                                        data-id="{{ sub.id }}" 
+                                                                        data-bs-toggle="tooltip" 
+                                                                        title="Mark as partially completed">
+                                                                    <i class="fas fa-adjust"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-danger skip-btn" 
+                                                                        data-id="{{ sub.id }}" 
+                                                                        data-bs-toggle="tooltip" 
+                                                                        title="Skip this activity">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                            {% else %}
+                                                                <span class="badge bg-{{ 'success' if status == 'completed' else ('warning' if status == 'partial' else 'danger') }}">
+                                                                    {{ status|capitalize }}
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="exp-info mt-2" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                                                         title="<strong>EXP Details:</strong><br>Base EXP: {{ sub.base_exp }}<br>Time Factor: {{ (sub.scheduled_time / 60)|round(2) }}<br>Difficulty: x{{ sub.difficulty_multiplier }}<br>Potential EXP: {{ (sub.base_exp * (sub.scheduled_time / 60) * sub.difficulty_multiplier * dcp)|round|int }}">
+                                                        <small class="text-muted">
+                                                            Potential EXP: <span class="text-success">+{{ (sub.base_exp * (sub.scheduled_time / 60) * sub.difficulty_multiplier * dcp)|round|int }}</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p class="text-muted">No sub-activities found for this category.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="mb-3">You don't have any activities yet!</p>
+                        <a href="{{ url_for('views.activities') }}" class="btn btn-primary">Create Your First Activity</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activity completion handlers
+    const completeButtons = document.querySelectorAll('.complete-btn');
+    const partialButtons = document.querySelectorAll('.partial-btn');
+    const skipButtons = document.querySelectorAll('.skip-btn');
+    
+    completeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const subActivityId = this.getAttribute('data-id');
+            completeActivity(subActivityId, 'completed');
+        });
+    });
+    
+    partialButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const subActivityId = this.getAttribute('data-id');
+            showPartialCompletionModal(subActivityId);
+        });
+    });
+    
+    skipButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const subActivityId = this.getAttribute('data-id');
+            showSkipModal(subActivityId);
+        });
+    });
+    
+    // Completion modal
+    function showPartialCompletionModal(subActivityId) {
+        // Create modal for partial completion time input
+        const modalHtml = `
+            <div class="modal fade" id="partialModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Partial Completion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="actual-time" class="form-label">How much time did you spend? (minutes)</label>
+                                <input type="number" class="form-control" id="actual-time" min="1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Reason (optional)</label>
+                                <textarea class="form-control" id="reason" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="confirm-partial">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        const modal = new bootstrap.Modal(document.getElementById('partialModal'));
+        modal.show();
+        
+        document.getElementById('confirm-partial').addEventListener('click', function() {
+            const actualTime = document.getElementById('actual-time').value;
+            const reason = document.getElementById('reason').value;
+            
+            if (actualTime) {
+                completeActivity(subActivityId, 'partial', actualTime, reason);
+                modal.hide();
+                
+                // Remove the modal from DOM after hiding
+                document.getElementById('partialModal').addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+            }
+        });
+    }
+    
+    function showSkipModal(subActivityId) {
+        // Create modal for skip reason
+        const modalHtml = `
+            <div class="modal fade" id="skipModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Skip Activity</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Skipping will result in EXP penalties.
+                            </div>
+                            <div class="mb-3">
+                                <label for="skip-reason" class="form-label">Reason for skipping (optional)</label>
+                                <textarea class="form-control" id="skip-reason" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="confirm-skip">Skip Activity</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        const modal = new bootstrap.Modal(document.getElementById('skipModal'));
+        modal.show();
+        
+        document.getElementById('confirm-skip').addEventListener('click', function() {
+            const reason = document.getElementById('skip-reason').value;
+            completeActivity(subActivityId, 'skipped', null, reason);
+            modal.hide();
+            
+            // Remove the modal from DOM after hiding
+            document.getElementById('skipModal').addEventListener('hidden.bs.modal', function() {
+                this.remove();
+            });
+        });
+    }
+    
+    function completeActivity(subActivityId, status, actualTime = null, reason = null) {
+        const data = {
+            subactivity_id: subActivityId,
+            status: status
+        };
+        
+        if (actualTime) {
+            data.actual_time = parseInt(actualTime);
+        }
+        
+        if (reason) {
+            data.reason = reason;
+        }
+        
+        fetch('/api/complete_activity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            
+            // Update UI to reflect completion
+            const subActivity = document.querySelector(`.sub-activity[data-id="${subActivityId}"]`);
+            
+            if (status === 'completed') {
+                subActivity.classList.remove('pending', 'overdue');
+                subActivity.classList.add('completed');
+            } else if (status === 'partial') {
+                subActivity.classList.remove('pending', 'overdue');
+                subActivity.classList.add('pending');  // Use a different class if you have one for partial
+            } else {
+                subActivity.classList.remove('pending', 'completed');
+                subActivity.classList.add('overdue');
+            }
+            
+            // Update buttons
+            const buttonsContainer = subActivity.querySelector('div > div:last-child');
+            buttonsContainer.innerHTML = `
+                <span class="badge bg-${status === 'completed' ? 'success' : (status === 'partial' ? 'warning' : 'danger')}">
+                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+            `;
+            
+            // Show notification for EXP gain/loss
+            const expChange = data.exp_change;
+            const expMessage = expChange >= 0 ? 
+                `Gained <strong>${expChange}</strong> EXP!` : 
+                `Lost <strong>${Math.abs(expChange)}</strong> EXP!`;
+            
+            const notificationType = expChange >= 0 ? 'success' : 'danger';
+            const notificationTitle = status === 'completed' ? 'Activity Completed!' : 
+                                     (status === 'partial' ? 'Partial Completion' : 'Activity Skipped');
+            
+            showNotification(notificationType, notificationTitle, expMessage);
+            
+            // Handle level up
+            if (data.level_up) {
+                setTimeout(() => {
+                    showNotification('warning', 'Level Up!', `You've reached level ${data.level_up_details.new_level}!<br>${data.level_up_details.reward}`, 10000);
+                    
+                    // Add animation to level display
+                    const levelElement = document.querySelector('h2.mb-0');
+                    levelElement.textContent = `Level ${data.level}`;
+                    levelElement.classList.add('pulse');
+                    setTimeout(() => {
+                        levelElement.classList.remove('pulse');
+                    }, 2000);
+                }, 1000);
+            }
+            
+            // Update stats display
+            updateStats();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('danger', 'Error', 'Failed to update activity status. Please try again.');
+        });
+    }
+    
+    // Function to update stats via API
+    function updateStats() {
+        fetch('/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            // Update level and EXP
+            document.querySelector('h2.mb-0').textContent = `Level ${data.user.level}`;
+            
+            // Update attributes
+            document.querySelector('.col-6:nth-child(1)').innerHTML = `
+                <span class="attribute-badge INT-bg" data-bs-toggle="tooltip" title="Intelligence: Affects learning and cognitive tasks">INT</span>
+                ${data.user.attributes.INT}
+            `;
+            document.querySelector('.col-6:nth-child(2)').innerHTML = `
+                <span class="attribute-badge STA-bg" data-bs-toggle="tooltip" title="Stamina: Affects physical endurance and health">STA</span>
+                ${data.user.attributes.STA}
+            `;
+            document.querySelector('.col-6:nth-child(3)').innerHTML = `
+                <span class="attribute-badge FCS-bg" data-bs-toggle="tooltip" title="Focus: Affects concentration and attention to detail">FCS</span>
+                ${data.user.attributes.FCS}
+            `;
+            document.querySelector('.col-6:nth-child(4)').innerHTML = `
+                <span class="attribute-badge CHA-bg" data-bs-toggle="tooltip" title="Charisma: Affects social skills and interactions">CHA</span>
+                ${data.user.attributes.CHA}
+            `;
+            document.querySelector('.col-6:nth-child(5)').innerHTML = `
+                <span class="attribute-badge DSC-bg" data-bs-toggle="tooltip" title="Discipline: Affects consistency and habit formation">DSC</span>
+                ${data.user.attributes.DSC}
+            `;
+            
+            // Update discipline factor
+            const dcpPercentage = (data.discipline_factor * 100).toFixed(0);
+            const progressBar = document.querySelector('.progress-bar.bg-info');
+            progressBar.style.width = `${dcpPercentage}%`;
+            progressBar.textContent = `${dcpPercentage}%`;
+            
+            // Reinitialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    html: true
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error updating stats:', error);
+        });
+    }
+});
+</script>
+{% endblock %}

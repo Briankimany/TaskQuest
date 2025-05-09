@@ -1,0 +1,175 @@
+/* activities_gaming.css - Dark Mode Styles */
+.activity-card {
+    background: rgba(13, 13, 43, 0.9) !important;
+    border: 2px solid var(--accent-cyan) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+.activity-card .card-header {
+    background: rgba(43, 13, 43, 0.8) !important;
+    border-bottom: 2px solid var(--accent-violet) !important;
+}
+
+.subactivities-list {
+    background: rgba(13, 13, 43, 0.7);
+    border-radius: 4px;
+}
+
+.table-hover tbody tr {
+    background: rgba(13, 13, 43, 0.6);
+    transition: all 0.3s ease;
+}
+
+.table-hover tbody tr:hover {
+    background: rgba(0, 255, 255, 0.1) !important;
+    transform: translateX(5px);
+}
+
+.table th {
+    background: linear-gradient(45deg, var(--accent-cyan), var(--accent-violet));
+    color: var(--bg-primary) !important;
+    border-bottom: 2px solid var(--accent-cyan) !important;
+}
+
+.table td {
+    color: var(--text-primary) !important;
+    border-color: rgba(0, 255, 255, 0.2) !important;
+}
+
+.badge {
+    background: rgba(0, 255, 255, 0.15) !important;
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan) !important;
+    font-weight: 500;
+}
+
+/* Modals */
+.modal-content {
+    background: rgba(13, 13, 43, 0.95) !important;
+    border: 2px solid var(--accent-violet) !important;
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--accent-cyan) !important;
+    color: var(--accent-cyan);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--accent-cyan) !important;
+}
+
+.form-control {
+    background: rgba(13, 13, 43, 0.7) !important;
+    border: 1px solid var(--accent-violet) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 10px var(--accent-cyan);
+    border-color: var(--accent-cyan) !important;
+}
+
+.form-label {
+    color: var(--accent-cyan) !important;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
+}
+
+/* Progress Bars */
+.progress {
+    background: rgba(13, 13, 43, 0.7);
+    border: 1px solid var(--accent-violet);
+    height: 15px;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, 
+        var(--accent-cyan), 
+        var(--accent-violet)) !important;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(45deg, 
+        var(--accent-cyan), 
+        var(--accent-violet));
+    border: none !important;
+    color: var(--bg-primary) !important;
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, 
+        #ff0000, 
+        #8b0000);
+    border: none !important;
+}
+
+.btn-warning {
+    background: linear-gradient(45deg, 
+        #ffd700, 
+        #ff8c00);
+    border: none !important;
+    color: var(--bg-primary) !important;
+}
+
+/* Tooltips */
+.tooltip-inner {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--accent-cyan) !important;
+    color: var(--accent-cyan) !important;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: var(--accent-cyan) !important;
+}
+
+/* Empty State */
+.text-muted {
+    color: rgba(229, 229, 229, 0.5) !important;
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .activity-card {
+        margin: 0 -15px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .table-responsive {
+        border: 1px solid var(--accent-violet);
+    }
+    
+    .btn-group .btn {
+        margin: 2px;
+        padding: 0.5rem;
+    }
+    
+    .modal-content {
+        margin: 10px;
+    }
+}
+
+/* Notification Overrides */
+.notification-center {
+    background: rgba(13, 13, 43, 0.95);
+    border: 1px solid var(--accent-cyan);
+}
+
+.notification-success {
+    background: linear-gradient(45deg, 
+        var(--accent-cyan), 
+        var(--accent-violet)) !important;
+    color: var(--bg-primary) !important;
+}
+
+.notification-danger {
+    background: linear-gradient(45deg, 
+        #ff0000, 
+        #8b0000) !important;
+    color: white !important;
+}
+
