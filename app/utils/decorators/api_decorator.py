@@ -2,25 +2,12 @@
 from flask import session  ,request
 
 from functools import wraps
-from app.config import TESTING_USER_ID ,INITIAL_TESTING_KEY ,DOT_ENV_LOCATION
+from app.config import TESTING_USER_ID ,TESTING_KEY
 from app.utils.custom_errors import AuthorizationError ,AppError
 from app.utils.logger import auth_logger ,api_logger
 
 from werkzeug.exceptions import HTTPException
 import os 
-from dotenv import load_dotenv,set_key
-
-
-load_dotenv()
-
-def modify_dotenv(key,value):
-    set_key(DOT_ENV_LOCATION ,key ,value)
-
-if not os.getenv('TESTING_KEY'):
-    modify_dotenv('TESTING_KEY',INITIAL_TESTING_KEY)
-    load_dotenv()
-TESTING_KEY = os.getenv("TESTING_KEY")
-
 
 class ApiDecorators:
     def __init__(self, dec_constructors: list, base_function: callable):

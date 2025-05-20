@@ -10,7 +10,7 @@ from .models import db
 from .routes import api_bp, auth_bp, views_bp
 from .utils.custom_errors import make_error_response
 import os
-
+from .config import SUPPORT_EMAIL
 
 from flask_migrate import Migrate
 
@@ -26,7 +26,7 @@ def create_app():
     def page_not_found(e):
         if  "api" in request.path:
             return make_error_response(e,msg='url not found. ',code=404)
-        return render_template('404.html'), 404
+        return render_template('404.html',support_mail = SUPPORT_EMAIL), 404
     
     migrate = Migrate(app, db)
 

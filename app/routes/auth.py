@@ -12,14 +12,18 @@ def login():
     """Handle user login."""
     if request.method == 'POST':
         username = request.form.get('username')
-       
+        password = request.form.get('password')
+        assert password !=None 
+
         user = User.query.filter_by(username=username).first()
         if not user:
             flash('Invalid username.', 'danger')
             return render_template('auth/login.html')
         
-        # In a real app, we would check password here
-        # For this demo, just log the user in
+        if not user.check_password(password):
+            flash('Invalid password.', 'danger')
+            return render_template('auth/login.html')
+
         session['user_id'] = user.id
         flash(f'Welcome back, {user.username}!', 'success')
         return redirect(url_for('views.dashboard'))
@@ -32,6 +36,7 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
+        password = request.form.get('password')
         
         # Check if username or email already exists
         existing_user = User.query.filter_by(username=username).first()
@@ -45,7 +50,7 @@ def register():
             return render_template('auth/register.html')
         
         # Create new user
-        new_user = User(username=username, email=email)
+        new_user = User(username=username, email=email ,password=password)
         db.session.add(new_user)
         db.session.commit()
         
@@ -53,9 +58,10 @@ def register():
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html')
 
+
 @auth_bp.route('/logout')
 def logout():
     """Handle user logout."""
-    session.pop('user_id', None)
+    session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('auth.login'))

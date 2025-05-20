@@ -7,6 +7,8 @@ including their attributes, level, and experience points.
 
 from datetime import datetime
 from .base import db
+import hashlib
+
 
 class User(db.Model):
     """User model representing a player in the RPG system."""
@@ -25,6 +27,18 @@ class User(db.Model):
     level = db.Column(db.Integer, default=1)
     total_exp = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    _password = db.Column('password',db.String(120), nullable=False)
+
+    @property
+    def password(self):
+        return self._password
+    
+    @password.setter
+    def password(self, value):
+        self._password = hashlib.sha256(value.encode('utf-8')).hexdigest()
+    def check_password(self, password):
+        return self.password == hashlib.sha256(password.encode('utf-8')).hexdigest()
     
     def __repr__(self):
         return f'<User {self.username}>'
