@@ -1,0 +1,363 @@
+:root {
+    /* Light Theme */
+    --bg-color: #f8f9fa;
+    --text-color: #212529;
+    --card-bg: #ffffff;
+    --primary: #4361ee;
+    --secondary: #6c757d;
+    --border: #dee2e6;
+    --error: #dc3545;
+    --success: #28a745;
+  }
+  
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+
+  
+  .app-header {
+    padding: 1rem;
+    background-color: var(--card-bg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .header-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .dashboard {
+    padding: 1rem;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+  
+  .task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .task-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--primary);
+    transition: transform 0.2s;
+  }
+  
+  .task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  
+  .task-time {
+    color: var(--secondary);
+    font-size: 0.9rem;
+  }
+  
+  .task-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+  }
+  
+  .btn:hover {
+    opacity: 0.9;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary);
+    color: white;
+  }
+  
+  .btn-secondary {
+    background-color: var(--secondary);
+    color: white;
+  }
+  
+  .btn-danger {
+    background-color: var(--error);
+    color: white;
+  }
+  
+  .floating-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .form-row .form-group {
+    flex: 1;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  input, select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+  }
+  
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .checkbox-container input {
+    width: auto;
+    margin-right: 0.5rem;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+
+  
+  @keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  
+  @media (max-width: 768px) {
+    .task-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .header-controls {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+    
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+
+
+/* ===== Typography Enhancements ===== */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+  }
+  
+  h1, h2, h3 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  
+  .task-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .task-time {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--secondary);
+  }
+  
+  /* ===== Card Enhancements ===== */
+  .task-card {
+    border: 1px solid var(--border);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+  
+  .task-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: var(--primary);
+  }
+  
+  /* ===== Button Refinements ===== */
+  .btn {
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    transition: all 0.15s ease;
+    padding: 0.5rem 1.25rem;
+  }
+  
+  .btn-primary {
+    background-image: linear-gradient(to bottom, var(--primary), color-mix(in srgb, var(--primary), black 15%));
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-1px);
+  }
+  
+  .btn-secondary {
+    background-color: color-mix(in srgb, var(--secondary), transparent 80%);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--secondary);
+  }
+  
+  /* ===== Form Control Enhancements ===== */
+  input, select {
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    padding: 0.625rem 0.75rem;
+  }
+  
+  input:focus, select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary), transparent 70%);
+    outline: none;
+  }
+  
+  /* ===== New Utility Classes ===== */
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--primary), transparent 85%);
+    color: var(--primary);
+  }
+  
+  /* ===== Animation Refinements ===== */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .task-card {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  
+  /* ===== Dark Mode Enhancements ===== */
+  [data-theme="dark"] {
+    --border: #4b5563;
+    
+    .task-card {
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
+    }
+    
+    input, select {
+      background-color: #1f2937;
+    }
+  }
+  
+  /* ===== Responsive Breakpoints ===== */
+  @media (min-width: 1024px) {
+    .task-grid {
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .task-card {
+      padding: 1.25rem;
+    }
+  }
+  
+  /* ===== Micro-interactions ===== */
+  .floating-btn {
+    transition: all 0.2s ease;
+    will-change: transform;
+  }
+  
+  .floating-btn:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* ===== Loading States ===== */
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  
+  .loading-card {
+    background: linear-gradient(to right, var(--bg-color) 4%, color-mix(in srgb, var(--bg-color), white 20%) 25%, var(--bg-color) 36%);
+    background-size: 1000px 100%;
+    animation: shimmer 1.5s infinite linear;
+    height: 120px;
+    border-radius: 8px;
+  }

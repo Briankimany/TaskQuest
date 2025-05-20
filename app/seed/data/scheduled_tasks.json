@@ -1,0 +1,353 @@
+
+[
+    {
+      "subactivity_name": "Studying.Mathematics",
+      "start_time": "09:00:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-10"
+    },
+    {
+      "subactivity_name": "Studying.Computer Science",
+      "start_time": "10:45:00",
+      "task_duration_hours": 2.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-10"
+    },
+    {
+      "subactivity_name": "Physical Training.Weight Lifting",
+      "start_time": "13:00:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 30,
+      "specific_buffer_name": "Long Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-10"
+    },
+    {
+      "subactivity_name": "Creative Work.Writing",
+      "start_time": "14:30:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-10"
+    },
+    {
+      "subactivity_name": "Social.Networking",
+      "start_time": "16:15:00",
+      "task_duration_hours": 0.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-10"
+    },
+    {
+      "subactivity_name": "Physical Training.Running",
+      "start_time": "09:00:00",
+      "task_duration_hours": 0.75,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-11"
+    },
+    {
+      "subactivity_name": "Creative Work.Digital Art",
+      "start_time": "10:00:00",
+      "task_duration_hours": 2.0,
+      "buffer_duration": 30,
+      "specific_buffer_name": "Long Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-11"
+    },
+    {
+      "subactivity_name": "Social.Team Collaboration",
+      "start_time": "13:00:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-11"
+    },
+    {
+      "subactivity_name": "Studying.Literature",
+      "start_time": "15:00:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-11"
+    },
+    {
+      "subactivity_name": "Physical Training.Yoga",
+      "start_time": "16:15:00",
+      "task_duration_hours": 0.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-11"
+    },
+    {
+      "subactivity_name": "Creative Work.Music Practice",
+      "start_time": "09:00:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-12"
+    },
+    {
+      "subactivity_name": "Studying.Mathematics",
+      "start_time": "10:15:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 30,
+      "specific_buffer_name": "Long Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-12"
+    },
+    {
+      "subactivity_name": "Physical Training.Weight Lifting",
+      "start_time": "12:15:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-12"
+    },
+    {
+      "subactivity_name": "Creative Work.Writing",
+      "start_time": "13:30:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-12"
+    },
+    {
+      "subactivity_name": "Social.Networking",
+      "start_time": "15:15:00",
+      "task_duration_hours": 0.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-12"
+    },
+    {
+      "subactivity_name": "Studying.Computer Science",
+      "start_time": "09:00:00",
+      "task_duration_hours": 2.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-13"
+    },
+    {
+      "subactivity_name": "Physical Training.Running",
+      "start_time": "11:15:00",
+      "task_duration_hours": 0.75,
+      "buffer_duration": 30,
+      "specific_buffer_name": "Long Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-13"
+    },
+    {
+      "subactivity_name": "Creative Work.Digital Art",
+      "start_time": "12:30:00",
+      "task_duration_hours": 2.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-13"
+    },
+    {
+      "subactivity_name": "Social.Team Collaboration",
+      "start_time": "14:45:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-13"
+    },
+    {
+      "subactivity_name": "Studying.Literature",
+      "start_time": "16:30:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-13"
+    },
+    {
+      "subactivity_name": "Physical Training.Yoga",
+      "start_time": "09:00:00",
+      "task_duration_hours": 0.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-14"
+    },
+    {
+      "subactivity_name": "Creative Work.Music Practice",
+      "start_time": "09:45:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 30,
+      "specific_buffer_name": "Long Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-14"
+    },
+    {
+      "subactivity_name": "Studying.Mathematics",
+      "start_time": "11:15:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-14"
+    },
+    {
+      "subactivity_name": "Physical Training.Weight Lifting",
+      "start_time": "13:00:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-14"
+    },
+    {
+      "subactivity_name": "Creative Work.Writing",
+      "start_time": "14:15:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-14"
+    },
+    {
+      "subactivity_name": "Social.Networking",
+      "start_time": "09:00:00",
+      "task_duration_hours": 0.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-15"
+    },
+    {
+      "subactivity_name": "Studying.Computer Science",
+      "start_time": "09:45:00",
+      "task_duration_hours": 2.0,
+      "buffer_duration": 30,
+      "specific_buffer_name": "Long Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-15"
+    },
+    {
+      "subactivity_name": "Physical Training.Running",
+      "start_time": "12:15:00",
+      "task_duration_hours": 0.75,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-15"
+    },
+    {
+      "subactivity_name": "Creative Work.Digital Art",
+      "start_time": "13:30:00",
+      "task_duration_hours": 2.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-15"
+    },
+    {
+      "subactivity_name": "Social.Team Collaboration",
+      "start_time": "15:45:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-15"
+    },
+    {
+      "subactivity_name": "Studying.Literature",
+      "start_time": "09:00:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-16"
+    },
+    {
+      "subactivity_name": "Physical Training.Yoga",
+      "start_time": "10:15:00",
+      "task_duration_hours": 0.5,
+      "buffer_duration": 30,
+      "specific_buffer_name": "Long Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-16"
+    },
+    {
+      "subactivity_name": "Creative Work.Music Practice",
+      "start_time": "11:00:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-16"
+    },
+    {
+      "subactivity_name": "Studying.Mathematics",
+      "start_time": "12:15:00",
+      "task_duration_hours": 1.5,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": false,
+      "date": "2025-05-16"
+    },
+    {
+      "subactivity_name": "Physical Training.Weight Lifting",
+      "start_time": "14:00:00",
+      "task_duration_hours": 1.0,
+      "buffer_duration": 15,
+      "specific_buffer_name": "Short Break",
+      "buffer_name": "Context Switch",
+      "cyclic": true,
+      "date": "2025-05-16"
+    }
+  ]

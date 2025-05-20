@@ -13,4 +13,4 @@ from .completion import CompletionLog
 from .timetable import Timetable
 from .level import Level
 from .base import db ,BASE_EXP ,STANDARD_TIME_UNIT ,GRACE_PERIOD
-
+from .timetable import Timetable ,TimetableEntry ,WeekDay

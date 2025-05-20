@@ -1,0 +1,177 @@
+
+{% extends 'base2.html' %}
+
+{% block title %}User Guide - Real-Life RPG System{% endblock %}
+
+{% block content %}
+<style>
+    .code-toggle {
+        border-left: 3px solid #4CAF50;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    .code-toggle:hover {
+        transform: translateX(5px);
+    }
+    .unlock-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    .attribute-table th {
+        min-width: 120px;
+    }
+</style>
+
+<button class="btn btn-warning unlock-btn" onclick="toggleCode()">
+    <i class="fas fa-lock-open"></i> Show Technical Details
+</button>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="alert alert-info mb-4">
+                <h4 class="alert-heading">Honor System</h4>
+                <p>This system only works if you're brutally honest with yourself. You're both player and game master - your stats directly reflect your self-reported activities.</p>
+            </div>
+
+            <!-- Activity Section -->
+            <div class="mb-5">
+                <h3>1. Managing Activities</h3>
+                <p>Activities represent major life categories (e.g., Fitness, Learning)</p>
+                
+                <div class="mb-3">
+                    <h5>Creating Activities</h5>
+                    <p>Navigate to Activities → New and enter a category name</p>
+                    <div class="collapse" id="activityCode">
+                        <div class="code-toggle p-3 mb-3">
+                            <small class="text-muted d-block mb-2">API Endpoint</small>
+                            <code>POST /api/activities</code>
+                            <pre class="mt-2">{ "name": "Fitness Journey" }</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-Activity Section -->
+            <div class="mb-5">
+                <h3>2. Creating Sub-Activities</h3>
+                <p>Specific tasks within activities (e.g., "30min Jogging")</p>
+                
+                <div class="mb-3">
+                    <h5>Task Configuration</h5>
+                    <ul>
+                        <li><strong>Difficulty:</strong> 1.0 (Normal) to 3.0 (Epic)</li>
+                        <li><strong>Scheduled Time:</strong> Ideal duration in minutes</li>
+                        <li><strong>Attribute Focus:</strong> Weighting for skill gains</li>
+                    </ul>
+                    
+                    <div class="collapse" id="subactivityCode">
+                        <div class="code-toggle p-3 mb-3">
+                            <small class="text-muted d-block mb-2">API Example</small>
+                            <code>POST /api/subactivities</code>
+                            <pre class="mt-2">
+{
+  "activity_id": 123,
+  "name": "Morning Yoga",
+  "difficulty_multiplier": 1.2,
+  "attribute_weights": {"STA": 0.4, "DSC": 0.6}
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completion Section -->
+            <div class="mb-5">
+                <h3>3. Tracking Completion</h3>
+                <p>Three statuses: ✅ Completed, ⏳ Partial, ❌ Skipped</p>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5>Reward System</h5>
+                                <ul>
+                                    <li>Full EXP for completed tasks</li>
+                                    <li>Partial EXP based on time spent</li>
+                                    <li>Penalties for skipped activities</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="collapse" id="completionCode">
+                            <div class="code-toggle p-3 h-100">
+                                <small class="text-muted d-block mb-2">Completion Logic</small>
+                                <pre>EXP = Base × Difficulty × Time Factor × Discipline</pre>
+                                <small class="text-muted mt-2 d-block">Grace Period: 15 minutes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attribute Development -->
+            <div class="mb-5">
+                <h3>Attribute Growth Matrix</h3>
+                <div class="table-responsive">
+                    <table class="table attribute-table">
+                        <thead>
+                            <tr>
+                                <th>Attribute</th>
+                                <th>Develops Through</th>
+                                <th>Impact Factor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>INT 🧠</td>
+                                <td>Learning tasks, problem solving</td>
+                                <td>Knowledge retention</td>
+                            </tr>
+                            <tr>
+                                <td>STA ❤️</td>
+                                <td>Physical activities, endurance</td>
+                                <td>Energy expenditure</td>
+                            </tr>
+                            <tr>
+                                <td>FCS 🎯</td>
+                                <td>Deep work sessions</td>
+                                <td>Undivided attention</td>
+                            </tr>
+                            <tr>
+                                <td>CHA 🤝</td>
+                                <td>Social interactions</td>
+                                <td>Relationship depth</td>
+                            </tr>
+                            <tr>
+                                <td>DSC 🛡️</td>
+                                <td>Habit consistency</td>
+                                <td>Commitment ratio</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCode() {
+        const collapses = document.querySelectorAll('.collapse');
+        const btn = document.querySelector('.unlock-btn');
+        
+        collapses.forEach(col => {
+            new bootstrap.Collapse(col, {toggle: true});
+        });
+        
+        btn.innerHTML = btn.innerHTML.includes('Show') 
+            ? '<i class="fas fa-lock"></i> Hide Details' 
+            : '<i class="fas fa-lock-open"></i> Show Details';
+    }
+</script>
+{% endblock %}

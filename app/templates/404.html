@@ -1,0 +1,102 @@
+
+{% extends 'base2.html' %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <!-- Error graphic -->
+            <div class="error-graphic mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" fill="currentColor" class="bi bi-exclamation-octagon" viewBox="0 0 16 16">
+                    <path d="M4.54.146A.5.5 0 0 1 4.893 0h6.214a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353L4.54.146zM5.1 1 1 5.1v5.8L5.1 15h5.8l4.1-4.1V5.1L10.9 1H5.1z"/>
+                    <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                </svg>
+            </div>
+            
+            <!-- Error message -->
+            <h1 class="display-1 fw-bold mb-3">404</h1>
+            <h2 class="h4 mb-4">Oops! Page Not Found</h2>
+            <p class="lead mb-4">
+                The page you're looking for doesn't exist or has been moved.
+            </p>
+            
+            <!-- Action buttons -->
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('views.dashboard') }}" class="btn btn-primary btn-lg px-4">
+                    <i class="fas fa-home me-2"></i>Return to Dashboard
+                </a>
+                <a href="mailto:support@yourdomain.com" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="fas fa-envelope me-2"></i>Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom 404 page styles */
+.error-graphic {
+    color: #dc3545;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.display-1 {
+    color: #dc3545;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background-color: #4361ee;
+    border-color: #4361ee;
+}
+
+.btn-primary:hover {
+    background-color: #3a56d4;
+    border-color: #3a56d4;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .error-graphic {
+    color: #ff6b6b;
+}
+
+[data-theme="dark"] .display-1 {
+    color: #ff6b6b;
+}
+
+[data-theme="dark"] .btn-primary {
+    background-color: #4895ef;
+    border-color: #4895ef;
+}
+
+/* Gaming theme adjustments */
+.theme-gaming .error-graphic {
+    color: var(--accent-violet);
+    filter: drop-shadow(0 0 5px var(--accent-violet));
+}
+
+.theme-gaming .display-1 {
+    color: var(--accent-violet);
+    text-shadow: 0 0 10px var(--accent-violet);
+}
+
+.theme-gaming .btn-primary {
+    background: rgba(0, 255, 255, 0.2);
+    border: 1px solid var(--accent-cyan);
+    color: var(--text-primary);
+}
+
+.theme-gaming .btn-primary:hover {
+    background: rgba(0, 255, 255, 0.4);
+    box-shadow: 0 0 10px var(--accent-cyan);
+}
+</style>
+{% endblock %}

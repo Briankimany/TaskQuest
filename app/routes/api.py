@@ -4,51 +4,126 @@ API routes for the Real-Life RPG System.
 This module provides JSON API endpoints for activities, sub-activities,
 timetables, completion tracking, and stats retrieval.
 """
-from flask import Blueprint, request, jsonify, session
+
+from app.utils import login_required
+
+
+from flask import Blueprint, request, jsonify ,session
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
 from app.models import db, User, Activity, SubActivity, CompletionLog, Level, Timetable
 from app.models import BASE_EXP, STANDARD_TIME_UNIT, GRACE_PERIOD
+from app.config import ATTRIBUTES_LIST  ,TIME_PARSING_STRING
+
+from app.utils.custom_errors import *
+from app.utils.logger import api_logger 
+from app.utils.routes_api_utils import general_decorator as log_app_errors
+from werkzeug.exceptions import BadRequest ,HTTPException
+
+
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-# Constants
-BASE_EXP = 100  # Default base experience
-STANDARD_TIME_UNIT = 60  # 1 hour in minutes
-GRACE_PERIOD = 15  # 15 minutes grace period
+@api_bp.errorhandler(HTTPException)
+def handle_http_errors(e):
+   return jsonify({'type': 'HTTPException', 'msg': str(e)}), e.code
+
+@api_bp.errorhandler(BadRequest)
+def server_bad_request(error):
+    return jsonify(
+        {
+            'description': str(error),
+            'msg': "Could not process request"
+        }
+    ) , 400
+
+@api_bp.errorhandler(AppError)
+def handle_app_error(error: AppError):
+    response, code = error.to_response()
+    return jsonify(response), code
+
+
+
+def serialize_sub_activity(sa):
+    return {
+        'id': sa.id,
+        'name': sa.name,
+        'difficulty_multiplier': sa.difficulty_multiplier,
+        'scheduled_time': str(sa.scheduled_time),
+        'base_exp': sa.base_exp,
+        'attribute_weights': sa.attribute_weights
+    }
+
+def serialize_activity(act):
+    return {
+        'id': act.id,
+        'name': act.name,
+        'created_at': act.created_at.isoformat(),
+        'sub_activities': [
+            sa.to_dict() for sa in act.sub_activities if sa.active
+        ]
+    }
+    
+def validate_sub_activity_attributes(data):
+    sent_data = [data['attribute_weights'].get(key ,0 ) for key in ATTRIBUTES_LIST]
+    if sum(sent_data) !=1:
+        raise InvalidRequestData(f"All attributes weights must add up to 1 {data['attribute_weights']}")
+    return data['attribute_weights']
+
+
+sub_activity_validator_map ={
+    "attribute_weights":validate_sub_activity_attributes
+}
+
+def verify_id(id_:str):
+    try:
+        if not id_:
+            return None 
+        
+        id_= int(id_)
+        if id_ < 1:
+            raise InvalidRequestData("Requst id must be greater than 1")
+        return id_
+    except ValueError as e:
+        raise InvalidRequestData("Invalid request id ")
+
 
 @api_bp.route('/activities', methods=['GET', 'POST'])
+@log_app_errors
 def activities():
-    """Handle CRUD operations for activities."""
-    if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
+    """Handle CRUD operations for activities.
+    API endpoint for managing activities.
+
+    GET: Retrieves all activities for the authenticated user with their sub-activities.
+    POST: Creates a new activity for the authenticated user.
+
+    Returns:
+        GET: JSON with list of activities and their sub-activities
+        POST: JSON with the newly created activity details and 201 status code
+        
+    Requires user authentication via session.
+    """
+
     user_id = session['user_id']
-    
+   
     if request.method == 'GET':
-        activities = Activity.query.filter_by(user_id=user_id).all()
-        return jsonify({
-            'activities': [
-                {
-                    'id': act.id,
-                    'name': act.name,
-                    'created_at': act.created_at.isoformat(),
-                    'sub_activities': [
-                        {
-                            'id': sub_act.id,
-                            'name': sub_act.name,
-                            'difficulty_multiplier': sub_act.difficulty_multiplier,
-                            'scheduled_time': sub_act.scheduled_time,
-                            'base_exp': sub_act.base_exp,
-                            'attribute_weights': sub_act.attribute_weights
-                        } for sub_act in act.sub_activities
-                    ]
-                } for act in activities
-            ]
-        })
     
+        activity_id = verify_id(request.args.get("id",None))
+        activities = Activity.query.filter_by(user_id=user_id)
+        if activity_id:
+            activities=activities.filter_by(id=activity_id)
+
+        return jsonify({
+            'activities': [serialize_activity(act) for act in activities.all()]
+        })
+
+        
     elif request.method == 'POST':
         data = request.json
+        activity =  Activity.query.filter_by(name=data['name'],user_id=session['user_id']).first()
+        if  activity:
+            raise RecordDuplicationError(f"Acivity already exist. {data['name']}",201)
+        
         new_activity = Activity(
             name=data['name'],
             user_id=user_id
@@ -63,16 +138,29 @@ def activities():
         }), 201
 
 @api_bp.route('/activity/<int:activity_id>', methods=['PUT', 'DELETE'])
+@login_required
 def activity_detail(activity_id):
-    """Handle updating and deleting activities."""
-    if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
+    """
+    Handle updating and deleting activities.
+
+    Endpoint for modifying or removing an activity. Requires user authentication.
+    PUT: Updates activity name
+    DELETE: Removes the activity
+
+    Returns:
+        PUT: JSON with updated activity details
+        DELETE: Empty response with 204 status
+        401: If user is not authenticated
+        404: If activity not found
+    """
     
     user_id = session['user_id']
     activity = Activity.query.filter_by(id=activity_id, user_id=user_id).first()
     
     if not activity:
-        return jsonify({'error': 'Activity not found'}), 404
+      raise RecordNotFoundError(f'No activity with id {activity_id}',
+                                404)
+
     
     if request.method == 'PUT':
         data = request.json
@@ -92,33 +180,60 @@ def activity_detail(activity_id):
 
 @api_bp.route("/subactivity",methods=['POST'])
 @api_bp.route('/subactivities', methods=['POST'])
+@log_app_errors
 def create_subactivity():
-    """Create a sub-activity."""
-    if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
+    """
+    Create a new sub-activity for an existing activity.
+
+    API endpoint for creating sub-activities. Requires user authentication.
+    Validates that the activity belongs to the authenticated user.
+
+    Returns:
+        JSON with the newly created sub-activity details and 201 status code
+        401: If user is not authenticated
+        404: If activity not found or doesn't belong to user
+    """
+  
     data = request.json
-    activity_id = data['activity_id']
-    # Verify activity belongs to user
+
+    activity_id = data.get('activity_id')
+    if not activity_id:
+        api_logger.error(f'invalid request data: {data}')
+        raise InvalidRequestData("Key error 'activity_id not in request's json' ")
+   
+
     activity = Activity.query.filter_by(
         id=activity_id, 
         user_id=session['user_id']
     ).first()
     
     if not activity:
-        return jsonify({'error': 'Activity not found'}), 404
+        api_logger.error(f"Cant modify other users activities data: {data}")
+        raise AuthorizationError("Can only modify activites you created ",400)
+
+    activity_data_keys = ['name','difficulty_multiplier',
+                          'scheduled_time','base_exp'
+                          ,'attribute_weights']
+    
+    activity_data = [data.get(key) for key in activity_data_keys]
+    if not all(activity_data):
+        missing_values = [i for i in activity_data_keys if i not in data]
+        raise InvalidRequestData(f"Mising activity keys :{missing_values}")
+    
+    validate_sub_activity_attributes(data)
+
+    if SubActivity.query.filter_by(name=data['name'],user_id=session['user_id']).first():
+        raise RecordDuplicationError(f"Sub activity duplication detected {data['name']}")
     
     new_subactivity = SubActivity(
         name=data['name'],
         activity_id=activity_id,
-        difficulty_multiplier=data.get('difficulty_multiplier', 1.0),
-        scheduled_time=data['scheduled_time'],
-        base_exp=data.get('base_exp', BASE_EXP)
+        difficulty_multiplier=data['difficulty_multiplier'],
+        base_exp=data['base_exp']
     )
+    new_subactivity.scheduled_time = data['scheduled_time']
     
-    if 'attribute_weights' in data:
-        new_subactivity.attribute_weights = data['attribute_weights']
-    
+    new_subactivity.attribute_weights = data['attribute_weights']
     db.session.add(new_subactivity)
     db.session.commit()
     
@@ -127,43 +242,39 @@ def create_subactivity():
         'name': new_subactivity.name,
         'activity_id': new_subactivity.activity_id,
         'difficulty_multiplier': new_subactivity.difficulty_multiplier,
-        'scheduled_time': new_subactivity.scheduled_time,
+        'scheduled_time': str(new_subactivity.scheduled_time),
         'base_exp': new_subactivity.base_exp,
         'attribute_weights': new_subactivity.attribute_weights
     }), 201
 
 
 @api_bp.route('/subactivity/<int:subactivity_id>', methods=['PUT', 'DELETE'])
+@login_required
 def subactivity_detail(subactivity_id):
     """Handle updating and deleting sub-activities."""
-    if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
     user_id = session['user_id']
     
     # Verify sub-activity belongs to user
-    subactivity = SubActivity.query.join(Activity).filter(
+    subactivity = SubActivity.query.filter(
         SubActivity.id == subactivity_id,
-        Activity.user_id == user_id
+        SubActivity.user_id == user_id
     ).first()
     
     if not subactivity:
-        return jsonify({'error': 'Sub-activity not found'}), 404
+        raise AuthorizationError("Can only edit sub activites user own")
     
     if request.method == 'PUT':
         data = request.json
-        
-        if 'name' in data:
-            subactivity.name = data['name']
-        if 'difficulty_multiplier' in data:
-            subactivity.difficulty_multiplier = data['difficulty_multiplier']
-        if 'scheduled_time' in data:
-            subactivity.scheduled_time = data['scheduled_time']
-        if 'base_exp' in data:
-            subactivity.base_exp = data['base_exp']
-        if 'attribute_weights' in data:
-            subactivity.attribute_weights = data['attribute_weights']
-        
+
+        for sub_activity_attribute ,value in data.items():
+            if not hasattr(subactivity,sub_activity_attribute):
+                continue
+    
+            validator = sub_activity_validator_map.get(sub_activity_attribute)
+            value = validator(data) if validator else value
+
+            setattr(subactivity,sub_activity_attribute,value)
+       
         db.session.commit()
         
         return jsonify({
@@ -171,238 +282,22 @@ def subactivity_detail(subactivity_id):
             'name': subactivity.name,
             'activity_id': subactivity.activity_id,
             'difficulty_multiplier': subactivity.difficulty_multiplier,
-            'scheduled_time': subactivity.scheduled_time,
             'base_exp': subactivity.base_exp,
             'attribute_weights': subactivity.attribute_weights
         })
     
     elif request.method == 'DELETE':
-        db.session.delete(subactivity)
+        subactivity.active=False 
         db.session.commit()
         return '', 204
 
-@api_bp.route('/complete_activity', methods=['POST'])
-def complete_activity():
-    """_summary_
-    
-    Returns:
-        _type_: _description_
-    """
-    if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
-    user_id = session['user_id']
-    data = request.json
-    
-    subactivity_id = data.get('subactivity_id')
-    status = data.get('status', 'completed')  # completed, skipped, partial
-    actual_time = data.get('actual_time')  # In minutes
-    reason = data.get('reason')  # Optional reason for skipping/partial
-    # Verify sub-activity belongs to user
-    subactivity = SubActivity.query.join(Activity).filter(
-        SubActivity.id == subactivity_id,
-        Activity.user_id == user_id
-    ).first()
-
-    if status == 'completed':
-        actual_time = subactivity.scheduled_time
-
-    if not subactivity:
-        return jsonify({'error': 'Sub-activity not found'}), 404
-    
-    user = User.query.get(user_id)
-    # Calculate discipline factor (dcp)
-    total_scheduled = SubActivity.query.join(Activity).filter(
-        Activity.user_id == user_id
-    ).count()
-    
-    total_completed = CompletionLog.query.filter(
-        CompletionLog.user_id == user_id,
-        CompletionLog.status == 'completed'
-    ).count()
-    
-    dcp = (total_completed / total_scheduled) if total_scheduled > 0 else 0
-    
-    # Create completion log
-    completion = CompletionLog(
-        user_id=user_id,
-        sub_activity_id=subactivity_id,
-        actual_time_taken=actual_time,
-        status=status,
-        reason=reason
-    )
-    
-    db.session.add(completion)
-    
-    # Calculate EXP based on status
-    gained_exp = 0
-    lost_exp = 0
-
-    if status == 'completed':
-        # Apply grace period
-        time_factor = subactivity.scheduled_time / STANDARD_TIME_UNIT
-        if actual_time and actual_time > subactivity.scheduled_time:
-            # If over scheduled time but within grace period
-            if actual_time <= (subactivity.scheduled_time + GRACE_PERIOD):
-                # Still award full EXP
-                time_factor = subactivity.scheduled_time / STANDARD_TIME_UNIT
-            else:
-                # Adjust for overtime
-                time_factor = actual_time / STANDARD_TIME_UNIT
-
-        # Calculate EXP gain
-        gained_exp = subactivity.base_exp * time_factor * subactivity.difficulty_multiplier * dcp
-
-        # Update user's attributes based on attribute weights
-        weights = subactivity.attribute_weights
-        user.INT += int(gained_exp * weights.get('INT', 0.2) / 100)
-        user.STA += int(gained_exp * weights.get('STA', 0.2) / 100)
-        user.FCS += int(gained_exp * weights.get('FCS', 0.2) / 100)
-        user.CHA += int(gained_exp * weights.get('CHA', 0.2) / 100)
-        user.DSC += int(gained_exp * weights.get('DSC', 0.2) / 100)
-
-    elif status == 'skipped':
-        # Calculate penalty for skipped activity
-        # P penalty factor (default to 0.5)
-        P = 0.5
-        lost_exp = subactivity.base_exp * (subactivity.scheduled_time / STANDARD_TIME_UNIT) * subactivity.difficulty_multiplier * P
-        gained_exp = -lost_exp  # Negative exp for skipping
-
-    elif status == 'partial':
-        # For partial completion, award EXP proportional to time spent
-        if actual_time:
-            completion_ratio = min(1.0, actual_time / subactivity.scheduled_time)
-            gained_exp = subactivity.base_exp * (subactivity.scheduled_time / STANDARD_TIME_UNIT) * subactivity.difficulty_multiplier * dcp * completion_ratio
-
-            # Update attributes with partial EXP
-            weights = subactivity.attribute_weights
-            user.INT += int(gained_exp * weights.get('INT', 0.2) / 100)
-            user.STA += int(gained_exp * weights.get('STA', 0.2) / 100)
-            user.FCS += int(gained_exp * weights.get('FCS', 0.2) / 100)
-            user.CHA += int(gained_exp * weights.get('CHA', 0.2) / 100)
-            user.DSC += int(gained_exp * weights.get('DSC', 0.2) / 100)
-
-    # Update user's total EXP
-    user.total_exp += int(gained_exp)
-    if user.total_exp < 0:  # Prevent negative EXP
-        user.total_exp = 0
-
-    # Check if user should level up
-    next_level = Level.query.filter(Level.level_number > user.level).order_by(Level.level_number).first()
-    level_up = False
-
-    if next_level and user.total_exp >= next_level.required_exp:
-        user.level = next_level.level_number
-        level_up = True
-
-    db.session.commit()
-
-    response = {
-        'completion_id': completion.id,
-        'status': status,
-        'exp_change': int(gained_exp),
-        'new_total_exp': user.total_exp,
-            'level': user.level,
-        'level_up': level_up,
-            'attributes': {
-                'INT': user.INT,
-                'STA': user.STA,
-                'FCS': user.FCS,
-                'CHA': user.CHA,
-                'DSC': user.DSC
-            }
-    }
-
-    if level_up and next_level:
-        response['level_up_details'] = {
-            'new_level': next_level.level_number,
-            'reward': next_level.reward_description
-        }
-
-    return jsonify(response), 200
-
-@api_bp.route('/timetable', methods=['GET', 'POST', 'PUT'])
-def timetable():
-    """Handle timetable operations."""
-    if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
-    user_id = session['user_id']
-    
-    if request.method == 'GET':
-        # Get date from query params, default to today
-        req_date = request.args.get('date', date.today().isoformat())
-        date_obj = date.fromisoformat(req_date)
-
-        # Find timetable for the requested date
-        timetable = Timetable.query.filter_by(
-            user_id=user_id,
-            date=date_obj
-        ).first()
-        
-        if not timetable:
-            return jsonify({'date': req_date, 'schedule': {}}), 200
-
-        return jsonify({
-            'date': req_date,
-            'schedule': timetable.json_blob
-        }), 200
-
-    elif request.method == 'POST':
-        # Create new timetable
-        data = request.json
-        date_obj = date.fromisoformat(data['date'])
-
-        # Check if timetable already exists
-        existing = Timetable.query.filter_by(
-            user_id=user_id,
-            date=date_obj
-        ).first()
-
-        if existing:
-            return jsonify({'error': 'Timetable for this date already exists'}), 400
-
-        new_timetable = Timetable(
-            user_id=user_id,
-            date=date_obj,
-            json_blob=data['schedule']
-        )
-
-        db.session.add(new_timetable)
-        db.session.commit()
-
-        return jsonify({
-            'id': new_timetable.id,
-            'date': data['date'],
-            'schedule': new_timetable.json_blob
-        }), 201
-
-    elif request.method == 'PUT':
-        # Update existing timetable
-        data = request.json
-        date_obj = date.fromisoformat(data['date'])
-
-        timetable = Timetable.query.filter_by(
-            user_id=user_id,
-            date=date_obj
-        ).first()
-
-        if not timetable:
-            return jsonify({'error': 'Timetable not found'}), 404
-
-        timetable.json_blob = data['schedule']
-        db.session.commit()
-
-        return jsonify({
-            'id': timetable.id,
-            'date': data['date'],
-            'schedule': timetable.json_blob
-        }), 200
 
 @api_bp.route('/stats', methods=['GET'])
+@log_app_errors
 def stats():
     """Get user statistics."""
     if 'user_id' not in session:
+       
         return jsonify({'error': 'Unauthorized'}), 401
     
     user_id = session['user_id']

@@ -557,3 +557,13 @@ body {
 .pulse {
     animation: pulse 0.5s ease infinite;
 }
+
+
+
+/* Responsive modal sizing */
+@media (max-width: 576px) {
+  #confirmationModal .modal-dialog {
+    margin: 1rem auto;
+    max-width: 95%;
+  }
+}

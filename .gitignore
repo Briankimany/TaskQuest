@@ -5,3 +5,9 @@ __pycache__/
 *.log
 md-files/
 .python-version
+live-venv/
+app/note-books/
+.vscode/
+app/migrations/
+.env
+logs/

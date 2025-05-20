@@ -1,52 +1,279 @@
 {% extends 'base2.html' %}
 
-{% block title %}Real-Life RPG System - Gamify Your Productivity{% endblock %}
+{% block title %}Reality RPG - Gamified Productivity System{% endblock %}
 
 {% block content %}
-<div class="row align-items-center py-5">
-    <div class="col-md-6">
-        <h1 class="display-4 fw-bold">Transform Your Life into an RPG</h1>
-        <p class="lead">Turn daily activities into quests, earn experience points, and level up your real life!</p>
-        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <img src="{{url_for('static', filename='assets/img/favicon.ico')}}" alt="RPG System" class="img-fluid rounded shadow">
-    </div>
-</div>
-<div class="row py-5">
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow">
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <i class="fas fa-tasks fa-3x text-primary"></i>
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #10b981;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --muted: #64748b;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #3b82f6;
+        --radius: 12px;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .attribute-card {
+        transition: var(--transition);
+        border: none;
+        background: white;
+        box-shadow: var(--shadow);
+    }
+
+    .attribute-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .philosophy-section {
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        border-radius: var(--radius);
+    }
+
+    .download-notice {
+        border-left: 4px solid var(--success);
+        background-color: rgba(16, 185, 129, 0.05);
+        border-radius: var(--radius);
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        background: transparent;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .btn-outline:hover {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .attribute-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .feature-icon {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+
+    .hero-image {
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+    }
+
+    .hero-image:hover {
+        transform: scale(1.02);
+    }
+
+    @media (max-width: 768px) {
+        .attribute-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<div class="container-fluid py-5">
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="row align-items-center py-5 hero-section">
+            <div class="col-lg-6 px-4 py-5">
+                <h1 class="display-4 fw-bold mb-4 text-dark">Reality RPG</h1>
+                <p class="lead mb-4 text-muted">An experimental framework that <span class="text-primary">adapts RPG mechanics</span> to personal development. While not a guaranteed solution, this system explores how gamification might help structure self-improvement efforts.</p>
+                
+                <div class="download-notice p-4 mb-4">
+                    <h5 class="text-success"><i class="fas fa-flask me-2"></i>Research Prototype</h5>
+                    <p class="mb-0 text-muted">Currently in open beta - exploring the intersection of game design and productivity psychology</p>
                 </div>
-                <h5 class="card-title">Track Activities</h5>
-                <p class="card-text">Organize your tasks into activities and sub-activities to stay productive.</p>
+
+                <div class="d-grid gap-3 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-dice-d20 me-2"></i>Start Experimenting
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Continue Journey
+                    </a>
+                </div>
+
+                <p class="small text-muted mt-3">Note: No real email required. Use any memorable identifier - just don't forget your password.</p>
+            </div>
+            <div class="col-lg-6 p-4">
+                <img src="{{url_for('static', filename='assets/img/favicon.ico')}}" alt="RPG System Interface" class="img-fluid hero-image">
             </div>
         </div>
-    </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow">
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <i class="fas fa-chart-line fa-3x text-success"></i>
+
+        <!-- Attribute System -->
+        <div class="row py-5">
+            <div class="col-12 text-center mb-5">
+                <h2 class="fw-bold mb-3">Experimental Attribute Framework</h2>
+                <p class="text-muted mx-auto" style="max-width: 700px;">
+                    These metrics represent one possible approach to quantifying personal development. Your mileage may vary.
+                </p>
+            </div>
+            
+            <div class="col-md-2 col-6">
+                <div class="card attribute-card h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="attribute-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h5 class="mb-2">INT</h5>
+                        <small class="text-muted">Cognitive engagement tracking</small>
+                    </div>
                 </div>
-                <h5 class="card-title">Earn Experience</h5>
-                <p class="card-text">Complete activities to gain EXP and develop your core attributes.</p>
+            </div>
+            
+            <div class="col-md-2 col-6">
+                <div class="card attribute-card h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="attribute-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h5 class="mb-2">STA</h5>
+                        <small class="text-muted">Activity consistency metrics</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-2 col-6">
+                <div class="card attribute-card h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="attribute-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h5 class="mb-2">FCS</h5>
+                        <small class="text-muted">Session duration analysis</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-2 col-6">
+                <div class="card attribute-card h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="attribute-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h5 class="mb-2">CHA</h5>
+                        <small class="text-muted">Social interaction logging</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-2 col-6">
+                <div class="card attribute-card h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="attribute-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h5 class="mb-2">DSC</h5>
+                        <small class="text-muted">Habit streak monitoring</small>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow">
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <i class="fas fa-level-up-alt fa-3x text-warning"></i>
+
+        <!-- Philosophy Section -->
+        <div class="row py-5 philosophy-section my-5">
+            <div class="col-lg-8 offset-lg-2 text-center py-4">
+                <h2 class="fw-bold mb-4">Theoretical Foundations</h2>
+                <p class="text-muted mb-5">
+                    This system draws partial inspiration from gamification research, but makes no claims about effectiveness. 
+                    It's one possible approach among many for structuring self-improvement efforts.
+                </p>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 bg-transparent">
+                            <div class="card-body">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h5 class="mb-3">Visual Tracking</h5>
+                                <p class="text-muted">
+                                    One method for making abstract progress more concrete through visualization
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 bg-transparent">
+                            <div class="card-body">
+                                <div class="feature-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <h5 class="mb-3">Motivation Structure</h5>
+                                <p class="text-muted">
+                                    An experimental framework for maintaining engagement through incremental goals
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 bg-transparent">
+                            <div class="card-body">
+                                <div class="feature-icon">
+                                    <i class="fas fa-balance-scale"></i>
+                                </div>
+                                <h5 class="mb-3">Feedback Systems</h5>
+                                <p class="text-muted">
+                                    Explores how reward structures might influence habit formation
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h5 class="card-title">Level Up</h5>
-                <p class="card-text">Progress through levels and unlock new privileges as you improve.</p>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="row py-5 text-center">
+            <div class="col-lg-8 offset-lg-2">
+                <h2 class="fw-bold mb-4">Ready to Experiment?</h2>
+                <p class="lead text-muted mb-5">
+                    This is not a magic solution, but rather a structured sandbox for exploring gamified productivity.
+                </p>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-5 py-3">
+                    <i class="fas fa-flask me-2"></i>Join the Beta Test
+                </a>
+                <p class="small text-muted mt-3">Pseudonymous accounts welcome - no personal data required</p>
             </div>
         </div>
     </div>

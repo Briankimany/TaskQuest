@@ -12,7 +12,7 @@ def login():
     """Handle user login."""
     if request.method == 'POST':
         username = request.form.get('username')
-        # Find user by username
+       
         user = User.query.filter_by(username=username).first()
         if not user:
             flash('Invalid username.', 'danger')
