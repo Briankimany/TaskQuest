@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Proceed with finalization
         try {
           const today = new Date().toISOString().split('T')[0];
-          const response = await fetch('/api/completiuhe/finalize_day', {
+          const response = await fetch('/api/complete/finalize_day', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ date: today })
