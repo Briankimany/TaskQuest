@@ -4,6 +4,8 @@ from app.utils.logger import api_logger
 from .exp_manager import ExpManager
 from app.utils.exceptions import RecordDuplicationError ,InvalidRequestData,IncompleteTasks,RecordNotFoundError
 from .timetable_manager import TimetableManager
+from .db.user_manger import UserManager
+
 
 class CompletionLogManager:
     """Utility class to manage completion log operations."""
@@ -12,6 +14,7 @@ class CompletionLogManager:
     STANDARD_UNIT_TIME =timedelta(hours=1) 
     log = api_logger
     exp_manager = ExpManager()
+    user_manger = UserManager()
 
     @classmethod
     def create_completion_log(cls,user_id: int, timetable_entry_id: int, status: str, completion_time:datetime,
@@ -140,9 +143,9 @@ class CompletionLogManager:
             raise RecordNotFoundError("No timetable found for the given date.")
         if timetable.finalized:
             cls.log.warning(f"Timetable for date {today} is already finalized.")
-            # raise RecordDuplicationError("Timetable for the given date is already finalized.")
+            raise RecordDuplicationError("Timetable for the given date is already finalized.")
         
-        timetable.finalized = True  
+       
 
         cls.log.info(f"Finalizing day for user_id={user_id} on date={today}")
         scheduled_tasks = cls._get_scheduled_tasks(user_id,today)
@@ -178,7 +181,8 @@ class CompletionLogManager:
         if next_level and user.total_exp >= next_level.required_exp:
             user.level = next_level.level_number
             level_up = True
-        
+
+        timetable.finalized = True  
         db.session.commit()
 
         response = {
@@ -211,18 +215,12 @@ class CompletionLogManager:
         total_exp = sum(log.exp_impact for log in logs if log.exp_impact is not None )
         
         cls.log.debug(f"Total Exp is {total_exp}")
-        # Calculate discipline factor
-        total_scheduled = len(cls._get_scheduled_tasks(user_id,today))
-        total_followed = CompletionLog.query.filter(
-            CompletionLog.user_id == user_id,
-            CompletionLog.status != 'skipped',
-            CompletionLog.completed_on == today
-        ).count()
-        
-        dcp = total_followed / total_scheduled
+ 
+        dcp = cls.user_manger.get_dcp(user_id=user_id,date_obj=today)
+
         if dcp > 1:
             raise Exception("SERVER ERROR. dcp cannot be greater than 1")
-        cls.log.debug(f"Discipline factor is {dcp} : {total_followed} / {total_scheduled}")
+        
 
         final_exp= int(total_exp * dcp)
         cls.log.debug(f"Final exp is {final_exp}")

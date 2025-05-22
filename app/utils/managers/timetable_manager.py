@@ -419,6 +419,8 @@ class TimetableManager:
         
         if timetable:
            entries = TimetableEntry.query.filter_by(timetable_id=timetable.id).all()
+           if not return_suggested:
+               return entries
         else:
             entries = []
 

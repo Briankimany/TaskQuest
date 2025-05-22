@@ -1,6 +1,6 @@
 
 import logging
-from app.config import app_folder
+from app.config import app_folder ,LOGGING_LEVEL
 from functools import wraps
 from flask import request, jsonify
 from werkzeug.exceptions import HTTPException
@@ -27,11 +27,12 @@ class LoggerManager:
 
 auth_logger = LoggerManager(log_file='auth_logs.log',
                             logger_name='rpg_auth',
-                            log_level=logging.DEBUG).get_logger()
+                            log_level=LOGGING_LEVEL).get_logger()
 api_logger = LoggerManager(log_file='api.logs',logger_name='api_logger',
-                           log_level=logging.DEBUG).get_logger()
+                           log_level=LOGGING_LEVEL).get_logger()
 
 external_apis_logger = LoggerManager(log_file='api_external.logs',logger_name='external_apis',
-                           log_level=logging.DEBUG).get_logger()
+                           log_level=LOGGING_LEVEL).get_logger()
 
-
+user_logger = LoggerManager(log_file='users.logs',log_level=LOGGING_LEVEL,
+                            logger_name='users_logs').get_logger()

@@ -6,6 +6,7 @@ from uuid import uuid4
 from pathlib import Path
 from dotenv import load_dotenv,set_key
 import os 
+import logging
 
 app_folder =  Path(__file__).parent 
 
@@ -50,3 +51,9 @@ if not SUPPORT_EMAIL:
 assistant_config_folder = seed_data_folder /'assistant'
 if not assistant_config_folder.exists():
     assistant_config_folder.mkdir(parents=True ,exist_ok=True)
+
+
+if hasattr(logging,os.getenv('LOGGING_LEVEL','DEBUG')):
+    LOGGING_LEVEL = getattr(logging,os.getenv('LOGGING_LEVEL','DEBUG'))
+else:
+    LOGGING_LEVEL = logging.DEBUG

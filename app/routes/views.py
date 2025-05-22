@@ -8,8 +8,10 @@ stats, and timetable pages.
 
 from flask import Blueprint, render_template, redirect, url_for, flash, session,request
 from datetime import date,time
-from app.models import User, Activity, SubActivity, CompletionLog, Level
+from app.models import User, Activity, CompletionLog, Level
 from app.utils.schedulers import TaskScheduler
+from app.utils.managers import UserManager
+
 from datetime import datetime
 from app.config import DATE_PARSING_STRING
 
@@ -58,9 +60,8 @@ def dashboard():
         CompletionLog.completed_on ==date_obj.date()).all()
 
     # Calculate discipline factor (dcp) for the day
-    total_scheduled = len(scheduled_tasks)
-    total_completed = sum(1 for log in date_logs if log.status != 'skipped')
-    dcp = (total_completed / total_scheduled) if total_scheduled > 0 else 0
+    dcp = UserManager.get_dcp(user_id=user_id,
+                              date_obj=date_obj.date())
     
     # Find next level info
     current_level = user.level
