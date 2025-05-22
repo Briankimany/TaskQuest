@@ -155,7 +155,7 @@ class LLMAssistant:
         task_description: str,
         model:str=None,
         test=False
-    ) -> float:
+    ) -> LlmPenalty:
         """
         Calculate late penalty score (0-1) using LLM.
         

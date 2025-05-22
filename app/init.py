@@ -19,9 +19,9 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     
     def handle_generic_error(error: Exception):
-        print(error)
+     
         if 'api' not in request.path:
-            return render_template('404.html',support_mail = SUPPORT_EMAIL), 500
+            return render_template('500.html',exception=error), 500
         return make_error_response(error, "Unexpected server error")
 
     app.register_error_handler(Exception,handle_generic_error)

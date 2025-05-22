@@ -3,6 +3,7 @@
 from datetime import datetime
 import pytz
 from app.utils.decorators import ApiDecorators
+from app.config import DATE_PARSING_STRING ,TIME_DATE_SEPARATOR,TIME_PARSING_STRING
 
 def login_required(func):
     return ApiDecorators(
@@ -42,3 +43,7 @@ def to_utc_from_user_input(
 def is_valid_timezone(tz_str):
     return tz_str in pytz.all_timezones
 
+
+full_string = DATE_PARSING_STRING+TIME_DATE_SEPARATOR+TIME_PARSING_STRING
+def format_time(date_time:datetime):
+    return date_time.strftime(full_string)

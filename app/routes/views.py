@@ -24,7 +24,6 @@ class ScheduledActivites:
 
 @views_bp.route('/')
 def index():
-    """Render the landing page."""
     if 'user_id' in session:
         return redirect(url_for('views.dashboard'))
     return render_template('index.html')

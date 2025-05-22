@@ -3,7 +3,7 @@ import sys
 sys.path.append(str(Path().cwd().parent.parent.absolute()))
 
 from time import sleep
-from app.config import DATE_PARSING_STRING ,TIME_DATE_SEPARATOR,TIME_PARSING_STRING
+from app.utils.routes_api_utils import format_time
 from app.utils.managers.llm_assistant import * 
 from datetime import datetime,timedelta ,time
 import json
@@ -17,9 +17,6 @@ assistant = LLMAssistant()
 starting = datetime.combine(datetime.now(),time(hour=13))
 end = starting + timedelta(hours=4)
 
-P = DATE_PARSING_STRING+TIME_DATE_SEPARATOR+TIME_PARSING_STRING
-def format_time(date_time:datetime):
-    return date_time.strftime(P)
 
 
 
@@ -184,7 +181,6 @@ for model_name, model_id in models.items():
             for result in as_completed(futures):
                 reason_data.append(result.result())
 
-            
             activities_data.extend(reason_data)
             sleep(10)
         with open(temp_file,'w') as f:

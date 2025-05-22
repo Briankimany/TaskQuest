@@ -5,7 +5,7 @@ deep_seek: deepseek-r1-distill-llama-70b
 google: gemma2-9b-it
 prompts:
   late_penalty:
-    model: gemma2-9b-it
+    model: qwen-qwq-32b
     system_prompt: |
       You are a penalty calculator. Analyze task completion timing and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
       - The reason provided (Key factor. Evaluate if the reason was within the user's control. If it was, treat it as negligence.)
@@ -29,7 +29,7 @@ prompts:
       2. Task difficulty
       3. Reason strength
   skip_penalty:
-    model: gemma2-9b-it
+    model: qwen-qwq-32b
     system_prompt: |
       You are an  penalty calculator. Analyze skip reasons and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
       - Reason validity

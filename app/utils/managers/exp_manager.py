@@ -2,13 +2,15 @@ from datetime import datetime, time, timedelta
 from typing import Optional
 from app.utils.logger import api_logger
 from app.models import SubActivity ,User ,db
+from .llm_assistant import LLMAssistant ,AssistantError,APIConnectionError,APITimeoutError,BadRequestError
+from app.utils.routes_api_utils import format_time
 
 class ExpManager:
     """
     Handles all EXP-related calculations with strict input validation and error handling.
     Implements the EXP calculation rules from the project documentation.
     """
-    
+    assistant = LLMAssistant()
     STANDARD_UNIT_TIME = timedelta(hours=1)
     GRACE_PERIOD = timedelta(minutes=15)
     
@@ -96,23 +98,22 @@ class ExpManager:
 
                     return int(exp_per_task)
                 
-                exp_lost = self._calculate_late_penalty(start_time, completion_time, scheduled_time, exp_per_task)
-                exp_penalties = self._calculate_reason_penalty(reason, exp_per_task) if reason else 0
-                final_exp = int(exp_per_task - exp_lost - exp_penalties)
+                exp_lost = self._calculate_late_penalty(start_time, completion_time, scheduled_time, exp_per_task,sub_activity,reason)
+             
+                final_exp = int(exp_per_task - exp_lost)
                 self.logger.debug(
-                    "Completed task with penalties - exp_per_task=%s, exp_lost=%s, exp_penalties=%s, final_exp=%s",
-                    exp_per_task, exp_lost, exp_penalties, final_exp
+                    "Completed task with penalties - exp_per_task=%s, exp_lost=%s, final_exp=%s",
+                    exp_per_task, exp_lost, final_exp
                 )
                 return final_exp if final_exp > 0 else 0
             
             elif status == 'partial':
-                exp_lost = self._calculate_late_penalty(start_time, completion_time, scheduled_time, exp_per_task)
-                exp_penalties = self._calculate_reason_penalty(reason, exp_per_task)
+                exp_lost = self._calculate_late_penalty(start_time, completion_time, scheduled_time, exp_per_task,sub_activity,reason)
                 completion_ratio = actual_time_taken / scheduled_time
-                final_exp = int((exp_per_task) - exp_lost - exp_penalties)
+                final_exp = int((exp_per_task) - exp_lost)
                 self.logger.debug(
-                    "Partial completion - completion_ratio=%s, exp_lost=%s, exp_penalties=%s, final_exp=%s",
-                    1-completion_ratio, exp_lost, exp_penalties, final_exp
+                    "Partial completion - completion_ratio=%s, exp_lost=%s, final_exp=%s",
+                    1-completion_ratio, exp_lost, final_exp
                 )
                 return final_exp if final_exp > 0 else 0
                 
@@ -191,12 +192,29 @@ class ExpManager:
         
         return is_within_grace
     
+
     def _calculate_late_penalty(self, start_time: time, completion_time: datetime, 
-                              scheduled_time: int, exp_per_task: float) -> float:
-        """Calculate penalty for late completion"""
+                              scheduled_time: int, exp_per_task: float,
+                              sub_activity:SubActivity,reason:str ) -> float:
         
         time_diff = abs((completion_time - datetime.combine(completion_time.date(), start_time)).total_seconds() -scheduled_time)
-        penalty = max(0, (time_diff / scheduled_time) * exp_per_task)
+        try:
+            penalty = self.assistant.calculate_late_penalty_score(
+                start_time=format_time(datetime.combine(completion_time.date(),start_time)),
+                completion_time=format_time(completion_time),
+                scheduled_duration=scheduled_time,
+                reason=reason ,
+                task_description=None ,
+                task_difficulty=sub_activity.difficulty_multiplier
+
+            )
+            if penalty:
+                penalty = penalty.score * exp_per_task
+
+        except (AssistantError,APIConnectionError,APITimeoutError,BadRequestError):
+            self.logger.warning("Un able to use assistant for late penalty calculations. ")
+            penalty = max(0, (time_diff / scheduled_time) * exp_per_task) 
+
         
         self.logger.debug(
             "Late penalty calculation - start_time=%s,completion_time=%s, scheduled_time=%s, time_diff=%s, penalty=%s",
@@ -204,37 +222,27 @@ class ExpManager:
         )
         
         return penalty
-    
-    def _calculate_reason_penalty(self, reason: str, exp_per_task: float) -> float:
-        """
-        Calculate penalty based on reason (placeholder implementation).
-        In production, this would integrate with your reason analysis system.
-        """
-        penalty = 0.0
-        
-        if "emergency" in reason.lower():
-            penalty = exp_per_task * 0.1
-            self.logger.debug("Emergency reason detected, applying 10%% penalty: %s", penalty)
-        elif "lazy" in reason.lower():
-            penalty = exp_per_task * 0.5
-            self.logger.warning("Lazy reason detected, applying 50%% penalty: %s", penalty)
-        else:
-            penalty = exp_per_task * 0.3
-            self.logger.debug("Default reason penalty (30%%): %s", penalty)
-        
-        return penalty
-    
+
     def _calculate_skipped_penalty(self, reason: str, base_exp: int, difficulty_multiplier: float) -> int:
         """
         Calculate penalty for skipped tasks.
         Skipped tasks always result in negative EXP based on base value and reason.
         """
-        penalty_multiplier = self._get_skip_penalty_multiplier(reason)
+        try:
+            penalty_multiplier = self.assistant.calculate_skip_penalty_score(
+                reason=reason,
+                task_description=None ,
+                task_difficulty=difficulty_multiplier            
+            )
+        except (AssistantError,APIConnectionError,APITimeoutError,BadRequestError):
+            self.logger.warning("Un able to use assistant for skipped penalty calculations. ")
+            penalty_multiplier = self._get_skip_penalty_multiplier(reason)
+
         penalty = -int(base_exp * difficulty_multiplier * penalty_multiplier)
         
         self.logger.warning(
             "Skipped task penalty - reason='%s', base_exp=%s, difficulty=%s, multiplier=%s, penalty=%s",
-            reason[:100],  # Truncate long reasons
+            reason[:100], 
             base_exp,
             difficulty_multiplier,
             penalty_multiplier,
@@ -249,7 +257,7 @@ class ExpManager:
         This should be enhanced with your actual reason analysis logic.
         """
         reason_lower = reason.lower()
-        
+
         if "emergency" in reason_lower:
             self.logger.debug("Emergency skip reason, using 0.5 multiplier")
             return 0.5
