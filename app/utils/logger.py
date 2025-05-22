@@ -4,7 +4,7 @@ from app.config import app_folder
 from functools import wraps
 from flask import request, jsonify
 from werkzeug.exceptions import HTTPException
-from app.utils.custom_errors import AppError
+from app.utils.exceptions import AppError
 
 class LoggerManager:
     def __init__(self, log_file="app.log", log_level=logging.DEBUG, logger_name=None):
@@ -31,27 +31,7 @@ auth_logger = LoggerManager(log_file='auth_logs.log',
 api_logger = LoggerManager(log_file='api.logs',logger_name='api_logger',
                            log_level=logging.DEBUG).get_logger()
 
+external_apis_logger = LoggerManager(log_file='api_external.logs',logger_name='external_apis',
+                           log_level=logging.DEBUG).get_logger()
 
-def log_app_errors(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except AppError as e:
-            api_logger.error(
-                f"{e.__class__.__name__}: {str(e)} | URL: {request.url} | Method: {request.method} | Body: {request.get_json(silent=True)}"
-            )
-            raise e 
-        except HTTPException as e:
-            api_logger.error(
-                f"HTTPException: {str(e)} | URL: {request.url} | Method: {request.method} | Body: {request.get_json(silent=True)}"
-            )
-            raise e 
-        except Exception as e:
-            api_logger.exception(
-                f"Unhandled Exception: {str(e)} | URL: {request.url} | Method: {request.method} | Body: {request.get_json(silent=True)}"
-                ,stack_info=True
-            )
-            raise e 
-    return wrapper
 

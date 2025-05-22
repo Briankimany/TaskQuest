@@ -11,7 +11,7 @@ from app.utils.routes_api_utils import is_valid_timezone ,to_utc_from_user_input
 from app.config import TIME_PARSING_STRING ,DATE_PARSING_STRING ,TIME_DATE_SEPARATOR
 
 from app.models.timetable import WeekDay
-from app.utils.custom_errors import (InvalidRequestData, 
+from app.utils.exceptions.custom_errors import (InvalidRequestData, 
                                      RecordNotFoundError
                                          )
 

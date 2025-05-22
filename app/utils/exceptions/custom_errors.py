@@ -1,7 +1,6 @@
 """
 Module to hold My custom errors 
 """
-from flask import jsonify
 
 class AppError(Exception):
     def __init__(self, message="An error occurred", status_code=500,extra_data={}):
@@ -55,11 +54,4 @@ class CustomWarnings(AppError):
     def __init__(self, message="request successful but should there are some warnings. ", status_code=207,extra_data={}):
         super().__init__(message, status_code,extra_data=extra_data)
 
-def make_error_response(error: Exception, msg: str = "", code: int = 500):
-    """Generic fallback for unexpected exceptions."""
-    data = {
-        'type': type(error).__name__,
-        'description': repr(error),
-        'msg': msg or str(error)
-    }
-    return jsonify(data), code
+

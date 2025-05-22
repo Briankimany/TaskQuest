@@ -1,7 +1,7 @@
 from flask import jsonify
 from app.models import db
 from app.models import Activity, SubActivity
-from app.utils.custom_errors import (
+from app.utils.exceptions import (
     InvalidRequestData,
     RecordNotFoundError,
     AuthorizationError,

@@ -3,7 +3,7 @@ from flask import session  ,request
 
 from functools import wraps
 from app.config import TESTING_USER_ID ,TESTING_KEY
-from app.utils.custom_errors import AuthorizationError ,AppError
+from app.utils.exceptions import AuthorizationError ,AppError ,ExternalAPIError
 from app.utils.logger import auth_logger ,api_logger
 
 from werkzeug.exceptions import HTTPException
@@ -71,6 +71,13 @@ class ApiDecorators:
             def wrapper(*args, **kwargs):
                 try:
                     return func(*args, **kwargs)
+                
+                except ExternalAPIError as e:
+                    api_logger.error(
+                        f"{e.__class__.__name__}: {str(e)}",extra=e.to_response()
+                    )
+                    raise e
+                
                 except AppError as e:
                     api_logger.error(
                         f"{e.__class__.__name__}: {str(e)} | URL: {request.url} | Method: {request.method} | Body: {request.get_json(silent=True)}"

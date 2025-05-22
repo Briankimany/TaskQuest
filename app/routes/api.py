@@ -16,7 +16,7 @@ from app.models import db, User, Activity, SubActivity, CompletionLog, Level, Ti
 from app.models import BASE_EXP, STANDARD_TIME_UNIT, GRACE_PERIOD
 from app.config import ATTRIBUTES_LIST  ,TIME_PARSING_STRING
 
-from app.utils.custom_errors import *
+from app.utils.exceptions import *
 from app.utils.logger import api_logger 
 from app.utils.routes_api_utils import general_decorator as log_app_errors
 from werkzeug.exceptions import BadRequest ,HTTPException

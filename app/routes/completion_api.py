@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app.routes.timetable_api import api_bp ,session ,log_app_errors,parse_time_date
 from app.utils.managers.completion_manager import CompletionLogManager
-from app.utils.custom_errors import InvalidRequestData
+from app.utils.exceptions.custom_errors import InvalidRequestData
 from app.config import TIME_PARSING_STRING ,TIME_DATE_SEPARATOR,DATE_PARSING_STRING
 
 

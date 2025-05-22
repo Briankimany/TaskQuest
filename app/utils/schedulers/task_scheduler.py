@@ -4,7 +4,7 @@ from datetime import datetime, time, timedelta
 from typing import Optional
 from app.utils.managers import TimetableManager
 from app.models import SubActivity  ,db,Activity 
-from app.utils.custom_errors import TaskScheduleError ,AuthorizationError
+from app.utils.exceptions import TaskScheduleError ,AuthorizationError
 from app.utils.logger import api_logger
 
 class TaskScheduler(TimetableManager):

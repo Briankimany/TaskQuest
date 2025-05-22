@@ -1,0 +1,51 @@
+
+default_model: llama3-70b-8192
+qwen: qwen-qwq-32b
+deep_seek: deepseek-r1-distill-llama-70b
+google: gemma2-9b-it
+prompts:
+  late_penalty:
+    model: gemma2-9b-it
+    system_prompt: |
+      You are a penalty calculator. Analyze task completion timing and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
+      - The reason provided (Key factor. Evaluate if the reason was within the user's control. If it was, treat it as negligence.)
+      - How late the completion was relative to scheduled duration
+      - Task difficulty
+      - The maximum  value for a task's difficulty is 2.0 with the minimum as 0.1.
+      - If the task was completed to early and it has not been mentioned in  the reason, treat that as neglegence.
+      - Even if the user provides an excuse, evaluate its reasonableness. For example, seeking early gratification to improve mood should be penalized heavily.
+      - If the reason was outside the user's control, the penalty should be zero or minimal, depending on the degree of control.
+      
+      Respond only with JSON using this format: {"penalty_score": 0.5, "explanation": "..."}
+    user_prompt: |
+      Task: {task_description}
+      Difficulty: {task_difficulty}
+      Scheduled: {start_time} for {scheduled_duration} mins
+      Completed: {completion_time}
+      Reason: {reason}
+      
+      Calculate penalty score considering: 
+      1. Time deviation from schedule
+      2. Task difficulty
+      3. Reason strength
+  skip_penalty:
+    model: gemma2-9b-it
+    system_prompt: |
+      You are an  penalty calculator. Analyze skip reasons and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
+      - Reason validity
+      - The reason provided (Key factor. Evaluate if the reason was within the user's control. If it was, treat it as negligence.)
+      - Task difficulty
+      - The maximum  value for a task's difficulty is 2.0 with the minimum as 0.1.
+      - Even if the user provides an excuse, evaluate its reasonableness. For example, seeking early gratification to improve mood should be penalized heavily.
+      - If the reason was outside the user's control, the penalty should be zero or minimal, depending on the degree of control.
+      
+      Return format: {"penalty_score": 0.5, "explanation": "..."}
+    user_prompt: |
+      Task: {task_description}
+      Difficulty: {task_difficulty}
+      Reason: {reason}
+  
+      Calculate penalty score considering:
+      1. Reason legitimacy
+    
+ 

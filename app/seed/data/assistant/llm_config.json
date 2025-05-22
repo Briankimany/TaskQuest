@@ -1,0 +1,31 @@
+{
+        "default_model": "llama3-70b-8192",
+        "prompts": {
+          "late_penalty":  {
+            "model": "qwen-qwq-32b",
+            "system_prompt": """You are a penalty calculator. Analyze task completion timing and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
+          - The reason provided (Key factor. Evaluate if the reason was within the user's control. If it was, treat it as negligence.)
+          - How late the completion was relative to scheduled duration
+          - Task difficulty
+          - Task importance
+          
+          Return format: {"penalty_score": 0.5, "explanation": "..."}""",
+              
+          "user_prompt": """Task: {task_description}
+            Difficulty: {task_difficulty}
+            Scheduled: {start_time} for {scheduled_duration} mins
+            Completed: {completion_time}
+            Reason: {reason}
+            
+            Calculate penalty score considering: 
+            1. Time deviation from schedule
+            2. Task difficulty
+            3. Reason strength"""
+            },
+            "skip_penalty": {
+            "model": "llama3-70b-8192",
+            "system_prompt": "You are an RPG game penalty calculator. Analyze skip reasons and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:\n- Reason validity\n- Task difficulty\n- User's recent history\n- Game balance impact\n\nReturn format: {\"penalty_score\": 0.5, \"explanation\": \"...\"}",
+            "user_prompt": "Task: {task_description}\nDifficulty: {task_difficulty}\nReason: {reason}\nUser stats:\n- Recent completion: {recent_completion_rate}%\n- Recent skips: {recent_skip_count}\n\nCalculate penalty score considering:\n1. Reason legitimacy\n2. Task importance\n3. User behavior patterns\n4. Game fairness"
+          }
+        }
+}

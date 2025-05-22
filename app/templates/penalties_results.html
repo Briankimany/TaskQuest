@@ -1,0 +1,89 @@
+
+{% extends "base2.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="text-center text-primary">⚖️ Penalty Model Analysis</h3>
+  <p class="text-muted text-center">Model: <strong>{{ model_name }}</strong></p>
+
+  <!-- Pagination Controls -->
+  <div class="d-flex justify-content-between mb-3">
+    {% if page > 1 %}
+      <a href="{{ url_for('assistant.penalty_results', page=page - 1) }}" class="btn btn-outline-primary">⬅ Previous</a>
+    {% else %}
+      <span></span>
+    {% endif %}
+
+    {% if page < total_pages %}
+      <a href="{{ url_for('assistant.penalty_results', page=page + 1) }}" class="btn btn-outline-primary">Next ➡</a>
+    {% endif %}
+  </div>
+
+  <!-- Activity Sections -->
+  {% for activity, test_cases in model_data.items() %}
+    <div class="accordion mb-3" id="accordion-{{ loop.index }}">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-{{ loop.index }}">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapse-{{ loop.index }}" aria-expanded="false" aria-controls="collapse-{{ loop.index }}">
+            {{ activity }}
+          </button>
+        </h2>
+        <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ loop.index }}">
+          <div class="accordion-body">
+
+            <!-- Analytics -->
+            {% set total_score = 0 %}
+            {% set reason_counts = {'valid_reason': 0, 'weak_reason': 0, 'invalid_reason': 0} %}
+            {% for case in test_cases %}
+              {% set total_score = total_score + case.score %}
+              {% set _ = reason_counts.__setitem__(case.reason_type, reason_counts[case.reason_type] + 1) %}
+            {% endfor %}
+
+            <div class="mb-2">
+              <p><strong>Average Score:</strong> {{ (total_score / test_cases|length)|round(2) }}</p>
+              <p><strong>Test Cases:</strong> {{ test_cases|length }}</p>
+              <p><strong>Reason Type Counts:</strong></p>
+              <ul>
+                <li>✅ Valid: {{ reason_counts['valid_reason'] }}</li>
+                <li>⚠️ Weak: {{ reason_counts['weak_reason'] }}</li>
+                <li>🚫 Invalid: {{ reason_counts['invalid_reason'] }}</li>
+              </ul>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+              <table class="table table-striped table-sm">
+                <thead class="table-light">
+                  <tr>
+                    <th>Timing</th>
+                    <th>Reason Type</th>
+                    <th>Score</th>
+                    <th>User Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for case in test_cases %}
+                    <tr>
+                      <td>{{ case.timing_label }}</td>
+                      <td>{{ case.reason_type }}</td>
+                      <td><strong>{{ case.score }}</strong></td>
+                      <td>
+                        <details>
+                          <summary>{{ case.reason[:40] }}...</summary>
+                          <small>{{ case.model_reason.explanation }}</small>
+                        </details>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

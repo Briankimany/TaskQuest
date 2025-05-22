@@ -10,7 +10,7 @@ from app.models import (
     SubActivity, 
     Activity,
     db)
-from app.utils.custom_errors import (TaskScheduleError ,
+from app.utils.exceptions import (TaskScheduleError ,
                                      AuthorizationError ,
                                      RecordDuplicationError,
                                      CustomWarnings)

@@ -1,0 +1,368 @@
+{
+  "Revise Organic Chemistry": [
+    {
+      "score": 0.0,
+      "model_reason": {
+        "penalty_score": 0,
+        "explanation": "The task was completed exactly as scheduled with no deviation in time. The reason provided indicates good time management and adherence to the plan, showing no negligence. Therefore, no penalty is applied."
+      },
+      "reason": "Started and finished exactly as planned.",
+      "reason_type": "valid_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 30 minutes late, which is a significant deviation. The difficulty is high, and the reason provided shows negligence, leading to a substantial penalty."
+      },
+      "reason": "Whatever, I did it, no big deal.",
+      "reason_type": "invalid_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.1,
+      "model_reason": {
+        "penalty_score": 0.1,
+        "explanation": "The task was completed on time, so there's no time deviation. However, the reason provided is within the user's control, indicating minimal negligence."
+      },
+      "reason": "Just decided to follow my routine for once.",
+      "reason_type": "weak_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 45 minutes late, which is a significant deviation from the scheduled time. The task difficulty is high (1.5), and the reason provided (scrolling through Instagram) indicates negligence as it is within the user's control. Therefore, a substantial penalty is applied."
+      },
+      "reason": "I got caught up scrolling through Instagram.",
+      "reason_type": "weak_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.8,
+      "model_reason": {
+        "penalty_score": 0.8,
+        "explanation": "The task was completed 45 minutes late, showing significant negligence. The reason provided was dismissive and within the user's control, leading to a high penalty."
+      },
+      "reason": "I\u2019ll do it whenever I feel like it. It\u2019s still done.",
+      "reason_type": "invalid_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.2,
+      "model_reason": {
+        "penalty_score": 0.2,
+        "explanation": "The task was completed 45 minutes late, which is a notable deviation from the scheduled time. However, the reason provided (helping a younger sibling with urgent homework) is valid and beyond the user's control. The task difficulty is moderate (1.5), which slightly influences the penalty. Overall, the penalty is minimal due to the strong reason, but a small penalty is applied for the time deviation."
+      },
+      "reason": "I had to help my younger sibling with urgent homework.",
+      "reason_type": "valid_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 3.5 hours late, which is a significant deviation from the scheduled time. The task difficulty is 1.5, which is moderate. The reason provided, 'I just couldn't find the motivation earlier,' is within the user's control and is considered negligence. Therefore, a high penalty is applied."
+      },
+      "reason": "I just couldn't find the motivation earlier.",
+      "reason_type": "weak_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.9,
+      "model_reason": {
+        "penalty_score": 0.9,
+        "explanation": "The task was completed 2 hours late, which is a significant deviation from the scheduled time. The reason provided, 'Time is relative, isn\u2019t it?', is not a valid excuse and indicates negligence. Given the task difficulty of 1.5, the penalty score is 0.9."
+      },
+      "reason": "Time is relative, isn\u2019t it?",
+      "reason_type": "invalid_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.2,
+      "model_reason": {
+        "penalty_score": 0.2,
+        "explanation": "The task was completed 2 hours late, but the reason provided (a blackout) is beyond the user's control. Therefore, the penalty is minimal."
+      },
+      "reason": "A blackout interrupted my entire evening schedule.",
+      "reason_type": "valid_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.2,
+      "model_reason": {
+        "penalty_score": 0.2,
+        "explanation": "The task was completed early due to a scheduled meeting, which is a valid reason. However, completing the task without adjusting the schedule is considered negligence, resulting in a minimal penalty."
+      },
+      "reason": "I had a meeting scheduled during the task time, so I did it beforehand.",
+      "reason_type": "valid_reason",
+      "timing_label": "early"
+    },
+    {
+      "score": 0.85,
+      "model_reason": {
+        "penalty_score": 0.85,
+        "explanation": "The task was completed an hour early, which is a significant deviation from the scheduled time. The reason provided, wanting to free up the afternoon for gaming, is within the user's control and is considered negligence. The task difficulty of 1.5 is moderate, but the primary factor here is the unreasonable reason for early completion, leading to a high penalty score."
+      },
+      "reason": "Wanted to free up my afternoon for gaming.",
+      "reason_type": "weak_reason",
+      "timing_label": "early"
+    },
+    {
+      "score": 0.8,
+      "model_reason": {
+        "penalty_score": 0.8,
+        "explanation": "The task was completed an hour early without a valid reason, showing negligence. The reason provided was not reasonable, and the task's moderate difficulty contributes to the penalty."
+      },
+      "reason": "Who cares when it's done, I\u2019m efficient.",
+      "reason_type": "invalid_reason",
+      "timing_label": "early"
+    }
+  ],
+  "Write Reflection Journal": [
+    {
+      "score": 0.3,
+      "model_reason": {
+        "penalty_score": 0.3,
+        "explanation": "The task was completed on time, so there's no penalty for lateness. However, the reason provided indicates negligence and a lack of seriousness, warranting a small penalty."
+      },
+      "reason": "Why are we even tracking this?",
+      "reason_type": "invalid_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.0,
+      "model_reason": {
+        "penalty_score": 0,
+        "explanation": "The task was completed on time, and the reason provided indicates a positive decision to avoid procrastination, which is within the user's control and reasonable. Therefore, no penalty is applied."
+      },
+      "reason": "Decided not to procrastinate this time.",
+      "reason_type": "weak_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.2,
+      "model_reason": {
+        "penalty_score": 0.2,
+        "explanation": "The task was completed on time, so there's no penalty for lateness. However, the reason provided indicates a preference for a different time without a valid excuse, which is within the user's control. Thus, a minimal penalty is applied."
+      },
+      "reason": "Completed during my usual evening journaling hour.",
+      "reason_type": "valid_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 45 minutes late, which is half of the scheduled duration. The reason provided, 'Started watching Netflix and forgot,' indicates negligence as it was within the user's control. The task difficulty of 1.5 further contributes to the penalty. The excuse is considered weak and unreasonable, leading to a significant penalty score."
+      },
+      "reason": "Started watching Netflix and forgot.",
+      "reason_type": "weak_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.8,
+      "model_reason": {
+        "penalty_score": 0.8,
+        "explanation": "The task was completed 45 minutes late, which is a significant deviation from the scheduled time. The reason provided shows negligence and a lack of valid excuse. The task difficulty of 1.5 is considered, but the poor reason and late completion justify a high penalty."
+      },
+      "reason": "I'll do it late if I want. Still counts.",
+      "reason_type": "invalid_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.3,
+      "model_reason": {
+        "penalty_score": 0.3,
+        "explanation": "The task was completed 2 hours and 15 minutes late. The reason provided, a long therapy session, is valid but could have been anticipated. While the therapy session is important, the user should have managed their time better, indicating some negligence. The moderate task difficulty and significant delay contribute to the penalty, but the reason's validity reduces the score."
+      },
+      "reason": "Had a long therapy session that overlapped with task time.",
+      "reason_type": "valid_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.2,
+      "model_reason": {
+        "penalty_score": 0.2,
+        "explanation": "The task was completed 3.5 hours late, which is a significant deviation from the scheduled time. However, the reason provided (unexpected shift change at work) is outside the user's control, reducing the penalty. The task difficulty of 1.5 is moderate, which slightly increases the penalty. Overall, the penalty is minimal due to the valid reason but accounts for the substantial delay."
+      },
+      "reason": "Unexpected shift change at work threw off my schedule.",
+      "reason_type": "valid_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.9,
+      "model_reason": {
+        "penalty_score": 0.9,
+        "explanation": "The task was completed 120 minutes late, which is a significant deviation. The reason provided indicates negligence as it was within the user's control. The task difficulty of 1.5 is moderate, but the primary factor is the deliberate disregard for deadlines, leading to a high penalty score."
+      },
+      "reason": "I do what I want, deadlines are fake.",
+      "reason_type": "invalid_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 2 hours late, which is 133% of the scheduled duration. The reason provided was within the user's control and considered negligence. The task difficulty was moderate at 1.5. These factors contribute to a significant penalty."
+      },
+      "reason": "It didn\u2019t feel urgent so I delayed it.",
+      "reason_type": "weak_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.5,
+      "model_reason": {
+        "penalty_score": 0.5,
+        "explanation": "The task was completed 60 minutes early, showing initiative but also deviating from the schedule. The reason provided is within the user's control, indicating negligence. The moderate task difficulty of 1.5 contributes to a balanced penalty score."
+      },
+      "reason": "I anticipated I'd be tired later and planned ahead.",
+      "reason_type": "valid_reason",
+      "timing_label": "early"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 60 minutes early, which is a significant deviation from the scheduled time. The reason provided, 'Wanted to rush through the day\u2019s tasks,' indicates negligence as it was within the user's control. The task difficulty of 1.5 further supports the penalty, as rushing through a moderately difficult task can compromise quality. Thus, a high penalty score is applied."
+      },
+      "reason": "Wanted to rush through the day\u2019s tasks.",
+      "reason_type": "weak_reason",
+      "timing_label": "early"
+    },
+    {
+      "score": 0.85,
+      "model_reason": {
+        "penalty_score": 0.85,
+        "explanation": "The task was completed an hour early without a valid reason, indicating negligence. The high difficulty of 1.5 and the weak excuse contribute to a significant penalty."
+      },
+      "reason": "Because I felt like it. Duh.",
+      "reason_type": "invalid_reason",
+      "timing_label": "early"
+    }
+  ],
+  "Study Electromagnetic Induction": [
+    {
+      "score": 0.0,
+      "model_reason": {
+        "penalty_score": 0.0,
+        "explanation": "The task was completed on time as scheduled, and the reason provided is valid and within the user's control, showing no negligence."
+      },
+      "reason": "Started studying immediately after class as planned.",
+      "reason_type": "valid_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.1,
+      "model_reason": {
+        "penalty_score": 0.1,
+        "explanation": "The task was completed on time, so there's no time deviation. The reason provided is vague and doesn't justify any issues, indicating slight negligence."
+      },
+      "reason": "It\u2019s school. We all suffer.",
+      "reason_type": "invalid_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.1,
+      "model_reason": {
+        "penalty_score": 0.1,
+        "explanation": "The task was completed on time, which is positive. However, the reason provided suggests that the user was reminded by the teacher, indicating possible negligence in planning or procrastination. Despite this, the timely completion results in a minimal penalty."
+      },
+      "reason": "Teacher reminded us today, so I figured why not.",
+      "reason_type": "weak_reason",
+      "timing_label": "on_time"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 45 minutes late, which is a significant delay. The reason provided, 'Chill, I\u2019m not a robot,' is within the user's control and is considered negligence. The task difficulty of 1.5 contributes to the penalty, as it is a moderately challenging task. The penalty score is 0.7, reflecting the delay, weak reason, and task difficulty."
+      },
+      "reason": "Chill, I\u2019m not a robot.",
+      "reason_type": "invalid_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.5,
+      "model_reason": {
+        "penalty_score": 0.5,
+        "explanation": "The task was completed 45 minutes late, which is a 50% increase in scheduled time. The task difficulty is moderate at 1.5. The reason provided, helping a friend debug their project, is partially within the user's control as it was a choice to assist. While helping others is commendable, it shows some negligence in prioritizing the task. Thus, a moderate penalty is applied."
+      },
+      "reason": "Got stuck helping a friend debug their project.",
+      "reason_type": "valid_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 45 minutes late, which is a 50% increase over the scheduled 90 minutes. The reason provided, being distracted by mobile games, is within the user's control and indicates negligence. The task difficulty is 1.5, which is moderate. Considering these factors, the penalty score is 0.7."
+      },
+      "reason": "Distracted with mobile games.",
+      "reason_type": "weak_reason",
+      "timing_label": "late"
+    },
+    {
+      "score": 0.1,
+      "model_reason": {
+        "penalty_score": 0.1,
+        "explanation": "The task was completed 2 hours late, but the reason provided (family emergency) is valid and beyond the user's control, resulting in a minimal penalty."
+      },
+      "reason": "Had to visit a hospital due to a family emergency.",
+      "reason_type": "valid_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.9,
+      "model_reason": {
+        "penalty_score": 0.9,
+        "explanation": "The task was completed 2 hours late, which is more than double the scheduled duration. The reason provided, 'I just didn\u2019t feel like doing physics,' is within the user's control and indicates negligence. The task difficulty of 1.5 is moderate, but the lack of a valid excuse and significant time deviation warrant a high penalty."
+      },
+      "reason": "I just didn\u2019t feel like doing physics.",
+      "reason_type": "weak_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 2 hours late on a 1.5 difficulty task. The reason provided indicates negligence as it was within the user's control and shows a lack of valid excuse. The significant delay and poor reason contribute to a high penalty score."
+      },
+      "reason": "I\u2019m not here for gold stars.",
+      "reason_type": "invalid_reason",
+      "timing_label": "very_late"
+    },
+    {
+      "score": 0.5,
+      "model_reason": {
+        "penalty_score": 0.5,
+        "explanation": "The task was completed 60 minutes early, which is a significant deviation from the scheduled time. The reason provided, 'Wanted to get it over with,' indicates negligence as it was within the user's control and not a valid excuse. The task difficulty of 1.5 is moderate, but the lack of a reasonable reason for early completion justifies a penalty."
+      },
+      "reason": "Wanted to get it over with.",
+      "reason_type": "weak_reason",
+      "timing_label": "early"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 60 minutes early, which is a significant deviation from the scheduled time. The reason provided, 'Being early should be enough reason,' is considered negligence as it does not justify completing the task early. The task difficulty of 1.5 contributes to the penalty, but the primary factor is the lack of a valid reason for early completion."
+      },
+      "reason": "Being early should be enough reason.",
+      "reason_type": "invalid_reason",
+      "timing_label": "early"
+    },
+    {
+      "score": 0.7,
+      "model_reason": {
+        "penalty_score": 0.7,
+        "explanation": "The task was completed 60 minutes early, which is significant. The reason provided, expecting to be busy with club activities, is within the user's control and could be considered negligence. The task difficulty is moderate at 1.5. Completing the task early without a valid reason is treated as negligence, and seeking early gratification for personal activities warrants a higher penalty."
+      },
+      "reason": "I expected to be busy later with club activities.",
+      "reason_type": "valid_reason",
+      "timing_label": "early"
+    }
+  ]
+}

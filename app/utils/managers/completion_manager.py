@@ -2,7 +2,7 @@ from datetime import datetime, timedelta ,time ,date
 from app.models import CompletionLog, SubActivity, TimetableEntry, User, Level, db,Timetable
 from app.utils.logger import api_logger
 from .exp_manager import ExpManager
-from app.utils.custom_errors import RecordDuplicationError ,InvalidRequestData,IncompleteTasks,RecordNotFoundError
+from app.utils.exceptions import RecordDuplicationError ,InvalidRequestData,IncompleteTasks,RecordNotFoundError
 from .timetable_manager import TimetableManager
 
 class CompletionLogManager:

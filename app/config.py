@@ -7,11 +7,15 @@ from pathlib import Path
 from dotenv import load_dotenv,set_key
 import os 
 
-load_dotenv()
+app_folder =  Path(__file__).parent 
+
+DOT_ENV_LOCATION = str((app_folder.parent /'.env').absolute())
+
+load_dotenv(DOT_ENV_LOCATION)   
 
 INITIAL_TESTING_KEY= str(uuid4())
 
-DOT_ENV_LOCATION = '.env'
+
 TESTING_USER_ID =1
 ATTRIBUTES_LIST = ['INT','STA','FCS','CHA','DSC']
 
@@ -21,14 +25,13 @@ TIME_DATE_SEPARATOR = "T"
 
 TEST_USER_ID = 1
 
-app_folder =  Path(__file__).parent 
 seed_folder =app_folder/'seed'
 seed_data_folder = seed_folder /'data'
 
 activites_seed_data = seed_data_folder /'activities.json'
 
 TESTING_KEY = os.getenv("TESTING_KEY")
-SUPPORT_EMAIL =os.getenv('SUPPORT_EMAIL7')
+SUPPORT_EMAIL =os.getenv('SUPPORT_EMAIL')
 
 def modify_dotenv(key,value):
     set_key(DOT_ENV_LOCATION ,key ,value)
@@ -36,7 +39,14 @@ def modify_dotenv(key,value):
 if not TESTING_KEY:
     TESTING_KEY = INITIAL_TESTING_KEY
     modify_dotenv('TESTING_KEY',INITIAL_TESTING_KEY)
+    load_dotenv(DOT_ENV_LOCATION)
 
 if not SUPPORT_EMAIL:
     SUPPORT_EMAIL = 'support@testingdomain.com'
     modify_dotenv('SUPPORT_MAIL',SUPPORT_EMAIL)
+  
+
+## assistant config
+assistant_config_folder = seed_data_folder /'assistant'
+if not assistant_config_folder.exists():
+    assistant_config_folder.mkdir(parents=True ,exist_ok=True)

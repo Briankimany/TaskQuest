@@ -7,8 +7,8 @@ activities into RPG-style quests with experience points and leveling.
 
 from flask import Flask ,render_template,request
 from .models import db
-from .routes import api_bp, auth_bp, views_bp
-from .utils.custom_errors import make_error_response
+from .routes import api_bp, auth_bp, views_bp ,assistant
+from .utils.exceptions import make_error_response
 import os
 from .config import SUPPORT_EMAIL
 
@@ -19,6 +19,9 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     
     def handle_generic_error(error: Exception):
+        print(error)
+        if 'api' not in request.path:
+            return render_template('404.html',support_mail = SUPPORT_EMAIL), 500
         return make_error_response(error, "Unexpected server error")
 
     app.register_error_handler(Exception,handle_generic_error)
@@ -48,6 +51,7 @@ def create_app():
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(views_bp)
+    app.register_blueprint(assistant)
 
 
     return app

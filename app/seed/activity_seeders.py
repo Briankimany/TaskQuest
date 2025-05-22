@@ -3,7 +3,7 @@ import json
 from app.utils.managers import ActivityManager
 from app.config import TEST_USER_ID ,activites_seed_data
 from app.init import create_app ,db
-from app.utils.custom_errors import AppError ,RecordDuplicationError
+from app.utils.exceptions import AppError ,RecordDuplicationError
 
 
 def seed_activities(user_id):
