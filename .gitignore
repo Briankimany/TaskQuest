@@ -11,3 +11,4 @@ app/note-books/
 app/migrations/
 .env
 logs/
+cleaners/

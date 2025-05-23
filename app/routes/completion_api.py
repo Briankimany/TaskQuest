@@ -3,6 +3,7 @@ from app.routes.timetable_api import api_bp ,session ,log_app_errors,parse_time_
 from app.utils.managers.completion_manager import CompletionLogManager
 from app.utils.exceptions.custom_errors import InvalidRequestData
 from app.config import TIME_PARSING_STRING ,TIME_DATE_SEPARATOR,DATE_PARSING_STRING
+from app.utils.routes_api_utils import full_string as parsing_string
 
 
 @api_bp.route('/complete/complete_activity', methods=['POST'])
@@ -23,14 +24,17 @@ def complete_activity():
     data = request.json
     user_id = session['user_id']
     
-    required_fields = ['timetable_entry_id', 'status','completed_on']
+    required_fields = ['timetable_entry_id', 'status']
     if any(field not in data for field in required_fields):
         missing_fields = [field for field in required_fields if field not in data]
         raise InvalidRequestData(f"Missing required fields: {missing_fields}")
     
-    parsing_string = DATE_PARSING_STRING+TIME_DATE_SEPARATOR+TIME_PARSING_STRING
-
-    completed_on = parse_time_date(parsing_string,data['completed_on'])
+    if data['status'] != 'skipped':
+        if not 'completed_on' in data:
+            raise InvalidRequestData('Non skipped tasks requests must be accompanied by completed_on')
+        completed_on = parse_time_date(parsing_string,data['completed_on'])
+    else:
+        completed_on = None
 
     valid_statuses = ['completed', 'skipped', 'partial']
     if data['status'] not in valid_statuses:

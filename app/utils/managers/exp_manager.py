@@ -196,7 +196,7 @@ class ExpManager:
     def _calculate_late_penalty(self, start_time: time, completion_time: datetime, 
                               scheduled_time: int, exp_per_task: float,
                               sub_activity:SubActivity,reason:str ) -> float:
-        
+
         time_diff = abs((completion_time - datetime.combine(completion_time.date(), start_time)).total_seconds() -scheduled_time)
         try:
             penalty = self.assistant.calculate_late_penalty_score(
@@ -234,6 +234,9 @@ class ExpManager:
                 task_description=None ,
                 task_difficulty=difficulty_multiplier            
             )
+            if penalty_multiplier:
+                penalty_multiplier = penalty_multiplier.score
+
         except (AssistantError,APIConnectionError,APITimeoutError,BadRequestError):
             self.logger.warning("Un able to use assistant for skipped penalty calculations. ")
             penalty_multiplier = self._get_skip_penalty_multiplier(reason)

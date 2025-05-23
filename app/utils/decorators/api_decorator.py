@@ -2,7 +2,7 @@
 from flask import session  ,request
 
 from functools import wraps
-from app.config import TESTING_USER_ID ,TESTING_KEY
+from app.config import TEST_USER_ID ,TESTING_KEY
 from app.utils.exceptions import AuthorizationError ,AppError ,ExternalAPIError
 from app.utils.logger import auth_logger ,api_logger
 
@@ -40,10 +40,10 @@ class ApiDecorators:
                             raise AuthorizationError("Un-authorized access", 403)
 
                         auth_logger.info(
-                            f"Test session activated for user {TESTING_USER_ID}",
+                            f"Test session activated for user {TEST_USER_ID}",
                             extra={'user': 'TESTING'}
                         )
-                        session['user_id'] = TESTING_USER_ID
+                        session['user_id'] = TEST_USER_ID
                         try:
                             return func(*args, **kwargs)
                         finally:

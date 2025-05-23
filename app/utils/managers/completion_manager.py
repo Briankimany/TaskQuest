@@ -43,6 +43,9 @@ class CompletionLogManager:
         entry = db.session.query(TimetableEntry).join(SubActivity).filter(
             TimetableEntry.id==timetable_entry_id,SubActivity.user_id==user_id).first()
         
+        if not completion_time and status == 'skipped':
+            completion_time = datetime.combine(entry.timetable.date,entry.end_time)
+
         if not entry.timetable.date == completion_time.date():
             raise InvalidRequestData("Completion time does not match the date of the timetable entry")
         

@@ -3,6 +3,7 @@
 
 This system was developed as a personal project and for individual use. It is best suited for those who appreciate gaming mechanics and reward-based systems. While it can be a powerful tool for motivation and productivity, its effectiveness may vary depending on personal preferences and work styles. 
 
+- [API-DOCS](https://cynic1.pythonanywhere.com/docs)
 
 ## Introduction
 

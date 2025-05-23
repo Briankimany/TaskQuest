@@ -107,12 +107,12 @@ def activities():
     user_id = session['user_id']
    
     if request.method == 'GET':
-    
+        
         activity_id = verify_id(request.args.get("id",None))
         activities = Activity.query.filter_by(user_id=user_id)
         if activity_id:
             activities=activities.filter_by(id=activity_id)
-
+       
         return jsonify({
             'activities': [serialize_activity(act) for act in activities.all()]
         })
@@ -161,7 +161,6 @@ def activity_detail(activity_id):
       raise RecordNotFoundError(f'No activity with id {activity_id}',
                                 404)
 
-    
     if request.method == 'PUT':
         data = request.json
         activity.name = data.get('name', activity.name)

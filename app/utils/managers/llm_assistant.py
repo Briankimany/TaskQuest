@@ -85,7 +85,7 @@ class LLMAssistant:
                 {"role": "system", "content": prompt_config["system_prompt"]},
                 {"role": "user", "content": prompt_config["user_prompt"].format(**variables)}
             ]
-
+            self.logger.debug(messages)
             self.logger.debug("LLM request - model=%s, prompt=%s", model, prompt_key)
        
             for i in range(3):
@@ -127,7 +127,7 @@ class LLMAssistant:
             raise error
     
     def _calculate_penalty(self, penalty_type: str,model:str=None ,**variables) -> float:
-
+       
         response = self._call_llm(penalty_type, model=model,variables=variables)
         if not response:
             return None 
@@ -171,7 +171,7 @@ class LLMAssistant:
         """
         if test:
             return None 
-        
+        print(start_time,completion_time,scheduled_duration,reason)
         return self._calculate_penalty(
             "late_penalty",
             start_time=start_time,

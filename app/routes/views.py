@@ -125,3 +125,6 @@ def timetable():
 @views_bp.route('/help')
 def help():
     return render_template('guide.html')
+@views_bp.route("/docs")
+def docs():
+    return render_template('docs.html',API_URL='https://funcwithme.com',TESTING_USED='test token')
