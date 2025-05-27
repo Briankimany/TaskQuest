@@ -35,7 +35,7 @@ class TimetableManager:
         Returns:
             Activity: The context-switching activity instance
         """
-        api_logger.info(f"Attempting to retrieve buffer activity for user_id={user_id} ,name={buffer_name}")
+        api_logger.debug(f"Attempting to retrieve buffer activity for user_id={user_id} ,name={buffer_name}")
         
         activity = Activity.query.filter(
             Activity.name.ilike(f"%{buffer_name}%"),
@@ -47,9 +47,9 @@ class TimetableManager:
             activity = Activity(name=buffer_name, user_id=user_id)
             db.session.add(activity)
             db.session.commit()
-            api_logger.info(f"Created new buffer activity id={activity.id} for user_id={user_id}")
+            api_logger.debug(f"Created new buffer activity id={activity.id} for user_id={user_id}")
         else:
-            api_logger.info(f"Retrieved existing buffer activity id={activity.id} for user_id={user_id}")
+            api_logger.debug(f"Retrieved existing buffer activity id={activity.id} for user_id={user_id}")
         
         return activity
 
@@ -82,9 +82,9 @@ class TimetableManager:
             SubActivity.activity_id == activity_id
         ).first()
         
-        api_logger.info(f"Searching for buffer sub activity id={activity_id} for user_id={user_id} name = {name}")
+        api_logger.debug(f"Searching for buffer sub activity id={activity_id} for user_id={user_id} name = {name}")
         if not subactivity:
-            api_logger.info(f"Created new buffer sub activity id={activity_id} for user_id={user_id} name = {name}")
+            api_logger.debug(f"Created new buffer sub activity id={activity_id} for user_id={user_id} name = {name}")
             subactivity = SubActivity(
                 name=name,
                 activity_id=activity_id,

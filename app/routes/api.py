@@ -66,8 +66,8 @@ def serialize_activity(act):
     
 def validate_sub_activity_attributes(data):
     sent_data = [data['attribute_weights'].get(key ,0 ) for key in ATTRIBUTES_LIST]
-    if sum(sent_data) !=1:
-        raise InvalidRequestData(f"All attributes weights must add up to 1 {data['attribute_weights']}")
+    if sum(sent_data) !=1 and sum(send_data) !=0:
+        raise InvalidRequestData(f"All attributes weights must add up to 1 or 0 {data['attribute_weights']}")
     return data['attribute_weights']
 
 
@@ -120,12 +120,12 @@ def activities():
         
     elif request.method == 'POST':
         data = request.json
-        activity =  Activity.query.filter_by(name=data['name'],user_id=session['user_id']).first()
+        activity =  Activity.query.filter_by(name=data['name'].strip(),user_id=session['user_id']).first()
         if  activity:
-            raise RecordDuplicationError(f"Acivity already exist. {data['name']}",201)
+            raise RecordDuplicationError(f"Acivity already exist. {data['name']}")
         
         new_activity = Activity(
-            name=data['name'],
+            name=data['name'].strip(),
             user_id=user_id
         )
         db.session.add(new_activity)
