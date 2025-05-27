@@ -35,21 +35,21 @@ class TimetableManager:
         Returns:
             Activity: The context-switching activity instance
         """
-        api_logger.info(f"Attempting to retrieve buffer activity for user_id={user_id}", extra={"user": user_id})
+        api_logger.info(f"Attempting to retrieve buffer activity for user_id={user_id} ,name={buffer_name}")
         
-        activity = Activity.query.filter_by(
-            name=buffer_name,
-            user_id=user_id
+        activity = Activity.query.filter(
+            Activity.name.ilike(f"%{buffer_name}%"),
+            Activity.user_id == user_id
         ).first()
         
         if not activity:
-            api_logger.info(f"No existing buffer activity found for user_id={user_id}, creating new one", extra={"user": user_id})
-            activity = Activity(name='Context switch', user_id=user_id)
+            api_logger.info(f"No existing buffer activity found for user_id={user_id}, creating new one")
+            activity = Activity(name=buffer_name, user_id=user_id)
             db.session.add(activity)
             db.session.commit()
-            api_logger.info(f"Created new buffer activity id={activity.id} for user_id={user_id}", extra={"user": user_id})
+            api_logger.info(f"Created new buffer activity id={activity.id} for user_id={user_id}")
         else:
-            api_logger.info(f"Retrieved existing buffer activity id={activity.id} for user_id={user_id}", extra={"user": user_id})
+            api_logger.info(f"Retrieved existing buffer activity id={activity.id} for user_id={user_id}")
         
         return activity
 
@@ -57,7 +57,7 @@ class TimetableManager:
     def create_buffer_sub_activity(
         user_id: int,
         activity_id: int,
-        name: str = "Context switch break",
+        name: str = "Short Break",
         schedule_time: int = 15
     ) -> SubActivity:
         """Creates or retrieves a context-switching break sub-activity.
@@ -76,13 +76,15 @@ class TimetableManager:
         Returns:
             SubActivity: The created or existing buffer sub-activity
         """
-        subactivity = SubActivity.query.filter_by(
-            user_id=user_id,
-            name=name,
-            activity_id=activity_id
+        subactivity = SubActivity.query.filter(
+            SubActivity.user_id == user_id,
+            SubActivity.name.ilike(f"%{name}%"),
+            SubActivity.activity_id == activity_id
         ).first()
-
+        
+        api_logger.info(f"Searching for buffer sub activity id={activity_id} for user_id={user_id} name = {name}")
         if not subactivity:
+            api_logger.info(f"Created new buffer sub activity id={activity_id} for user_id={user_id} name = {name}")
             subactivity = SubActivity(
                 name=name,
                 activity_id=activity_id,
