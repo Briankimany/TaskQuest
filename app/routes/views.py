@@ -11,12 +11,19 @@ from datetime import date,time
 from app.models import User, Activity, CompletionLog, Level
 from app.utils.schedulers import TaskScheduler
 from app.utils.managers import UserManager
+from app.utils.logger import ui_logger
 
 from datetime import datetime
 from app.config import DATE_PARSING_STRING
 
 views_bp = Blueprint('views', __name__)
 
+
+@views_bp.errorhandler(Exception)
+def handle_generic_error(error: Exception):
+    ui_logger.error(msg=error)
+    return render_template('500.html',exception=""), 500
+  
 class ScheduledActivites:
     
     def __init__(self,name,sub_activities):

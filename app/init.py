@@ -18,11 +18,14 @@ def create_app():
     """Create and configure the Flask application."""
     app = Flask(__name__, instance_relative_config=True)
     
+    @app.errorhandler(Exception)
     def handle_generic_error(error: Exception):
         print(error)
         if 'api' not in request.path:
             return render_template('500.html',exception=error), 500
         return make_error_response(error, "Unexpected server error")
+
+   
 
     # app.register_error_handler(Exception,handle_generic_error)
     @app.errorhandler(404)
@@ -52,6 +55,5 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(views_bp)
     app.register_blueprint(assistant)
-
 
     return app

@@ -36,3 +36,6 @@ external_apis_logger = LoggerManager(log_file='api_external.logs',logger_name='e
 
 user_logger = LoggerManager(log_file='users.logs',log_level=LOGGING_LEVEL,
                             logger_name='users_logs').get_logger()
+
+ui_logger = LoggerManager(log_file='ui.logs',log_level=LOGGING_LEVEL,
+                            logger_name='ui_logs').get_logger()
