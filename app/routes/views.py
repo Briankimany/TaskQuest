@@ -90,7 +90,7 @@ def activities():
         return redirect(url_for('auth.login'))
     
     user_id = session['user_id']
-    activities = Activity.query.filter_by(user_id=user_id).all()
+    activities = Activity.query.filter_by(user_id=user_id ,is_active=True).order_by(Activity.created_at.desc()).all()
     
     return render_template('activities.html', activities=activities)
 

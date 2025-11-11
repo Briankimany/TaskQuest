@@ -40,9 +40,19 @@ def server_bad_request(error):
 @api_bp.errorhandler(AppError)
 def handle_app_error(error: AppError):
     response, code = error.to_response()
+    api_logger.error(
+        msg=response
+    )
     return jsonify(response), code
 
-
+@api_bp.errorhandler(Exception)
+def handle_app_error(error: Exception):
+    response, code = {"error": "Unexpected error"} , 500
+    
+    api_logger.error(
+        msg=error
+    )
+    return jsonify(response), code
 
 def serialize_sub_activity(sa):
     return {
@@ -66,7 +76,7 @@ def serialize_activity(act):
     
 def validate_sub_activity_attributes(data):
     sent_data = [data['attribute_weights'].get(key ,0 ) for key in ATTRIBUTES_LIST]
-    if sum(sent_data) !=1 and sum(send_data) !=0:
+    if sum(sent_data) !=1 and sum(sent_data) !=0:
         raise InvalidRequestData(f"All attributes weights must add up to 1 or 0 {data['attribute_weights']}")
     return data['attribute_weights']
 
@@ -109,7 +119,7 @@ def activities():
     if request.method == 'GET':
         
         activity_id = verify_id(request.args.get("id",None))
-        activities = Activity.query.filter_by(user_id=user_id)
+        activities = Activity.query.filter_by(user_id=user_id, is_active=True).order_by(Activity.created_at.desc())
         if activity_id:
             activities=activities.filter_by(id=activity_id)
        
@@ -155,7 +165,7 @@ def activity_detail(activity_id):
     """
     
     user_id = session['user_id']
-    activity = Activity.query.filter_by(id=activity_id, user_id=user_id).first()
+    activity = Activity.query.filter_by(id=activity_id, user_id=user_id ,is_active=True).first()
     
     if not activity:
       raise RecordNotFoundError(f'No activity with id {activity_id}',
@@ -173,7 +183,7 @@ def activity_detail(activity_id):
         })
     
     elif request.method == 'DELETE':
-        db.session.delete(activity)
+        activity.is_active = False
         db.session.commit()
         return '', 204
 

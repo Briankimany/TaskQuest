@@ -2,7 +2,7 @@
 Authentication blueprint for the Real-Life RPG System
 Handles user registration, login, and logout
 """
-from flask import Blueprint, request, render_template, redirect, url_for, flash, session
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session ,jsonify
 from app.models import db, User
 
 auth_bp = Blueprint('auth', __name__)
@@ -33,7 +33,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if not user:
             if is_api_request():
-                return jsonify({'error': 'Invalid username.'}), 400
+                return jsonify({'error': 'Invalid username'}), 400
             flash('Invalid username.', 'danger')
             return render_template('auth/login.html')
         

@@ -17,6 +17,7 @@ class Activity(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean ,default=True)
     
     # Relationships
     user = db.relationship('User', backref=db.backref('activities', lazy=True, cascade="all, delete-orphan"))
