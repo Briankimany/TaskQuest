@@ -154,7 +154,7 @@ class TaskScheduler(TimetableManager):
              
 
     def _get_users_activities(self):
-        return Activity.query.filter_by(user_id=self.user_id).all()
+        return Activity.query.filter_by(user_id=self.user_id,is_active=True).order_by(Activity.created_at.desc()).all()
     
     def _get_or_create_buffer(self,name='Context Switch',specific_name:str='Short Break') -> SubActivity:
         """Ensures buffer activity exists for the user."""

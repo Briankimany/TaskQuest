@@ -125,7 +125,7 @@ def timetable():
     
     user_id = session['user_id']
     user = User.query.get(user_id)
-    activities = Activity.query.filter_by(user_id=user_id).all()
+    activities = Activity.query.filter_by(user_id=user_id ,is_active=True).order_by(Activity.created_at.desc()).all()
     
     return render_template('timetable.html', user=user, activities=activities)
 
