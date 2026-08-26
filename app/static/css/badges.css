@@ -1,0 +1,67 @@
+/* ── Attribute Badges ── */
+.attr-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.attr-badge-INT { background: var(--badge-int); }
+.attr-badge-STA { background: var(--badge-sta); }
+.attr-badge-FCS { background: var(--badge-fcs); }
+.attr-badge-CHA { background: var(--badge-cha); }
+.attr-badge-DSC { background: var(--badge-dsc); }
+
+.attr-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.75rem;
+}
+
+.attr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.attr-item .attr-value { font-family: var(--font-mono); font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+.attr-item .attr-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+
+/* ── Status Badges ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-completed { background: rgba(74,103,65,0.12); color: var(--success); }
+.status-pending { background: rgba(184,134,11,0.12); color: var(--warning); }
+.status-partial { background: rgba(91,123,148,0.12); color: var(--accent-calm); }
+.status-skipped { background: rgba(166,93,87,0.12); color: var(--danger); }
+
+[data-theme="dark"] .status-completed { background: rgba(126,200,160,0.15); }
+[data-theme="dark"] .status-pending { background: rgba(224,192,96,0.15); }
+[data-theme="dark"] .status-partial { background: rgba(126,184,218,0.15); }
+[data-theme="dark"] .status-skipped { background: rgba(224,112,112,0.15); }
+
+@media (max-width: 768px) {
+  .attr-row { grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+}
+
+@media (max-width: 576px) {
+  .attr-row { grid-template-columns: repeat(3, 1fr); }
+}

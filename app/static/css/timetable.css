@@ -1,0 +1,52 @@
+/* ── Timetable ── */
+.tt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tt-header h1 { font-size: 1.4rem; margin: 0; }
+
+.tt-controls { display: flex; align-items: center; gap: 0.75rem; }
+
+.tt-date-input {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.task-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--accent);
+  transition: all 0.15s ease;
+}
+
+.task-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.task-card .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+.task-card .task-header h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+.task-card .task-time { font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono); }
+.task-card .task-actions { margin-top: 0.75rem; }
+
+@media (max-width: 768px) {
+  .tt-header { flex-direction: column; align-items: stretch; }
+  .tt-controls { flex-wrap: wrap; }
+  .task-grid { grid-template-columns: 1fr; }
+}

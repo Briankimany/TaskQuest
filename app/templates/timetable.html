@@ -1,107 +1,90 @@
-<!-- templates/timetable/calendar_view.html -->
 {% extends 'base2.html' %}
 
-{% block title %}Timetable - Real-Life RPG System{% endblock %}
-
-{% block styles %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/tt_style.css">
-{% endblock %}
+{% block title %}Timetable — {{ APP_NAME }}{% endblock %}
 
 {% block content %}
-<header class="app-header">
-  <h1>Task Scheduler</h1>
-  <div class="header-controls">
-    <input type="date" id="date-picker" class="date-input">
-    <button id="new-day-btn" class="btn-primary">+ New Day</button>
-  </div>
-</header>
-<main class="dashboard">
-  <!-- Task Grid -->
-  <div class="task-grid" id="task-grid">
-    <!-- Cards will be injected here -->
-  </div>
-
-  <button id="add-task-btn" class="add-task btn btn-success position-fixed bottom-0 start-0 m-3">
-    ➕ Add Task
-</button>
-
-</style>
-</main>
-  <!-- Task Modal -->
-  <div class="modal" id="task-modal">
-    <div class="modal-content">
-      <form id="task-form">
-        <h2 id="modal-title">Schedule New Task</h2>
-        
-        <div class="form-group">
-          <label for="activity">Activity</label>
-          <select id="activity-select" required>
-            <option value="">Loading activities...</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="sub-activity">sub Activity</label>
-          <select id="sub-activity" required>
-            <option value="">Loading sub activities...</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="start-time">Start Time</label>
-            <input type="time" id="start-time" required>
-          </div>
-          <div class="form-group">
-            <label for="duration">Duration (mins)</label>
-            <input type="number" id="duration" min="1">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="checkbox-container">
-            <input type="checkbox" id="is-cyclic">
-            <span class="checkmark"></span>
-            Repeats weekly
-          </label>
-        </div>
-
-        <div class="form-group" id="weekday-group" style="display:none;">
-          <label for="weekday">Weekday</label>
-          <select id="weekday">
-            <option value="1">Monday</option>
-            <option value="2">Tuesday</option>
-            <option value="3">Wednesday</option>
-            <option value="4">Thursday</option>
-            <option value="5">Friday</option>
-            <option value="6">Saturday</option>
-            <option value="7">Sunday</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="checkbox-container">
-            <input type="checkbox" id="add-buffer" checked>
-            <span class="checkmark"></span>
-            Add buffer activity
-          </label>
-        </div>
-        <!--text input area for the tasks's descrioption -->
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea id="task-description" rows="4"></textarea>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" id="cancel-btn">Cancel</button>
-          <button type="submit" class="btn-primary">Save Task</button>
-        </div>
-      </form>
+<header class="tt-header">
+    <h1>Task Scheduler</h1>
+    <div class="tt-controls">
+        <input type="date" id="date-picker" class="tt-date-input">
+        <button id="new-day-btn" class="btn-app btn-app-primary">+ New Day</button>
     </div>
-  </div>
+</header>
 
+<main>
+    <div class="task-grid" id="task-grid"></div>
+
+    <button id="add-task-btn" class="btn-app btn-app-primary position-fixed" style="bottom:1.5rem;left:1.5rem;z-index:100">
+        <i class="lucide-plus" style="font-size:1em"></i> Add Task
+    </button>
+
+    <!-- Task Modal -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content">
+            <form id="task-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">Schedule New Task</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="activity-select" class="form-label">Activity</label>
+                        <select id="activity-select" class="form-select" required>
+                            <option value="">Loading activities...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sub-activity" class="form-label">Sub-Activity</label>
+                        <select id="sub-activity" class="form-select" required>
+                            <option value="">Loading sub-activities...</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start-time" class="form-label">Start Time</label>
+                            <input type="time" id="start-time" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="duration" class="form-label">Duration (mins)</label>
+                            <input type="number" id="duration" class="form-control" min="1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center gap-2" style="cursor:pointer">
+                            <input type="checkbox" id="is-cyclic"> Repeats weekly
+                        </label>
+                    </div>
+                    <div class="mb-3" id="weekday-group" style="display:none">
+                        <label for="weekday" class="form-label">Weekday</label>
+                        <select id="weekday" class="form-select">
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                            <option value="6">Saturday</option>
+                            <option value="7">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center gap-2" style="cursor:pointer">
+                            <input type="checkbox" id="add-buffer" checked> Add buffer activity
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-description" class="form-label">Description</label>
+                        <textarea id="task-description" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-app btn-app-secondary" id="cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-app btn-app-primary">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
 {% endblock %}
 
 {% block scripts %}
-<script src="static/js/tt_script.js"></script>
+<script src="{{ url_for('static', filename='js/tt_script.js') }}"></script>
 {% endblock %}

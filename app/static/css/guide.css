@@ -1,0 +1,23 @@
+/* ── Guide Page ── */
+.guide-section { margin-bottom: 2.5rem; }
+.guide-section h3 { font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--accent); }
+.guide-steps { padding-left: 1.25rem; }
+.guide-steps li { margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; }
+
+.guide-note {
+  background: var(--bg-muted);
+  border-left: 3px solid var(--warning);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.guide-note h6 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--warning);
+  margin-bottom: 0.5rem;
+}

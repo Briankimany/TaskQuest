@@ -1,174 +1,147 @@
-
 {% extends 'base2.html' %}
 
-{% block title %}Dashboard - Real-Life RPG System{% endblock %}
+{% block title %}Dashboard — {{ APP_NAME }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- Stats Panel -->
-    <div class="col-md-4 mb-4">
-        <div class="card shadow">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">Character Stats</h5>
+<div class="row g-4">
+
+    <!-- Character Stats -->
+    <div class="col-lg-4">
+        <div class="app-card">
+            <div class="app-card-header">
+                <h5 class="mb-0">Character</h5>
+                <small class="text-muted-app">{{ user.username }}</small>
             </div>
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                    <h2 class="mb-0 me-2">Level {{ user.level }}</h2>
-                    <small class="text-muted">{{ user.username }}</small>
+            <div class="app-card-body">
+                <!-- Level -->
+                <div class="d-flex align-items-baseline gap-2 mb-3">
+                    <span class="stat-big-number" style="font-size:2.2rem">{{ user.level }}</span>
+                    <span class="text-muted-app" style="font-size:0.85rem">Level</span>
                 </div>
-                
-                <!-- EXP Progress Bar -->
+
+                <!-- EXP Bar -->
                 <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-1">
-                        <small>EXP: {{ user.total_exp }}</small>
-                        <small>Next: {{ user.total_exp + exp_to_next_level }}</small>
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.8rem">
+                        <span class="text-muted-app">EXP {{ user.total_exp }}</span>
+                        <span class="text-muted-app">Next {{ user.total_exp + exp_to_next_level }}</span>
                     </div>
-                    {% set progress_percentage = (100 - (exp_to_next_level / (exp_to_next_level + 1) * 100))|round if exp_to_next_level > 0 else 100 %}
-                    <div class="progress exp-progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress_percentage }}%"></div>
+                    {% set progress_pct = (100 - (exp_to_next_level / (exp_to_next_level + 1) * 100))|round if exp_to_next_level > 0 else 100 %}
+                    <div class="progress-app progress-app-lg">
+                        <div class="bar" style="width:{{ progress_pct }}%"></div>
                     </div>
-                    <small class="text-muted mt-1 d-block">{{ exp_to_next_level }} EXP to level {{ user.level + 1 }}</small>
+                    <small class="text-muted-app d-block mt-1">{{ exp_to_next_level }} EXP to level {{ user.level + 1 }}</small>
                 </div>
-                
+
                 <!-- Discipline Factor -->
-                <div class="mb-3">
-                    <h6>Daily Discipline Factor</h6>
-                    {% set dcp_percentage = (dcp * 100)|round %}
-                    <div class="progress">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ dcp_percentage }}%" 
-                            data-bs-toggle="tooltip" data-bs-placement="top" 
-                            title="Completed {{ dcp_percentage }}% of scheduled activities">
-                            {{ dcp_percentage }}%
-                        </div>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.8rem">
+                        <span class="text-muted-app">Daily Discipline</span>
+                        <span class="font-mono" style="font-size:0.8rem">{{ (dcp * 100)|round }}%</span>
+                    </div>
+                    <div class="progress-app">
+                        <div class="bar bar-calm" style="width:{{ (dcp * 100)|round }}%"></div>
                     </div>
                 </div>
-                
+
                 <!-- Attributes -->
-                <h6>Core Attributes</h6>
-                <div class="row">
-                    <div class="col-6 mb-2">
-                        <span class="attribute-badge INT-bg" data-bs-toggle="tooltip" title="Intelligence: Affects learning and cognitive tasks">INT</span>
-                        {{ user.INT }}
+                <h6 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.75rem">Core Attributes</h6>
+                <div class="attr-row">
+                    <div class="attr-item">
+                        <span class="attr-badge attr-badge-INT">INT</span>
+                        <span class="attr-value">{{ user.INT }}</span>
                     </div>
-                    <div class="col-6 mb-2">
-                        <span class="attribute-badge STA-bg" data-bs-toggle="tooltip" title="Stamina: Affects physical endurance and health">STA</span>
-                        {{ user.STA }}
+                    <div class="attr-item">
+                        <span class="attr-badge attr-badge-STA">STA</span>
+                        <span class="attr-value">{{ user.STA }}</span>
                     </div>
-                    <div class="col-6 mb-2">
-                        <span class="attribute-badge FCS-bg" data-bs-toggle="tooltip" title="Focus: Affects concentration and attention to detail">FCS</span>
-                        {{ user.FCS }}
+                    <div class="attr-item">
+                        <span class="attr-badge attr-badge-FCS">FCS</span>
+                        <span class="attr-value">{{ user.FCS }}</span>
                     </div>
-                    <div class="col-6 mb-2">
-                        <span class="attribute-badge CHA-bg" data-bs-toggle="tooltip" title="Charisma: Affects social skills and interactions">CHA</span>
-                        {{ user.CHA }}
+                    <div class="attr-item">
+                        <span class="attr-badge attr-badge-CHA">CHA</span>
+                        <span class="attr-value">{{ user.CHA }}</span>
                     </div>
-                    <div class="col-6 mb-2">
-                        <span class="attribute-badge DSC-bg" data-bs-toggle="tooltip" title="Discipline: Affects consistency and habit formation">DSC</span>
-                        {{ user.DSC }}
+                    <div class="attr-item">
+                        <span class="attr-badge attr-badge-DSC">DSC</span>
+                        <span class="attr-value">{{ user.DSC }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Scheduled Tasks -->
-    <div class="col-md-8">
-        <div class="card shadow mb-4">
-            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+
+    <!-- Today's Schedule -->
+    <div class="col-lg-8">
+        <div class="app-card">
+            <div class="app-card-header">
                 <h5 class="mb-0">Today's Schedule</h5>
-                <div>
-                    <a href="{{ url_for('views.timetable') }}" class="btn btn-sm btn-outline-light me-2">
-                        <i class="fas fa-calendar-plus"></i> Schedule Tasks
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('views.timetable') }}" class="btn-app btn-app-secondary btn-app-sm">
+                        <i class="lucide-calendar-plus" style="font-size:0.85em"></i> Schedule
                     </a>
-                    <a href="{{ url_for('views.activities') }}" class="btn btn-sm btn-outline-light me-2">
-                        <i class="fas fa-tasks"></i> Manage Activities
+                    <a href="{{ url_for('views.activities') }}" class="btn-app btn-app-secondary btn-app-sm">
+                        <i class="lucide-list-checks" style="font-size:0.85em"></i> Activities
                     </a>
-                    <button id="finalizeDayBtn" class="btn btn-sm btn-warning">
-                        <i class="fas fa-flag-checkered"></i> Finalize Day
+                    <button id="finalizeDayBtn" class="btn-app btn-app-primary btn-app-sm">
+                        <i class="lucide-flag" style="font-size:0.85em"></i> Finalize Day
                     </button>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="app-card-body">
                 {% if scheduled_tasks %}
                     <div id="schedule-container">
-        
                         {% for activity_name, tasks in scheduled_tasks|groupby('sub_activity.activity.name') %}
-                            <div class="activity-card card mb-3">
-                                <div class="card-header d-flex justify-content-between align-items-center"
-                                        role="button">
-                                    <h6 class="mb-0">{{ activity_name }}</h6>
-                                    <span class="badge bg-secondary">{{ tasks|length }} tasks</span>
+                            <div class="activity-group">
+                                <div class="activity-group-header" data-bs-toggle="collapse" data-bs-target="#activity-{{ loop.index }}" role="button" aria-expanded="false">
+                                    <h6>{{ activity_name }}</h6>
+                                    <span class="status-badge status-pending">{{ tasks|length }} tasks</span>
                                 </div>
-                      
                                 <div class="collapse" id="activity-{{ loop.index }}">
-                                    <div class="card-body">
+                                    <div class="activity-group-body">
                                         {% for task in tasks %}
                                             {% set sub = task.sub_activity %}
                                             {% set log = today_logs|selectattr('timetable_entry_id', 'eq', task.id)|first %}
                                             {% set status = log.status if log else 'pending' %}
-                                            {% set status_class = 'completed' if status == 'completed' else ('overdue' if status == 'skipped' else 'pending') %}
-                                          
-                                            <div class="scheduled-task {{ status_class }}" data-id="{{ task.id }}">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <h6 class="mb-1">{{ sub.name }}</h6>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-clock"></i> {{ task.start_time.strftime('%H:%M') }} - {{ task.end_time.strftime('%H:%M') }}
-                                                            <i class="fas fa-star ms-2"></i> x{{ sub.difficulty_multiplier }}
-                                                        </small>
+
+                                            <div class="task-item {{ status }}" data-id="{{ task.id }}">
+                                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                                    <div style="min-width:0">
+                                                        <div class="task-title">{{ sub.name }}</div>
+                                                        <div class="task-meta">
+                                                            <span><i class="lucide-clock" style="font-size:0.85em"></i> {{ task.start_time.strftime('%H:%M') }} – {{ task.end_time.strftime('%H:%M') }}</span>
+                                                            <span><i class="lucide-star" style="font-size:0.85em"></i> x{{ sub.difficulty_multiplier }}</span>
+                                                        </div>
                                                     </div>
-                                                    <div>
+                                                    <div class="task-actions">
                                                         {% if status == 'pending' %}
-                                                            <button class="btn btn-sm btn-success complete-btn" 
-                                                                    data-id="{{ task.id }}" 
-                                                                    data-bs-toggle="tooltip" 
-                                                                    title="Mark as completed">
-                                                                <i class="fas fa-check"></i>
+                                                            <button class="btn-app btn-app-primary btn-app-sm complete-btn" data-id="{{ task.id }}" title="Complete">
+                                                                <i class="lucide-check" style="font-size:0.85em"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-warning partial-btn" 
-                                                                    data-id="{{ task.id }}" 
-                                                                    data-bs-toggle="tooltip" 
-                                                                    title="Mark as partially completed">
-                                                                <i class="fas fa-adjust"></i>
+                                                            <button class="btn-app btn-app-secondary btn-app-sm partial-btn" data-id="{{ task.id }}" title="Partial">
+                                                                <i class="lucide-minus" style="font-size:0.85em"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-danger skip-btn" 
-                                                                    data-id="{{ task.id }}" 
-                                                                    data-bs-toggle="tooltip" 
-                                                                    title="Skip this activity">
-                                                                <i class="fas fa-times"></i>
+                                                            <button class="btn-app btn-app-danger btn-app-sm skip-btn" data-id="{{ task.id }}" title="Skip">
+                                                                <i class="lucide-x" style="font-size:0.85em"></i>
                                                             </button>
                                                         {% else %}
-                                                            <span class="badge bg-{{ 'success' if status == 'completed' else ('warning' if status == 'partial' else 'danger') }}">
-                                                                {{ status|capitalize }}
-                                                            </span>
+                                                            <span class="status-badge status-{{ status }}">{{ status|capitalize }}</span>
                                                         {% endif %}
                                                     </div>
                                                 </div>
-                                                <div class="exp-info mt-2" 
-                                                data-bs-toggle="tooltip" 
-                                                data-bs-placement="bottom" 
-                                                data-bs-html="true"
-                                                title="<strong>EXP Details:</strong><br>Base EXP: {{ sub.base_exp }}<br>Time Factor: {{ (sub.scheduled_time / 60)|round(2) }}<br>Difficulty: x{{ sub.difficulty_multiplier }}<br>Potential EXP: {{ sub.calculate_potential_exp() }}">
-                                               <small class="text-muted">
-                                                   {% if task.completion_log %}
-                                                       EXP Gained: <span class="text-success">+{{ task.exp_gain }}</span>
-                                                   {% else %}
-                                                       Potential EXP: <span class="text-success">+{{ task.exp_gain }}</span>
-                                                   {% endif %}
-                                               </small>
-                                             </div>
-                                            </div>
-                                            <!-- Show the tasks description. -->
-                                            {% if task.description %}
-                                                <div class="task-description">
-                                                    <!-- make the goal appear nice and clean and attractive. may be use emojis-->
-                                                    <p class="mb-2"><strong>Goal:</strong> {{ task.description }}</p>
-                                                </div>
-                                            {% endif %}
-                                            {% if not loop.last %}
-                                                <hr class="my-2">
-                                            {% endif %}
 
+                                                {% if task.description %}
+                                                    <div class="task-description">{{ task.description }}</div>
+                                                {% endif %}
+
+                                                <div class="mt-2" style="font-size:0.8rem">
+                                                    {% if task.completion_log %}
+                                                        <span class="text-accent">EXP +{{ task.exp_gain }}</span>
+                                                    {% else %}
+                                                        <span class="text-muted-app">Potential: <span class="text-accent">+{{ task.exp_gain }}</span></span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -176,11 +149,11 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="text-center py-4">
-                        <p class="mb-3">You don't have any tasks scheduled for today!</p>
+                    <div class="text-center py-5">
+                        <p class="text-muted-app mb-3">No tasks scheduled for today.</p>
                         <div class="d-flex justify-content-center gap-2">
-                            <a href="{{ url_for('views.timetable') }}" class="btn btn-primary">Schedule Tasks</a>
-                            <a href="{{ url_for('views.activities') }}" class="btn btn-outline-primary">Create Activities</a>
+                            <a href="{{ url_for('views.timetable') }}" class="btn-app btn-app-primary">Schedule Tasks</a>
+                            <a href="{{ url_for('views.activities') }}" class="btn-app btn-app-secondary">Create Activities</a>
                         </div>
                     </div>
                 {% endif %}
@@ -191,30 +164,5 @@
 {% endblock %}
 
 {% block scripts %}
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const activityCards = document.querySelectorAll('.activity-card');
-
-        activityCards.forEach(function (card) {
-            const collapseButton = card.querySelector('.card-header');
-            const collapseContent = card.querySelector('.collapse');
-
-            const bsCollapse = new bootstrap.Collapse(collapseContent, {
-                toggle: false
-            });
-
-            collapseButton.addEventListener('click', function () {
-                if (collapseContent.classList.contains('show')) {
-                    bsCollapse.hide();
-                } else {
-                    bsCollapse.show();
-                }
-            });
-        });
-    });
-</script>
-
-
-<script src="static/js/dashboard.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

@@ -1,138 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Life RPG System Help</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-        }
-        h1, h3 {
-            color: #2c3e50;
-        }
-        .gotchas {
-            background-color: #f8d7da;
-            border-left: 5px solid #f5c6cb;
-            padding: 10px;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>How to Use the Real-Life RPG System</h1>
+{% extends 'base2.html' %}
 
-        <div class="mb-5">
-            <h3>1. Creating Activities and Sub-activities</h3>
-            <p>Follow these steps to create activities and sub-activities:</p>
-            <ol>
-                <li>Navigate to the Activities page.</li>
-                <li>Click the "New Activity" button.</li>
-                <li>Enter the activity name and save.</li>
-                <li>For each activity, click "Add Sub-Activity".</li>
-                <li>Fill in the sub-activity details:
-                    <ul>
-                        <li>Name</li>
-                        <li>Scheduled Time</li>
-                        <li>Difficulty Multiplier</li>
-                        <li>Base EXP</li>
-                        <li>Attribute weights</li>
-                    </ul>
-                </li>
-            </ol>
-            <div class="gotchas">
-                <h5>Gotchas:</h5>
-                <ul>
-                    <li>Ensure all sub-activities have unique names within an activity.</li>
-                    <li>The sum of attribute weights should not exceed 1.0.</li>
-                    <li>Difficulty multipliers affect both EXP rewards and penalties, so choose wisely.</li>
-                </ul>
-            </div>
+{% block title %}Guide — {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div style="max-width:720px;margin:0 auto">
+    <h1 style="margin-bottom:1.5rem">How to use {{ APP_NAME }}</h1>
+
+    <div class="guide-section">
+        <h3>1. Creating Activities</h3>
+        <ol class="guide-steps">
+            <li>Navigate to the <strong>Activities</strong> page.</li>
+            <li>Click <strong>New Activity</strong> and enter a name.</li>
+            <li>For each activity, click <strong>Sub</strong> to add sub-activities.</li>
+            <li>Set the name, scheduled time, difficulty, base EXP, and attribute weights.</li>
+        </ol>
+        <div class="guide-note">
+            <h6>Notes</h6>
+            <ul style="margin:0;padding-left:1.25rem">
+                <li>Sub-activity names should be unique within an activity.</li>
+                <li>Attribute weights should sum to 1.0.</li>
+                <li>Difficulty multipliers affect both EXP rewards and penalties.</li>
+            </ul>
         </div>
-
-        <div class="mb-5">
-            <h3>2. Scheduling Tasks</h3>
-            <p>Follow these steps to schedule tasks:</p>
-            <ol>
-                <li>Go to the Timetable page.</li>
-                <li>Use the date picker to select the desired date.</li>
-                <li>Click "Add Task" to open the task modal.</li>
-                <li>Choose an activity and sub-activity.</li>
-                <li>Set the start time and duration.</li>
-                <li>For recurring tasks, check "Is Cyclic" and select weekdays.</li>
-                <li>Save the task.</li>
-            </ol>
-            <div class="gotchas">
-                <h5>Gotchas:</h5>
-                <ul>
-                    <li>Avoid scheduling overlapping tasks.</li>
-                    <li>Remember to account for buffer time between tasks.</li>
-                    <li>Cyclic tasks will automatically appear on selected weekdays.</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="mb-5">
-            <h3>3. Logging Completed Tasks</h3>
-            <p>Follow these steps to log completed tasks:</p>
-            <ol>
-                <li>On the Dashboard, find the task you've completed.</li>
-                <li>Click the "Complete" button.</li>
-                <li>In the completion modal:
-                    <ul>
-                        <li>Verify or adjust the completion time.</li>
-                        <li>Add any relevant comments.</li>
-                    </ul>
-                </li>
-                <li>For partially completed tasks, use the "Partial" button and specify:
-                    <ul>
-                        <li>Actual time spent</li>
-                        <li>Reason for partial completion</li>
-                    </ul>
-                </li>
-                <li>If skipping a task, use the "Skip" button and provide a reason.</li>
-            </ol>
-            <div class="gotchas">
-                <h5>Gotchas:</h5>
-                <ul>
-                    <li>Log tasks as soon as possible for accurate tracking.</li>
-                    <li>Be honest about completion times – the system has a 15-minute grace period.</li>
-                    <li>Partial completions and skips affect your daily discipline factor.</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="mb-5">
-            <h3>4. Finalizing the Day</h3>
-            <p>Follow these steps to finalize the day:</p>
-            <ol>
-                <li>At the end of your day, go to the Dashboard.</li>
-                <li>Review all tasks for the day.</li>
-                <li>Ensure all tasks are marked as completed, partial, or skipped.</li>
-                <li>Click the "Finalize Day" button.</li>
-            </ol>
-            <div class="gotchas">
-                <h5>Gotchas:</h5>
-                <ul>
-                    <li>Once finalized, you cannot change task statuses for that day.</li>
-                    <li>Finalizing calculates your daily EXP and updates your level progress.</li>
-                    <li>Skipped or partially completed tasks will impact your overall discipline factor.</li>
-                </ul>
-            </div>
-        </div>
-
-        <p>Remember, consistency is key in the Real-Life RPG System. Regular task completion and honest logging will help you level up and improve your attributes over time!</p>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+    <div class="guide-section">
+        <h3>2. Scheduling Tasks</h3>
+        <ol class="guide-steps">
+            <li>Go to the <strong>Timetable</strong> page.</li>
+            <li>Use the date picker to select a date.</li>
+            <li>Click <strong>+ New Day</strong> to create a timetable, then <strong>Add Task</strong>.</li>
+            <li>Choose an activity and sub-activity, set start time and duration.</li>
+            <li>For recurring tasks, check <strong>Repeats weekly</strong> and select weekdays.</li>
+        </ol>
+        <div class="guide-note">
+            <h6>Notes</h6>
+            <ul style="margin:0;padding-left:1.25rem">
+                <li>Avoid overlapping tasks.</li>
+                <li>Account for buffer time between tasks.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="guide-section">
+        <h3>3. Logging Completion</h3>
+        <ol class="guide-steps">
+            <li>On the <strong>Dashboard</strong>, find your task.</li>
+            <li>Click <strong>Complete</strong>, <strong>Partial</strong>, or <strong>Skip</strong>.</li>
+            <li>Fill in the required fields and submit.</li>
+        </ol>
+        <div class="guide-note">
+            <h6>Notes</h6>
+            <ul style="margin:0;padding-left:1.25rem">
+                <li>Log tasks as soon as possible for accurate tracking.</li>
+                <li>There is a 15-minute grace period.</li>
+                <li>Partial completions and skips affect your discipline factor.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="guide-section">
+        <h3>4. Finalizing the Day</h3>
+        <ol class="guide-steps">
+            <li>At the end of your day, review all tasks on the <strong>Dashboard</strong>.</li>
+            <li>Ensure all tasks are marked as completed, partial, or skipped.</li>
+            <li>Click <strong>Finalize Day</strong>.</li>
+        </ol>
+        <div class="guide-note">
+            <h6>Notes</h6>
+            <ul style="margin:0;padding-left:1.25rem">
+                <li>Once finalized, you cannot change task statuses for that day.</li>
+                <li>Finalizing calculates your daily EXP and updates level progress.</li>
+            </ul>
+        </div>
+    </div>
+
+    <p class="text-muted-app" style="font-size:0.9rem">Consistency is key. Regular task completion and honest logging will help you grow over time.</p>
+</div>
+{% endblock %}

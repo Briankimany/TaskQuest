@@ -1,0 +1,17 @@
+/* ── Modals ── */
+.modal-content {
+  background: var(--modal-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  background: var(--modal-header-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+}
+
+.modal-header .modal-title { font-family: var(--font-heading); font-weight: 600; font-size: 1.1rem; }
+.modal-body { padding: 1.25rem; }
+.modal-footer { border-top: 1px solid var(--border); padding: 1rem 1.25rem; }

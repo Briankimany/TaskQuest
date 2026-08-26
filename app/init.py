@@ -10,13 +10,16 @@ from .models import db
 from .routes import api_bp, auth_bp, views_bp ,assistant
 from .utils.exceptions import make_error_response
 import os
-from .config import SUPPORT_EMAIL
+from .config import SUPPORT_EMAIL, APP_NAME, APP_TAGLINE
 
 from flask_migrate import Migrate
 
 def create_app():
     """Create and configure the Flask application."""
     app = Flask(__name__, instance_relative_config=True)
+
+    app.jinja_env.globals['APP_NAME'] = APP_NAME
+    app.jinja_env.globals['APP_TAGLINE'] = APP_TAGLINE
     
     @app.errorhandler(Exception)
     def handle_generic_error(error: Exception):

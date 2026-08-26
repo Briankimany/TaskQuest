@@ -1,87 +1,52 @@
-
 {% extends 'base2.html' %}
 
-{% block title %}Statistics - Real-Life RPG System{% endblock %}
+{% block title %}Stats — {{ APP_NAME }}{% endblock %}
 
 {% block content %}
-
-<div class="stats-container">
-    <!-- Progress Overview Section -->
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="stats-card">
-                <div class="stats-card-header">
-                    <h5 class="stats-card-title">Progress Overview</h5>
+<!-- Progress Overview -->
+<div class="app-card mb-4">
+    <div class="app-card-header">
+        <h5 class="mb-0">Progress Overview</h5>
+        <button class="btn-app btn-app-ghost btn-app-sm" data-bs-toggle="modal" data-bs-target="#activityLogsModal">
+            <i class="lucide-scroll-text" style="font-size:0.85em"></i> Logs
+        </button>
+    </div>
+    <div class="app-card-body">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-4 text-center">
+                <div class="stat-big-number">{{ user.level }}</div>
+                <div class="stat-label mb-2">Level {{ user.level }}</div>
+                <div class="progress-app progress-app-lg">
+                    <div class="bar" style="width:{{ progress_percentage }}%"></div>
                 </div>
-                <div class="card-body">
-                    <div class="row g-4 align-items-center">
-                        <!-- Level Progress -->
-                        <div class="col-md-4 text-center">
-                            <div class="progress-container">
-                                <h3 class="display-1 fw-bold text-primary mb-2">{{ user.level }}</h3>
-                                <p class="text-muted mb-3">Level {{ user.level }}</p>
-                                <button class="btn btn-link text-decoration-none" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#activityLogsModal"
-                                title="View activity logs">
-                            <i class="fas fa-scroll"></i> Logs
-                        </button>
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-success" 
-                                         style="width: {{ progress_percentage }}%" 
-                                         role="progressbar"
-                                         aria-valuenow="{{ progress_percentage }}"
-                                         aria-valuemin="0"
-                                         aria-valuemax="100"></div>
-                                </div>
-                                <small class="text-muted d-block mt-2">
-                                    {{ user.total_exp }} Total EXP
-                                </small>
-                            </div>
-                        </div>
-                        
-                        <!-- Attributes Chart -->
-                        <div class="col-md-8">
-                            <div class="chart-container">
-                                <canvas id="attributesChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <small class="text-muted-app">{{ user.total_exp }} Total EXP</small>
+            </div>
+            <div class="col-md-8">
+                <canvas id="attributesChart" height="280"></canvas>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Charts Row -->
-    <div class="row g-4 mb-4">
-        <!-- Activity Completion -->
-        <div class="col-lg-6">
-            <div class="stats-card">
-                <div class="stats-card-header">
-                    <h5 class="stats-card-title">Activity Completion</h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="completionChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Discipline Factor -->
-        <div class="col-lg-6">
-            <div class="stats-card">
-                <div class="stats-card-header">
-                    <h5 class="stats-card-title">Discipline Factor</h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="disciplineChart"></canvas>
-                    </div>
-                </div>
+<!-- Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="stat-card h-100">
+            <div class="stat-card-header">Activity Completion</div>
+            <div class="stat-card-body">
+                <canvas id="completionChart" height="260"></canvas>
             </div>
         </div>
     </div>
+    <div class="col-lg-6">
+        <div class="stat-card h-100">
+            <div class="stat-card-header">Discipline Factor</div>
+            <div class="stat-card-body">
+                <canvas id="disciplineChart" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Activity Logs Modal -->
 <div class="modal fade" id="activityLogsModal" tabindex="-1">
@@ -92,10 +57,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- Move the table here -->
                 <div class="table-responsive">
-                    <table class="table table-hover activity-log-table mb-0">
-                        <!-- Existing thead and tbody content -->
+                    <table class="table-app">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -108,17 +71,11 @@
                         <tbody>
                             {% for log in completion_history %}
                             <tr>
-                                <td>{{ log.completed_on.strftime('%m/%d %H:%M') }}</td>
-                                <td class="text-truncate" style="max-width: 150px;">
-                                    {{ log.sub_activity.name }}
-                                </td>
-                                <td>
-                                    <span class="badge badge-status bg-{{ 'success' if log.status == 'completed' else ('warning' if log.status == 'partial' else 'danger') }}">
-                                        {{ log.status|capitalize }}
-                                    </span>
-                                </td>
-                                <td>{{ log.actual_time_taken }}m</td>
-                                <td>{{ log.exp_impact if log.exp_impact else '-' }}</td>
+                                <td class="font-mono" style="font-size:0.85rem">{{ log.completed_on.strftime('%m/%d %H:%M') }}</td>
+                                <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ log.sub_activity.name }}</td>
+                                <td><span class="status-badge status-{{ log.status }}">{{ log.status|capitalize }}</span></td>
+                                <td class="font-mono" style="font-size:0.85rem">{{ log.actual_time_taken }}m</td>
+                                <td class="font-mono" style="font-size:0.85rem">{{ log.exp_impact if log.exp_impact else '-' }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -126,16 +83,14 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-app btn-app-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
-</div>
 {% endblock %}
-
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/static/js/stats.js"> </script>
+<script src="{{ url_for('static', filename='js/stats.js') }}"></script>
 {% endblock %}

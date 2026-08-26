@@ -1,11 +1,8 @@
-
-
-const dummyStats = {
-    user: {
-        attributes: {
-            INT: 8, STA: 6, FCS: 7, CHA: 5, DSC: 9
-        }
-    },
+/**
+ * Stats — Chart.js visualizations
+ */
+var dummyStats = {
+    user: { attributes: { INT: 8, STA: 6, FCS: 7, CHA: 5, DSC: 9 } },
     completion_history: {
         "2025-04-26": 2, "2025-04-27": 1, "2025-04-28": 0,
         "2025-04-29": 3, "2025-04-30": 2, "2025-05-01": 5,
@@ -17,120 +14,137 @@ const dummyStats = {
 
 function loadStats() {
     return fetch('/api/stats')
-        .then(res => res.json())
-        .catch(() => {
-            console.warn("Using dummy stats data");
-            return dummyStats;
-        });
+        .then(function (r) { return r.json(); })
+        .catch(function () { return dummyStats; });
 }
+
+function getChartColors() {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+        accent: isDark ? '#7EC8A0' : '#4A6741',
+        warm: isDark ? '#D4A574' : '#8B6F47',
+        calm: isDark ? '#7EB8DA' : '#5B7B94',
+        text: isDark ? '#A0A0A0' : '#6B6B6B',
+        grid: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
+    };
+}
+
 function renderAttributesChart(data) {
-    const ctx = document.getElementById('attributesChart').getContext('2d');
+    var c = getChartColors();
+    var ctx = document.getElementById('attributesChart').getContext('2d');
     return new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['Intelligence (INT)', 'Stamina (STA)', 'Focus (FCS)', 'Charisma (CHA)', 'Discipline (DSC)'],
+            labels: ['INT', 'STA', 'FCS', 'CHA', 'DSC'],
             datasets: [{
                 label: 'Attributes',
                 data: [
-                    data.user.attributes.INT,
-                    data.user.attributes.STA,
-                    data.user.attributes.FCS,
-                    data.user.attributes.CHA,
+                    data.user.attributes.INT, data.user.attributes.STA,
+                    data.user.attributes.FCS, data.user.attributes.CHA,
                     data.user.attributes.DSC
                 ],
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 2
+                backgroundColor: c.accent + '20',
+                borderColor: c.accent,
+                borderWidth: 2,
+                pointBackgroundColor: c.accent
             }]
         },
         options: {
-            scales: { r: { beginAtZero: true, ticks: { display: false } } },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    ticks: { display: false },
+                    grid: { color: c.grid },
+                    pointLabels: { color: c.text, font: { size: 12, family: "'Inter', sans-serif" } }
+                }
+            },
             plugins: { legend: { display: false } }
         }
     });
 }
+
 function renderCompletionChart(history) {
-    const data = processCompletionHistory(history);
-    const ctx = document.getElementById('completionChart').getContext('2d');
+    var c = getChartColors();
+    var data = processCompletionHistory(history);
+    var ctx = document.getElementById('completionChart').getContext('2d');
     return new Chart(ctx, {
         type: 'bar',
         data: {
             labels: data.labels,
             datasets: [{
-                label: 'Completed Activities',
+                label: 'Completed',
                 data: data.values,
-                backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                backgroundColor: c.accent + 'CC',
+                borderRadius: 4
             }]
         },
         options: {
             scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Number of Activities' } },
-                x: { title: { display: true, text: 'Date' } }
+                y: { beginAtZero: true, ticks: { color: c.text }, grid: { color: c.grid } },
+                x: { ticks: { color: c.text, maxRotation: 45 }, grid: { display: false } }
             },
-            plugins: { title: { display: true, text: 'Daily Activity Completion' } }
+            plugins: { legend: { display: false } }
         }
     });
 }
+
 function renderDisciplineChart(labelCount) {
-    const data = generateDummyDisciplineData(labelCount);
-    const labels = processCompletionHistory(dummyStats.completion_history).labels;
-    const ctx = document.getElementById('disciplineChart').getContext('2d');
+    var c = getChartColors();
+    var data = generateDummyDisciplineData(labelCount);
+    var labels = processCompletionHistory(dummyStats.completion_history).labels;
+    var ctx = document.getElementById('disciplineChart').getContext('2d');
     return new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Discipline Factor',
+                label: 'Discipline',
                 data: data,
-                borderColor: 'rgba(153, 102, 255, 1)',
-                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: c.calm,
+                backgroundColor: c.calm + '20',
                 fill: true,
-                tension: 0.3
+                tension: 0.3,
+                pointRadius: 3
             }]
         },
         options: {
             scales: {
-                y: { beginAtZero: true, max: 1, title: { display: true, text: 'Discipline Factor' } },
-                x: { title: { display: true, text: 'Date' } }
+                y: { beginAtZero: true, max: 1, ticks: { color: c.text }, grid: { color: c.grid } },
+                x: { ticks: { color: c.text, maxRotation: 45 }, grid: { display: false } }
             },
-            plugins: { title: { display: true, text: 'Discipline Factor Trend' } }
+            plugins: { legend: { display: false } }
         }
     });
 }
 
 function processCompletionHistory(history) {
-    const labels = [];
-    const values = [];
-    const endDate = new Date();
-    const startDate = new Date();
+    var labels = [], values = [];
+    var endDate = new Date();
+    var startDate = new Date();
     startDate.setDate(endDate.getDate() - 13);
-
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
+    for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        var dateStr = d.toISOString().split('T')[0];
         labels.push(dateStr);
         values.push(history[dateStr] || 0);
     }
-
-    return { labels, values };
+    return { labels: labels, values: values };
 }
 
 function generateDummyDisciplineData(length) {
-    const values = [];
-    let last = 0.7;
-    for (let i = 0; i < length; i++) {
-        const delta = (Math.random() - 0.5) * 0.2;
-        last = Math.min(1, Math.max(0, last + delta));
+    var values = [], last = 0.7;
+    for (var i = 0; i < length; i++) {
+        last = Math.min(1, Math.max(0, last + (Math.random() - 0.5) * 0.2));
         values.push(last);
     }
     return values;
 }
-document.addEventListener('DOMContentLoaded', function() {
-    loadStats().then(data => {
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadStats().then(function (data) {
         renderAttributesChart(data);
         renderCompletionChart(data.completion_history);
-        renderDisciplineChart(14); // Always 14 days
-    }).catch(error => {
-        console.error('Failed to render stats:', error);
+        renderDisciplineChart(14);
+    }).catch(function (err) {
+        console.error('Failed to render stats:', err);
     });
 });
-

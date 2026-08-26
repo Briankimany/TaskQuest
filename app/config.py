@@ -1,4 +1,3 @@
-
 """
 A module to provide seeding configuration values
 """
@@ -31,6 +30,10 @@ activites_seed_data = seed_data_folder /'activities.json'
 
 TESTING_KEY = os.getenv("TESTING_KEY")
 SUPPORT_EMAIL =os.getenv('SUPPORT_EMAIL')
+
+## App Identity - Change APP_NAME to customize your app branding
+APP_NAME = os.getenv("APP_NAME", "TaskQuest")
+APP_TAGLINE = os.getenv("APP_TAGLINE", "A framework for intentional living")
 
 def modify_dotenv(key,value):
     set_key(DOT_ENV_LOCATION ,key ,value)

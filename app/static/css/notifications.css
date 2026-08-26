@@ -1,0 +1,70 @@
+/* ── Notifications / Toasts ── */
+#notification-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1060;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 360px;
+}
+
+.notification {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: notifSlideIn 0.3s ease;
+}
+
+.notification-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.notification.success .notification-icon { background: var(--success); }
+.notification.danger .notification-icon { background: var(--danger); }
+.notification.warning .notification-icon { background: var(--warning); }
+.notification.info .notification-icon { background: var(--accent-calm); }
+
+.notification-content { flex: 1; min-width: 0; }
+.notification-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.15rem; }
+.notification-message { font-size: 0.8rem; color: var(--text-secondary); }
+
+.notification-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+@keyframes notifSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Flash Messages ── */
+.alert { border-radius: var(--radius-sm); font-size: 0.9rem; border: none; }
+.alert-success { background: rgba(74,103,65,0.1); color: var(--success); }
+.alert-danger { background: rgba(166,93,87,0.1); color: var(--danger); }
+.alert-warning { background: rgba(184,134,11,0.1); color: var(--warning); }
+.alert-info { background: rgba(91,123,148,0.1); color: var(--accent-calm); }
+
+@media (max-width: 768px) {
+  #notification-container { left: 10px; right: 10px; max-width: none; }
+}
