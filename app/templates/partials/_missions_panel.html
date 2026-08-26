@@ -1,0 +1,39 @@
+<div class="grpg-panel" style="flex:1;">
+  <div class="grpg-panel-header">
+    <span class="grpg-panel-title">Today's Missions</span>
+    <span class="grpg-count-pill">{{ scheduled_tasks|length if scheduled_tasks else 0 }}</span>
+  </div>
+
+  {% if scheduled_tasks %}
+    {% for task in scheduled_tasks %}
+      {% set sub = task.sub_activity %}
+      {% set log = today_logs|selectattr('timetable_entry_id', 'eq', task.id)|first %}
+      {% set is_done = log is not none %}
+      {% set tag = 'MAIN' if loop.index <= 2 else 'DAILY' %}
+      {% set tag_color = 'fcs' if tag == 'MAIN' else 'dsc' %}
+
+      <div class="grpg-mission-row" data-mission-id="{{ task.id }}" data-done="{{ 'true' if is_done else 'false' }}">
+        <div class="grpg-mission-top">
+          <button class="grpg-mission-status" style="--tag-color: var(--accent-{{ tag_color }});" aria-label="Toggle {{ sub.name }}" data-xp="{{ task.exp_gain }}"></button>
+          <span class="grpg-mission-tag" style="color: var(--accent-{{ tag_color }});">[{{ tag }}]</span>
+          <span class="grpg-mission-title">{{ sub.name }}</span>
+          <span class="grpg-mission-xp">+{{ task.exp_gain|int }} XP</span>
+        </div>
+        <div class="grpg-mission-meta">
+          {% if is_done %}
+            <span class="grpg-done-label">✓ DONE</span>
+          {% else %}
+            {{ task.start_time.strftime('%H:%M') }} – {{ task.end_time.strftime('%H:%M') }}
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div style="text-align:center;padding:24px 0;color:var(--text-muted);font-size:13px;">
+      No missions today.<br>
+      <a href="{{ url_for('views.timetable') }}" style="color:var(--accent);font-size:12px;">Schedule tasks →</a>
+    </div>
+  {% endif %}
+
+  <a href="{{ url_for('views.timetable') }}" class="grpg-ghost-btn" style="display:block;text-align:center;margin-top:8px;">VIEW ALL MISSIONS →</a>
+</div>

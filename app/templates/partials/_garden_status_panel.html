@@ -1,0 +1,27 @@
+<div class="grpg-panel">
+  <div class="grpg-panel-header">
+    <span class="grpg-panel-title">Garden Status</span>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:16px;">
+    <!-- Growth Ring -->
+    <div class="grpg-level-ring" style="width:64px;height:64px;">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="28" fill="none" stroke="var(--bg-panel-raised)" stroke-width="5"/>
+        <circle cx="32" cy="32" r="28" fill="none" stroke="var(--accent-dsc)" stroke-width="5"
+          stroke-dasharray="175.93" stroke-dashoffset="{{ (175.93 * (1 - dcp))|round(1) }}" stroke-linecap="round"/>
+      </svg>
+      <div class="grpg-level-ring-text" style="font-size:18px;">
+        {{ (dcp * 100)|round }}
+        <small style="font-size:8px;">%</small>
+      </div>
+      <span class="sr-only">Garden discipline: {{ (dcp * 100)|round }}%</span>
+    </div>
+
+    <div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">{{ user.username }}'s Garden</div>
+      <div style="font-size:12px;color:var(--text-secondary);">Day {{ user.level }} · Growing steadily</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Level {{ user.level }} · {{ user.total_exp }} total XP</div>
+    </div>
+  </div>
+</div>

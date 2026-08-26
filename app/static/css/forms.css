@@ -16,8 +16,8 @@
   box-shadow: 0 0 0 3px rgba(74,103,65,0.12);
 }
 
-[data-theme="dark"] .form-control:focus,
-[data-theme="dark"] .form-select:focus {
+[data-theme="default"][data-scheme="dark"] .form-control:focus,
+[data-theme="default"][data-scheme="dark"] .form-select:focus {
   box-shadow: 0 0 0 3px rgba(126,200,160,0.15);
 }
 

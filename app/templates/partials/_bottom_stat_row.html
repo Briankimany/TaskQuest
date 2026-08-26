@@ -1,0 +1,80 @@
+<div class="grpg-bottom-row">
+
+  <!-- Card 1: Wayfarer -->
+  <div class="grpg-stat-card">
+    <span class="grpg-stat-card-title">Wayfarer</span>
+    <div>
+      <div style="font-size:22px;font-weight:700;color:var(--text-primary);">Level {{ level }}</div>
+      <div style="font-size:11px;color:var(--text-muted);">NEXT: Pathfinder</div>
+    </div>
+    <div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:var(--font-mono);">{{ xp_current }} / {{ xp_next }} XP</div>
+      <div style="font-size:11px;color:var(--text-muted);">{{ xp_pct }}%</div>
+    </div>
+    <div class="grpg-xp-bar">
+      <div class="grpg-xp-bar-fill" style="width:{{ xp_pct }}%"></div>
+    </div>
+    <div class="grpg-reward-chips">
+      <span class="grpg-reward-chip">Level {{ level + 1 }}</span>
+      <span class="grpg-reward-chip">New Title</span>
+      <span class="grpg-reward-chip">+5 Max Energy</span>
+    </div>
+  </div>
+
+  <!-- Card 2: XP Flow -->
+  <div class="grpg-stat-card">
+    <span class="grpg-stat-card-title">XP Flow</span>
+    <canvas id="grpg-xp-chart" height="100"></canvas>
+    <script type="application/json" id="grpg-xp-data">{{ xp_week|tojson if xp_week is defined else '[0,0,0,0,0,0,0]'|safe }}</script>
+  </div>
+
+  <!-- Card 3: Discipline -->
+  <div class="grpg-stat-card">
+    <span class="grpg-stat-card-title">Discipline</span>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="grpg-level-ring" style="width:56px;height:56px;">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="24" fill="none" stroke="var(--bg-panel-raised)" stroke-width="4"/>
+          <circle cx="28" cy="28" r="24" fill="none" stroke="var(--accent-info)" stroke-width="4"
+            stroke-dasharray="150.8" stroke-dashoffset="{{ (150.8 * (1 - (dcp * 100 / 100)))|round(1) }}" stroke-linecap="round"/>
+        </svg>
+        <div class="grpg-level-ring-text" style="font-size:14px;">
+          {{ (dcp * 100)|round }}
+          <small style="font-size:7px;">/100</small>
+        </div>
+        <span class="sr-only">Discipline score: {{ (dcp * 100)|round }} out of 100</span>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;font-weight:600;color:var(--accent-info);text-transform:uppercase;">STABLE</div>
+        <div style="margin-top:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Consistency</span><span style="font-family:var(--font-mono);color:var(--text-primary);">89%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Reliability</span><span style="font-family:var(--font-mono);color:var(--text-primary);">82%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Responsibility</span><span style="font-family:var(--font-mono);color:var(--text-primary);">76%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Recent Activity -->
+  <div class="grpg-stat-card">
+    <span class="grpg-stat-card-title">Recent Activity</span>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      {% if today_logs %}
+        {% for log in today_logs[:4] %}
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+          <span style="color:{% if log.status == 'completed' %}var(--accent-success){% elif log.status == 'skipped' %}var(--accent-danger){% else %}var(--accent-warning){% endif %};">
+            {% if log.status == 'completed' %}✓{% elif log.status == 'skipped' %}✗{% else %}◐{% endif %}
+          </span>
+          <span style="flex:1;color:var(--text-primary);">{{ log.sub_activity.name }}</span>
+          <span style="font-family:var(--font-mono);font-weight:600;color:{% if log.exp_impact and log.exp_impact > 0 %}var(--accent-success){% elif log.exp_impact and log.exp_impact < 0 %}var(--accent-danger){% else %}var(--text-muted){% endif %};">
+            {% if log.exp_impact %}{{ '%+d'|format(log.exp_impact) }}{% else %}—{% endif %}
+          </span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px;">No activity yet today</div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>

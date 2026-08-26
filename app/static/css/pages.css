@@ -42,7 +42,7 @@
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .error-code { color: var(--accent-warm); }
+[data-theme="default"][data-scheme="dark"] .error-code { color: var(--accent-warm); }
 
 .error-message {
   font-size: 1.1rem;

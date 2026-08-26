@@ -1,5 +1,6 @@
-/* ── Theme Tokens ── */
-:root, [data-theme="light"] {
+/* ── Default Theme Tokens ── */
+/* Active when data-theme="default" is set on <html> */
+[data-theme="default"] {
   --bg-primary: #FAF9F6;
   --bg-surface: #FFFFFF;
   --bg-muted: #F0EDE8;
@@ -45,7 +46,7 @@
   --chart-grid: rgba(0,0,0,0.06);
 }
 
-[data-theme="dark"] {
+[data-theme="default"][data-scheme="dark"] {
   --bg-primary: #1A1A2E;
   --bg-surface: #16213E;
   --bg-muted: #0F3460;

@@ -1,0 +1,30 @@
+{% extends "base2.html" %}
+
+{% block title %}Garden RPG — {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="grpg-dashboard">
+  {% include "partials/_topbar_garden_rpg.html" %}
+
+  <div class="grpg-main-row">
+    <div class="grpg-col-left">
+      {% include "partials/_attributes_panel.html" %}
+      {% include "partials/_garden_status_panel.html" %}
+    </div>
+
+    {% include "partials/_hero_garden.html" %}
+
+    <div class="grpg-col-right">
+      {% include "partials/_missions_panel.html" %}
+      {% include "partials/_system_judge_panel.html" %}
+    </div>
+  </div>
+
+  {% include "partials/_bottom_stat_row.html" %}
+  {% include "partials/_bottom_nav_garden_rpg.html" %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard-garden-rpg.js') }}" defer></script>
+{% endblock %}

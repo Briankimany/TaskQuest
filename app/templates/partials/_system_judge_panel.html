@@ -1,0 +1,44 @@
+<div class="grpg-panel">
+  <div class="grpg-panel-header">
+    <span class="grpg-panel-title">System Judge</span>
+    <a href="#" class="grpg-link">View log</a>
+  </div>
+
+  <p class="grpg-judge-review-label">Last review</p>
+  <p class="grpg-judge-review-title">
+    {{ scheduled_tasks[0].sub_activity.name if scheduled_tasks else '—' }}
+    <span class="grpg-danger-pill">3 missed tasks</span>
+  </p>
+
+  <!-- Metrics -->
+  <div class="grpg-metric-row">
+    <span>Validity</span>
+    <div class="grpg-bar-track" style="flex:1;">
+      <div class="grpg-bar-fill" style="width:78%;background:var(--accent-info);"></div>
+    </div>
+    <span>78%</span>
+  </div>
+
+  <div class="grpg-metric-row">
+    <span>Responsibility</span>
+    <div class="grpg-bar-track" style="flex:1;">
+      <div class="grpg-bar-fill" style="width:72%;background:var(--accent-info);"></div>
+    </div>
+    <span>72%</span>
+  </div>
+
+  <div class="grpg-metric-row">
+    <span>Consistency</span>
+    <div class="grpg-bar-track" style="flex:1;">
+      <div class="grpg-bar-fill" style="width:89%;background:var(--accent-info);"></div>
+    </div>
+    <span>89%</span>
+  </div>
+
+  <div class="grpg-penalty-row">
+    <span>Penalty</span>
+    <span class="grpg-penalty-value">-47 XP</span>
+  </div>
+
+  <button class="grpg-solid-btn">OPEN FULL LOG</button>
+</div>

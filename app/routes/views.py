@@ -9,6 +9,7 @@ stats, and timetable pages.
 from flask import Blueprint, render_template, redirect, url_for, flash, session,request
 from datetime import date,time
 from app.models import User, Activity, CompletionLog, Level
+from app.models.base import db
 from app.utils.schedulers import TaskScheduler
 from app.utils.managers import UserManager
 from app.utils.logger import ui_logger
@@ -77,7 +78,51 @@ def dashboard():
     ).order_by(Level.level_number).first()
     
     exp_to_next_level = (next_level.required_exp - user.total_exp) if next_level else 0
-    
+
+    # Determine which template to render based on theme preference
+    theme = request.cookies.get('app_theme', 'default')
+
+    if theme == 'garden-rpg':
+        # Compute garden RPG specific context
+        import math
+        circumference = 2 * math.pi * 20  # r=20 for level ring
+        xp_pct = round((user.total_exp / next_level.required_exp) * 100, 1) if next_level else 100
+        ring_offset = round(circumference * (1 - (user.total_exp / next_level.required_exp)), 1) if next_level else 0
+
+        # Compute XP for last 7 days
+        from sqlalchemy import func
+        from datetime import timedelta
+        today = date_obj.date()
+        xp_week = []
+        for i in range(6, -1, -1):
+            day = today - timedelta(days=i)
+            day_exp = db.session.query(func.coalesce(func.sum(CompletionLog.exp_impact), 0)).filter(
+                CompletionLog.user_id == user_id,
+                CompletionLog.completed_on == day
+            ).scalar()
+            xp_week.append(int(day_exp))
+
+        current_time_str = datetime.now().strftime('%H:%M')
+
+        return render_template(
+            'dashboard_garden_rpg.html',
+            user=user,
+            scheduled_tasks=scheduled_tasks,
+            today_logs=date_logs,
+            dcp=dcp,
+            exp_to_next_level=exp_to_next_level,
+            current_date=date_obj.date(),
+            level=user.level,
+            xp_current=user.total_exp,
+            xp_next=next_level.required_exp if next_level else user.total_exp,
+            xp_pct=xp_pct,
+            ring_offset=ring_offset,
+            streak=17,
+            streak_best=24,
+            xp_week=xp_week,
+            current_time=current_time_str
+        )
+
     return render_template(
         'dashboard.html',
         user=user,

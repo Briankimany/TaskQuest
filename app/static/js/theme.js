@@ -1,18 +1,21 @@
 /**
- * Theme Manager — light/dark toggle via data-theme attribute
- * Persists preference in localStorage
+ * Theme Manager — light/dark toggle within the default theme
+ * Toggles data-scheme attribute on <html>
+ * The theme-switcher.js handles switching between default/garden-rpg
  */
 (function () {
-  const STORAGE_KEY = 'app-theme';
-  const html = document.documentElement;
-  const toggle = document.getElementById('themeToggle');
-  const iconLight = toggle.querySelector('.theme-icon-light');
-  const iconDark = toggle.querySelector('.theme-icon-dark');
+  var SCHEME_KEY = 'scheme';
+  var html = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  if (!toggle) return;
 
-  function setTheme(theme) {
-    html.setAttribute('data-theme', theme);
-    localStorage.setItem(STORAGE_KEY, theme);
-    if (theme === 'dark') {
+  var iconLight = toggle.querySelector('.theme-icon-light');
+  var iconDark = toggle.querySelector('.theme-icon-dark');
+
+  function setScheme(scheme) {
+    html.setAttribute('data-scheme', scheme);
+    localStorage.setItem(SCHEME_KEY, scheme);
+    if (scheme === 'dark') {
       iconLight.style.display = 'none';
       iconDark.style.display = '';
     } else {
@@ -22,19 +25,19 @@
   }
 
   function init() {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    var saved = localStorage.getItem(SCHEME_KEY);
     if (saved) {
-      setTheme(saved);
+      setScheme(saved);
     } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme('dark');
+      setScheme('dark');
     } else {
-      setTheme('light');
+      setScheme('light');
     }
   }
 
   toggle.addEventListener('click', function () {
-    const current = html.getAttribute('data-theme');
-    setTheme(current === 'dark' ? 'light' : 'dark');
+    var current = html.getAttribute('data-scheme') || 'light';
+    setScheme(current === 'dark' ? 'light' : 'dark');
   });
 
   init();

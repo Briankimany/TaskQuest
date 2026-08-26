@@ -53,10 +53,10 @@
 .status-partial { background: rgba(91,123,148,0.12); color: var(--accent-calm); }
 .status-skipped { background: rgba(166,93,87,0.12); color: var(--danger); }
 
-[data-theme="dark"] .status-completed { background: rgba(126,200,160,0.15); }
-[data-theme="dark"] .status-pending { background: rgba(224,192,96,0.15); }
-[data-theme="dark"] .status-partial { background: rgba(126,184,218,0.15); }
-[data-theme="dark"] .status-skipped { background: rgba(224,112,112,0.15); }
+[data-theme="default"][data-scheme="dark"] .status-completed { background: rgba(126,200,160,0.15); }
+[data-theme="default"][data-scheme="dark"] .status-pending { background: rgba(224,192,96,0.15); }
+[data-theme="default"][data-scheme="dark"] .status-partial { background: rgba(126,184,218,0.15); }
+[data-theme="default"][data-scheme="dark"] .status-skipped { background: rgba(224,112,112,0.15); }
 
 @media (max-width: 768px) {
   .attr-row { grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }

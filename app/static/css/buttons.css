@@ -29,6 +29,6 @@
 .btn-app-lg { padding: 0.65rem 1.4rem; font-size: 1rem; }
 
 /* Dark mode close buttons (Bootstrap default is dark, invisible on dark bg) */
-[data-theme="dark"] .btn-close {
+[data-theme="default"][data-scheme="dark"] .btn-close {
   filter: invert(1);
 }

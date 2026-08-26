@@ -1,0 +1,30 @@
+<div class="grpg-panel">
+  <div class="grpg-panel-header">
+    <span class="grpg-panel-title">Attributes</span>
+  </div>
+
+  {% set attrs = [
+    {'code': 'INT', 'name': 'Intelligence', 'value': user.INT, 'color': 'var(--accent-int)', 'trend_dir': 'up', 'trend_label': '+2'},
+    {'code': 'STA', 'name': 'Stamina', 'value': user.STA, 'color': 'var(--accent-sta)', 'trend_dir': 'up', 'trend_label': '+1'},
+    {'code': 'FCS', 'name': 'Focus', 'value': user.FCS, 'color': 'var(--accent-fcs)', 'trend_dir': 'up', 'trend_label': '+4'},
+    {'code': 'CHA', 'name': 'Charisma', 'value': user.CHA, 'color': 'var(--accent-cha)', 'trend_dir': 'flat', 'trend_label': '—'},
+    {'code': 'DSC', 'name': 'Discipline', 'value': user.DSC, 'color': 'var(--accent-dsc)', 'trend_dir': 'up', 'trend_label': '+1'}
+  ] %}
+
+  {% for attr in attrs %}
+  <div class="grpg-attr-row" style="--attr-color: {{ attr.color }};">
+    <div class="grpg-attr-top">
+      <span class="grpg-attr-icon-badge">{{ attr.code[0] }}</span>
+      <span class="grpg-attr-code">{{ attr.code }}</span>
+      <span class="grpg-attr-name">{{ attr.name }}</span>
+      <span class="grpg-attr-value">{{ attr.value }}</span>
+      <span class="grpg-attr-trend grpg-trend-{{ attr.trend_dir }}">
+        {% if attr.trend_dir == 'up' %}▲{% elif attr.trend_dir == 'down' %}▼{% else %}—{% endif %} {{ attr.trend_label }}
+      </span>
+    </div>
+    <div class="grpg-bar-track">
+      <div class="grpg-bar-fill" style="width: {{ attr.value }}%; background: var(--attr-color);"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

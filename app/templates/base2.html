@@ -1,9 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="default">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+
+    <!-- Theme: set data-theme before any CSS loads to prevent flash -->
+    <script>
+      (function() {
+        var saved = localStorage.getItem('theme') || 'default';
+        document.documentElement.setAttribute('data-theme', saved);
+        var scheme = localStorage.getItem('scheme') || 'light';
+        if (saved === 'default') {
+          document.documentElement.setAttribute('data-scheme', scheme);
+        }
+      })();
+    </script>
 
     <link rel="icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
 
@@ -37,6 +49,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/timetable.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/guide.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}">
+
+    <!-- Garden RPG Theme (tokens + layout, scoped under data-theme="garden-rpg") -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-garden-rpg.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout-garden-rpg.css') }}">
 
     {% block styles %}{% endblock %}
 </head>
@@ -93,12 +109,17 @@
                 </ul>
                 <div class="d-flex align-items-center gap-2">
                     {% if session.get('user_id') %}
+                    <!-- Theme Switcher -->
+                    <select id="themeSwitcher" class="form-select form-select-sm" style="width:auto;font-size:0.8rem;padding:0.2rem 0.5rem;background:var(--bg-surface);color:var(--text-primary);border:1px solid var(--border);border-radius:var(--radius-sm);" aria-label="Switch theme">
+                        <option value="default">Default</option>
+                        <option value="garden-rpg">Garden RPG</option>
+                    </select>
                     <a href="{{ url_for('auth.logout') }}" class="btn-app btn-app-ghost btn-app-sm">Logout</a>
                     {% else %}
                     <a href="{{ url_for('auth.login') }}" class="btn-app btn-app-ghost btn-app-sm">Login</a>
                     <a href="{{ url_for('auth.register') }}" class="btn-app btn-app-primary btn-app-sm">Register</a>
                     {% endif %}
-                    <button class="theme-toggle" id="themeToggle" title="Toggle theme" type="button">
+                    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark" type="button">
                         <span class="theme-icon-light">&#9788;</span>
                         <span class="theme-icon-dark" style="display:none">&#9790;</span>
                     </button>
@@ -129,6 +150,7 @@
     <!-- Scripts (loaded once) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
     {% block scripts %}{% endblock %}
