@@ -1,6 +1,6 @@
 <div class="grpg-panel" style="flex:1;">
   <div class="grpg-panel-header">
-    <span class="grpg-panel-title">Today's Missions</span>
+    <h3 class="grpg-panel-title">Today's Missions</h3>
     <span class="grpg-count-pill">{{ scheduled_tasks|length if scheduled_tasks else 0 }}</span>
   </div>
 
@@ -14,7 +14,7 @@
 
       <div class="grpg-mission-row" data-mission-id="{{ task.id }}" data-done="{{ 'true' if is_done else 'false' }}">
         <div class="grpg-mission-top">
-          <button class="grpg-mission-status" style="--tag-color: var(--accent-{{ tag_color }});" aria-label="Toggle {{ sub.name }}" data-xp="{{ task.exp_gain }}"></button>
+          <button class="grpg-mission-status" style="--tag-color: var(--accent-{{ tag_color }});" aria-label="Toggle {{ sub.name }}" aria-pressed="{{ 'true' if is_done else 'false' }}" data-xp="{{ task.exp_gain }}"></button>
           <span class="grpg-mission-tag" style="color: var(--accent-{{ tag_color }});">[{{ tag }}]</span>
           <span class="grpg-mission-title">{{ sub.name }}</span>
           <span class="grpg-mission-xp">+{{ task.exp_gain|int }} XP</span>

@@ -58,6 +58,16 @@
   letter-spacing: 0.06em;
   color: var(--text-secondary);
   font-weight: 600;
+  margin: 0;
+}
+
+[data-theme="garden-rpg"] .grpg-stat-card-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin: 0 0 8px 0;
 }
 
 /* ── Topbar ── */
@@ -242,7 +252,7 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: var(--accent-text);
   background: var(--attr-color);
   flex-shrink: 0;
 }
@@ -565,7 +575,7 @@
   width: 100%;
   padding: 10px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   border: none;
   border-radius: var(--radius-md);
   font-size: 12px;
@@ -601,14 +611,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-[data-theme="garden-rpg"] .grpg-stat-card-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-  font-weight: 600;
 }
 
 [data-theme="garden-rpg"] .grpg-reward-chips {
@@ -731,9 +733,41 @@
   [data-theme="garden-rpg"] .grpg-topbar {
     gap: 8px;
     padding: 0 8px;
+    overflow-x: auto;
   }
 
   [data-theme="garden-rpg"] .grpg-topbar-nav {
     display: none;
+  }
+
+  [data-theme="garden-rpg"] .grpg-divider {
+    display: none;
+  }
+
+  [data-theme="garden-rpg"] .grpg-overlay-card {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    margin: 8px;
+  }
+
+  [data-theme="garden-rpg"] .grpg-region-badge {
+    transform: scale(0.85);
+  }
+}
+
+/* ── Shared component overrides for garden RPG contrast ── */
+[data-theme="garden-rpg"] .btn-app-primary {
+  color: var(--accent-text);
+}
+[data-theme="garden-rpg"] .btn-app-danger {
+  color: var(--accent-text);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="garden-rpg"] * {
+    animation: none !important;
+    transition-duration: 0s !important;
   }
 }

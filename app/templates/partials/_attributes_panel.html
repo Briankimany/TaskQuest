@@ -1,6 +1,6 @@
 <div class="grpg-panel">
   <div class="grpg-panel-header">
-    <span class="grpg-panel-title">Attributes</span>
+    <h3 class="grpg-panel-title">Attributes</h3>
   </div>
 
   {% set attrs = [
@@ -22,7 +22,7 @@
         {% if attr.trend_dir == 'up' %}▲{% elif attr.trend_dir == 'down' %}▼{% else %}—{% endif %} {{ attr.trend_label }}
       </span>
     </div>
-    <div class="grpg-bar-track">
+    <div class="grpg-bar-track" role="progressbar" aria-valuenow="{{ attr.value }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ attr.name }} level">
       <div class="grpg-bar-fill" style="width: {{ attr.value }}%; background: var(--attr-color);"></div>
     </div>
   </div>

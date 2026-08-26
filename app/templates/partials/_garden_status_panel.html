@@ -1,21 +1,23 @@
 <div class="grpg-panel">
   <div class="grpg-panel-header">
-    <span class="grpg-panel-title">Garden Status</span>
+    <h3 class="grpg-panel-title">Garden Status</h3>
   </div>
 
   <div style="display:flex;align-items:center;gap:16px;">
     <!-- Growth Ring -->
+    {% set dcp_pct = (dcp * 100)|round %}
+    {% set circumference = 175.93 %}
     <div class="grpg-level-ring" style="width:64px;height:64px;">
       <svg width="64" height="64" viewBox="0 0 64 64">
         <circle cx="32" cy="32" r="28" fill="none" stroke="var(--bg-panel-raised)" stroke-width="5"/>
         <circle cx="32" cy="32" r="28" fill="none" stroke="var(--accent-dsc)" stroke-width="5"
-          stroke-dasharray="175.93" stroke-dashoffset="{{ (175.93 * (1 - dcp))|round(1) }}" stroke-linecap="round"/>
+          stroke-dasharray="{{ circumference }}" stroke-dashoffset="{{ (circumference * (1 - dcp))|round(1) }}" stroke-linecap="round"/>
       </svg>
       <div class="grpg-level-ring-text" style="font-size:18px;">
-        {{ (dcp * 100)|round }}
+        {{ dcp_pct }}
         <small style="font-size:8px;">%</small>
       </div>
-      <span class="sr-only">Garden discipline: {{ (dcp * 100)|round }}%</span>
+      <span class="sr-only">Garden discipline: {{ dcp_pct }}%</span>
     </div>
 
     <div>

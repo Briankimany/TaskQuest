@@ -6,37 +6,37 @@
 
     <!-- Region Badges -->
     <div class="grpg-region-badge" style="top:32%;left:46%;--badge-color:var(--accent-int);">
-      <span class="grpg-badge-icon">📚</span>
+      <span class="grpg-badge-icon" aria-hidden="true">📚</span>
       <span class="grpg-badge-label">ACADEMY<br><small>INT {{ user.INT }}</small></span>
     </div>
 
     <div class="grpg-region-badge" style="top:48%;left:22%;--badge-color:var(--accent-sta);">
-      <span class="grpg-badge-icon">🌊</span>
+      <span class="grpg-badge-icon" aria-hidden="true">🌊</span>
       <span class="grpg-badge-label">RIVER<br><small>STA {{ user.STA }}</small></span>
     </div>
 
     <div class="grpg-region-badge" style="top:45%;left:76%;--badge-color:var(--accent-fcs);">
-      <span class="grpg-badge-icon">🌙</span>
+      <span class="grpg-badge-icon" aria-hidden="true">🌙</span>
       <span class="grpg-badge-label">MOON<br><small>FCS {{ user.FCS }}</small></span>
     </div>
 
     <!-- Petals Card (Today's Tasks) -->
     <div class="grpg-overlay-card" style="bottom:4%;left:3%;">
       <div class="grpg-panel-header" style="margin-bottom:4px;">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;">🌸 PETALS</span>
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌸 PETALS</h3>
       </div>
       <p class="grpg-overlay-sub">Today's Tasks</p>
       <ul class="grpg-checklist" id="grpg-petals-list">
         {% if scheduled_tasks %}
           {% for task in scheduled_tasks[:5] %}
           <li class="grpg-check-row" data-done="false" data-task-id="{{ task.id }}">
-            <button class="grpg-check-toggle" aria-label="Toggle {{ task.sub_activity.name }}"></button>
+            <button class="grpg-check-toggle" aria-label="Toggle {{ task.sub_activity.name }}" aria-pressed="false"></button>
             <span>{{ task.sub_activity.name }}</span>
           </li>
           {% endfor %}
         {% else %}
           <li class="grpg-check-row" data-done="true">
-            <button class="grpg-check-toggle" aria-label="Toggle rest"></button>
+            <button class="grpg-check-toggle" aria-label="Toggle rest" aria-pressed="true"></button>
             <span>No tasks scheduled</span>
           </li>
         {% endif %}
@@ -46,7 +46,7 @@
     <!-- Seeds Card (Future Quests) -->
     <div class="grpg-overlay-card" style="bottom:4%;left:42%;">
       <div class="grpg-panel-header" style="margin-bottom:4px;">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;">🌱 SEEDS</span>
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌱 SEEDS</h3>
       </div>
       <p class="grpg-overlay-sub">Future Quests</p>
       <ul class="grpg-checklist">

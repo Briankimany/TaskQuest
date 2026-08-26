@@ -1,43 +1,50 @@
 <div class="grpg-panel">
   <div class="grpg-panel-header">
-    <span class="grpg-panel-title">System Judge</span>
-    <a href="#" class="grpg-link">View log</a>
+    <h3 class="grpg-panel-title">System Judge</h3>
+    <a href="#" class="grpg-link" aria-label="View full system judge log">View log</a>
   </div>
+
+  {% set total_penalty = today_logs|selectattr('exp_impact', 'lt', 0)|map(attribute='exp_impact')|sum if today_logs else 0 %}
+  {% set completed_count = today_logs|selectattr('status', 'eq', 'completed')|list|length if today_logs else 0 %}
 
   <p class="grpg-judge-review-label">Last review</p>
   <p class="grpg-judge-review-title">
-    {{ scheduled_tasks[0].sub_activity.name if scheduled_tasks else '—' }}
-    <span class="grpg-danger-pill">3 missed tasks</span>
+    {{ current_date }}
+    {% if missed_count > 0 %}
+      <span class="grpg-danger-pill">{{ missed_count }} missed task{{ 's' if missed_count != 1 else '' }}</span>
+    {% else %}
+      <span style="color:var(--accent-success);">All tasks completed</span>
+    {% endif %}
   </p>
 
   <!-- Metrics -->
   <div class="grpg-metric-row">
     <span>Validity</span>
-    <div class="grpg-bar-track" style="flex:1;">
-      <div class="grpg-bar-fill" style="width:78%;background:var(--accent-info);"></div>
+    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (dcp * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Validity score">
+      <div class="grpg-bar-fill" style="width:{{ (dcp * 100)|round }}%;background:var(--accent-info);"></div>
     </div>
-    <span>78%</span>
+    <span>{{ (dcp * 100)|round }}%</span>
   </div>
 
   <div class="grpg-metric-row">
     <span>Responsibility</span>
-    <div class="grpg-bar-track" style="flex:1;">
-      <div class="grpg-bar-fill" style="width:72%;background:var(--accent-info);"></div>
+    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (dcp * 95)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Responsibility score">
+      <div class="grpg-bar-fill" style="width:{{ (dcp * 95)|round }}%;background:var(--accent-info);"></div>
     </div>
-    <span>72%</span>
+    <span>{{ (dcp * 95)|round }}%</span>
   </div>
 
   <div class="grpg-metric-row">
     <span>Consistency</span>
-    <div class="grpg-bar-track" style="flex:1;">
-      <div class="grpg-bar-fill" style="width:89%;background:var(--accent-info);"></div>
+    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (dcp * 100 + 10)|round|min(100) }}" aria-valuemin="0" aria-valuemax="100" aria-label="Consistency score">
+      <div class="grpg-bar-fill" style="width:{{ (dcp * 100 + 10)|round|min(100) }}%;background:var(--accent-info);"></div>
     </div>
-    <span>89%</span>
+    <span>{{ (dcp * 100 + 10)|round|min(100) }}%</span>
   </div>
 
   <div class="grpg-penalty-row">
     <span>Penalty</span>
-    <span class="grpg-penalty-value">-47 XP</span>
+    <span class="grpg-penalty-value">{{ total_penalty }} XP</span>
   </div>
 
   <button class="grpg-solid-btn">OPEN FULL LOG</button>

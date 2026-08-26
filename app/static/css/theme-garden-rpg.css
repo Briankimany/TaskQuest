@@ -22,7 +22,10 @@
   /* Text */
   --text-primary: #F2F3F5;
   --text-secondary: #9BA1AE;
-  --text-muted: #5F6472;
+  --text-muted: #8A8FA0;
+
+  /* Dark text for use on bright accent backgrounds (buttons, badges) — WCAG AA */
+  --accent-text: #0F1218;
 
   /* Attribute accents */
   --accent-int: #34C6E8;

@@ -104,6 +104,10 @@ def dashboard():
 
         current_time_str = datetime.now().strftime('%H:%M')
 
+        streak = UserManager.get_streak(user_id)
+        streak_best = UserManager.get_best_streak(user_id)
+        missed_count = UserManager.get_missed_count(user_id, date_obj.date())
+
         return render_template(
             'dashboard_garden_rpg.html',
             user=user,
@@ -117,10 +121,11 @@ def dashboard():
             xp_next=next_level.required_exp if next_level else user.total_exp,
             xp_pct=xp_pct,
             ring_offset=ring_offset,
-            streak=17,
-            streak_best=24,
+            streak=streak,
+            streak_best=streak_best,
             xp_week=xp_week,
-            current_time=current_time_str
+            current_time=current_time_str,
+            missed_count=missed_count
         )
 
     return render_template(

@@ -2,7 +2,7 @@
 
   <!-- Card 1: Wayfarer -->
   <div class="grpg-stat-card">
-    <span class="grpg-stat-card-title">Wayfarer</span>
+    <h3 class="grpg-stat-card-title">Wayfarer</h3>
     <div>
       <div style="font-size:22px;font-weight:700;color:var(--text-primary);">Level {{ level }}</div>
       <div style="font-size:11px;color:var(--text-muted);">NEXT: Pathfinder</div>
@@ -11,7 +11,7 @@
       <div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:var(--font-mono);">{{ xp_current }} / {{ xp_next }} XP</div>
       <div style="font-size:11px;color:var(--text-muted);">{{ xp_pct }}%</div>
     </div>
-    <div class="grpg-xp-bar">
+    <div class="grpg-xp-bar" role="progressbar" aria-valuenow="{{ xp_current }}" aria-valuemin="0" aria-valuemax="{{ xp_next }}" aria-label="Experience points progress">
       <div class="grpg-xp-bar-fill" style="width:{{ xp_pct }}%"></div>
     </div>
     <div class="grpg-reward-chips">
@@ -23,14 +23,14 @@
 
   <!-- Card 2: XP Flow -->
   <div class="grpg-stat-card">
-    <span class="grpg-stat-card-title">XP Flow</span>
-    <canvas id="grpg-xp-chart" height="100"></canvas>
+    <h3 class="grpg-stat-card-title">XP Flow</h3>
+    <canvas id="grpg-xp-chart" height="100" role="img" aria-label="XP earned over the last 7 days"></canvas>
     <script type="application/json" id="grpg-xp-data">{{ xp_week|tojson if xp_week is defined else '[0,0,0,0,0,0,0]'|safe }}</script>
   </div>
 
   <!-- Card 3: Discipline -->
   <div class="grpg-stat-card">
-    <span class="grpg-stat-card-title">Discipline</span>
+    <h3 class="grpg-stat-card-title">Discipline</h3>
     <div style="display:flex;align-items:center;gap:16px;">
       <div class="grpg-level-ring" style="width:56px;height:56px;">
         <svg width="56" height="56" viewBox="0 0 56 56">
@@ -57,7 +57,7 @@
 
   <!-- Card 4: Recent Activity -->
   <div class="grpg-stat-card">
-    <span class="grpg-stat-card-title">Recent Activity</span>
+    <h3 class="grpg-stat-card-title">Recent Activity</h3>
     <div style="display:flex;flex-direction:column;gap:8px;">
       {% if today_logs %}
         {% for log in today_logs[:4] %}
