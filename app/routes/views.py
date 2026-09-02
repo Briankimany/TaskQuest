@@ -22,7 +22,15 @@ views_bp = Blueprint('views', __name__)
 
 @views_bp.errorhandler(Exception)
 def handle_generic_error(error: Exception):
-    ui_logger.error(msg=error)
+    import traceback
+    from flask import current_app
+    msg = (
+        f"{error!r} | URL: {request.url} | Method: {request.method}\n"
+        f"{''.join(traceback.format_exception(type(error), error, error.__traceback__))}"
+    )
+    ui_logger.error(msg)
+    if current_app.debug:
+        raise error
     return render_template('500.html',exception=""), 500
   
 class ScheduledActivites:
@@ -38,15 +46,27 @@ def index():
         return redirect(url_for('views.dashboard'))
     return render_template('index.html')
 
+def _get_current_user():
+    """Return the logged-in user, clearing stale sessions that no longer exist in the DB."""
+    user_id = session.get('user_id')
+    if user_id is None:
+        return None
+    user = User.query.get(user_id)
+    if user is None:
+        session.pop('user_id', None)
+        flash('Your session has expired. Please log in again.', 'warning')
+        return None
+    return user
+
+
 @views_bp.route('/dashboard')
 def dashboard():
     """Render the main dashboard with scheduled tasks."""
-    if 'user_id' not in session:
-        flash('Please log in first.', 'warning')
+    user = _get_current_user()
+    if user is None:
         return redirect(url_for('auth.login'))
-    
-    user_id = session['user_id']
-    user = User.query.get(user_id)
+
+    user_id = user.id
     
     # Parse date parameter or use current date
     date_str = request.args.get('date')
@@ -86,8 +106,12 @@ def dashboard():
         # Compute garden RPG specific context
         import math
         circumference = 2 * math.pi * 20  # r=20 for level ring
-        xp_pct = round((user.total_exp / next_level.required_exp) * 100, 1) if next_level else 100
-        ring_offset = round(circumference * (1 - (user.total_exp / next_level.required_exp)), 1) if next_level else 0
+        if next_level and next_level.required_exp > 0:
+            xp_pct = round((user.total_exp / next_level.required_exp) * 100, 1)
+            ring_offset = round(circumference * (1 - (user.total_exp / next_level.required_exp)), 1)
+        else:
+            xp_pct = 100
+            ring_offset = 0
 
         # Compute XP for last 7 days
         from sqlalchemy import func
@@ -118,7 +142,7 @@ def dashboard():
             current_date=date_obj.date(),
             level=user.level,
             xp_current=user.total_exp,
-            xp_next=next_level.required_exp if next_level else user.total_exp,
+            xp_next=next_level.required_exp if next_level and next_level.required_exp > 0 else max(user.total_exp, 1),
             xp_pct=xp_pct,
             ring_offset=ring_offset,
             streak=streak,
@@ -142,40 +166,34 @@ def dashboard():
 @views_bp.route('/activities')
 def activities():
     """Render the activities management page."""
-    if 'user_id' not in session:
-        flash('Please log in first.', 'warning')
+    user = _get_current_user()
+    if user is None:
         return redirect(url_for('auth.login'))
-    
-    user_id = session['user_id']
-    activities = Activity.query.filter_by(user_id=user_id ,is_active=True).order_by(Activity.created_at.desc()).all()
+
+    activities = Activity.query.filter_by(user_id=user.id, is_active=True).order_by(Activity.created_at.desc()).all()
     
     return render_template('activities.html', activities=activities)
 
 @views_bp.route('/stats')
 def stats():
     """Render the statistics page."""
-    if 'user_id' not in session:
-        flash('Please log in first.', 'warning')
+    user = _get_current_user()
+    if user is None:
         return redirect(url_for('auth.login'))
     
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-    
     # Get completion history for charts
-    completion_history = CompletionLog.query.filter_by(user_id=user_id).order_by(CompletionLog.completed_on).all()
+    completion_history = CompletionLog.query.filter_by(user_id=user.id).order_by(CompletionLog.completed_on).all()
 
     return render_template('stats.html', user=user, completion_history=completion_history)
 
 @views_bp.route('/timetable')
 def timetable():
     """Render the timetable planning page."""
-    if 'user_id' not in session:
-        flash('Please log in first.', 'warning')
+    user = _get_current_user()
+    if user is None:
         return redirect(url_for('auth.login'))
     
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-    activities = Activity.query.filter_by(user_id=user_id ,is_active=True).order_by(Activity.created_at.desc()).all()
+    activities = Activity.query.filter_by(user_id=user.id, is_active=True).order_by(Activity.created_at.desc()).all()
     
     return render_template('timetable.html', user=user, activities=activities)
 

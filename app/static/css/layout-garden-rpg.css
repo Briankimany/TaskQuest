@@ -6,6 +6,14 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Global overrides ── */
+/* Hide the standard fixed Bootstrap navbar — the Garden RPG skin renders its
+   own topbar (grpg-topbar) and should present as a full-viewport app. */
+[data-theme="garden-rpg"] .app-navbar,
+[data-theme="garden-rpg"] nav.app-navbar {
+  display: none !important;
+}
+
+/* Break out of the Bootstrap .container so the dashboard spans full width. */
 [data-theme="garden-rpg"] body {
   background: var(--bg-page);
   color: var(--text-primary);
@@ -13,14 +21,36 @@
   padding-top: 0;
 }
 
+/* Remove container padding/margins that would inset the full-bleed layout */
+[data-theme="garden-rpg"] main.container,
+[data-theme="garden-rpg"] .container {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 [data-theme="garden-rpg"] a { color: var(--accent); }
 [data-theme="garden-rpg"] a:hover { color: var(--accent-hover); }
 
 /* ── Dashboard Grid Shell ── */
+/* Fixed full-viewport shell: topbar / main 1fr / bottom rows / nav.
+   Main row is 1fr so it absorbs remaining height; its columns scroll
+   internally when their content is taller than the viewport. */
 [data-theme="garden-rpg"] .grpg-dashboard {
   display: grid;
-  grid-template-rows: 72px 1fr auto 56px;
+  grid-template-rows: 72px 1fr 156px 56px;
+  height: 100vh;
   min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Bottom stat row: fixed 156px per design so topbar/bottom-nav always sit
+   on-screen together (no page scroll). Content scrolls inside if needed. */
+[data-theme="garden-rpg"] .grpg-bottom-row {
+  max-height: 156px;
+  overflow-y: auto;
 }
 
 [data-theme="garden-rpg"] .grpg-main-row {
@@ -28,6 +58,7 @@
   grid-template-columns: 300px 1fr 340px;
   gap: 16px;
   padding: 16px;
+  min-height: 0;            /* allow children to shrink/scroll within 1fr */
 }
 
 [data-theme="garden-rpg"] .grpg-col-left,
@@ -35,6 +66,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+  overflow-y: auto;         /* long panels scroll within the viewport */
+  scrollbar-width: thin;
 }
 
 /* ── Panel base ── */
@@ -207,7 +241,8 @@
 }
 
 [data-theme="garden-rpg"] .grpg-nav-btn:hover,
-[data-theme="garden-rpg"] .grpg-nav-btn.grpg-nav-active {
+[data-theme="garden-rpg"] .grpg-nav-btn.grpg-nav-active,
+[data-theme="garden-rpg"] .grpg-nav-btn.grpg-nav-item-active {
   color: var(--text-primary);
   background: var(--bg-panel-raised);
 }
@@ -300,14 +335,26 @@
 }
 
 /* ── Hero Garden ── */
+/* The hero fills the middle 1fr column so it spans the full available
+   viewport height between the topbar and bottom rows. */
 [data-theme="garden-rpg"] .grpg-hero {
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  min-height: 400px;
+  min-height: 0;
+  height: 100%;
 }
 
 [data-theme="garden-rpg"] .grpg-hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+[data-theme="garden-rpg"] .grpg-hero-art {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -705,22 +752,30 @@
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
+  /* Allow the page to scroll on smaller screens (single-column layout). */
+  [data-theme="garden-rpg"] body { overflow: auto; }
+  [data-theme="garden-rpg"] .grpg-dashboard { height: auto; overflow: visible; }
+
   [data-theme="garden-rpg"] .grpg-main-row {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
+    overflow: visible;
   }
 
   [data-theme="garden-rpg"] .grpg-bottom-row {
     grid-template-columns: repeat(2, 1fr);
+    max-height: none;
+    overflow: visible;
   }
 
   [data-theme="garden-rpg"] .grpg-hero {
-    min-height: 300px;
+    min-height: 340px;
+    height: auto;
     order: 1;
   }
 
-  [data-theme="garden-rpg"] .grpg-col-left { order: 2; }
-  [data-theme="garden-rpg"] .grpg-col-right { order: 3; }
+  [data-theme="garden-rpg"] .grpg-col-left { order: 2; overflow: visible; }
+  [data-theme="garden-rpg"] .grpg-col-right { order: 3; overflow: visible; }
   [data-theme="garden-rpg"] .grpg-bottom-row { order: 4; }
   [data-theme="garden-rpg"] .grpg-bottom-nav { order: 5; }
 }

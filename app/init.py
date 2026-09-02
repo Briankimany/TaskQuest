@@ -9,6 +9,7 @@ from flask import Flask ,render_template,request
 from .models import db
 from .routes import api_bp, auth_bp, views_bp ,assistant
 from .utils.exceptions import make_error_response
+from .utils.logger import ui_logger
 import os
 from .config import SUPPORT_EMAIL, APP_NAME, APP_TAGLINE
 
@@ -20,17 +21,19 @@ def create_app():
 
     app.jinja_env.globals['APP_NAME'] = APP_NAME
     app.jinja_env.globals['APP_TAGLINE'] = APP_TAGLINE
-    
+
+    # Only swallow exceptions into a 500 page in production. In dev mode
+    # (DEBUG=True / app.debug) we let exceptions propagate so the Werkzeug
+    # debugger prints the full traceback on screen for easier debugging.
     @app.errorhandler(Exception)
     def handle_generic_error(error: Exception):
-        print(error)
+        ui_logger.error(f"{error!r} | URL: {request.url} | Method: {request.method} | DEBUG={app.debug}")
+        if app.debug:
+            raise error
         if 'api' not in request.path:
             return render_template('500.html',exception=error), 500
         return make_error_response(error, "Unexpected server error")
 
-   
-
-    # app.register_error_handler(Exception,handle_generic_error)
     @app.errorhandler(404)
     def page_not_found(e):
         if  "api" in request.path:
@@ -39,12 +42,16 @@ def create_app():
     
     migrate = Migrate(app, db)
 
+    # Read debug flag fresh at startup so toggling FLASK_DEBUG in .env works
+    # even if config.py was imported earlier in the process.
+    debug_mode = os.getenv("FLASK_DEBUG", "0").strip().lower() in {"1", "true", "yes", "on"}
+
     app.config.from_mapping(
         SECRET_KEY='dev',
         SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(app.instance_path, 'rpg_system.db'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        DEBUG=debug_mode,
     )
-
     try:
         os.makedirs(app.instance_path)
     except OSError:

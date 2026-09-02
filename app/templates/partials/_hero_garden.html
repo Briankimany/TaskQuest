@@ -1,59 +1,62 @@
 <div class="grpg-hero">
-  <!-- Placeholder background — replace with garden-hero.jpg when available -->
-  <div style="width:100%;height:100%;min-height:400px;background:linear-gradient(135deg, #0a0e1a 0%, #0f1a2e 30%, #0a1628 60%, #060a14 100%);position:relative;">
+  <!-- Background art: generated image, gradient fallback until it exists -->
+  <div class="grpg-hero-bg" style="background:linear-gradient(135deg, #0a0e1a 0%, #0f1a2e 30%, #0a1628 60%, #060a14 100%);">
+    {% set hero_img = url_for('static', filename='assets/img/garden-hero.jpg') %}
+    <img src="{{ hero_img }}" alt="A serene fantasy garden scene" class="grpg-hero-art"
+         onerror="this.style.display='none';">
+  </div>
 
-    <p class="grpg-quote">"Discipline today.<br>Freedom tomorrow."</p>
+  <p class="grpg-quote">"Discipline today.<br>Freedom tomorrow."</p>
 
-    <!-- Region Badges -->
-    <div class="grpg-region-badge" style="top:32%;left:46%;--badge-color:var(--accent-int);">
-      <span class="grpg-badge-icon" aria-hidden="true">📚</span>
-      <span class="grpg-badge-label">ACADEMY<br><small>INT {{ user.INT }}</small></span>
+  <!-- Region Badges -->
+  <div class="grpg-region-badge" style="top:12%;left:46%;--badge-color:var(--accent-int);">
+    <span class="grpg-badge-icon" aria-hidden="true">📚</span>
+    <span class="grpg-badge-label">ACADEMY<br><small>INT {{ user.INT }}</small></span>
+  </div>
+
+  <div class="grpg-region-badge" style="top:34%;left:20%;--badge-color:var(--accent-sta);">
+    <span class="grpg-badge-icon" aria-hidden="true">🌊</span>
+    <span class="grpg-badge-label">RIVER<br><small>STA {{ user.STA }}</small></span>
+  </div>
+
+  <div class="grpg-region-badge" style="top:30%;left:78%;--badge-color:var(--accent-fcs);">
+    <span class="grpg-badge-icon" aria-hidden="true">🌙</span>
+    <span class="grpg-badge-label">MOON<br><small>FCS {{ user.FCS }}</small></span>
+  </div>
+
+  <!-- Petals Card (Today's Tasks) -->
+  <div class="grpg-overlay-card" style="bottom:4%;left:3%;">
+    <div class="grpg-panel-header" style="margin-bottom:4px;">
+      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌸 PETALS</h3>
     </div>
+    <p class="grpg-overlay-sub">Today's Tasks</p>
+    <ul class="grpg-checklist" id="grpg-petals-list">
+      {% if scheduled_tasks %}
+        {% for task in scheduled_tasks[:5] %}
+        <li class="grpg-check-row" data-done="false" data-task-id="{{ task.id }}">
+          <button class="grpg-check-toggle" aria-label="Toggle {{ task.sub_activity.name }}" aria-pressed="false"></button>
+          <span>{{ task.sub_activity.name }}</span>
+        </li>
+        {% endfor %}
+      {% else %}
+        <li class="grpg-check-row" data-done="true">
+          <button class="grpg-check-toggle" aria-label="Toggle rest" aria-pressed="true"></button>
+          <span>No tasks scheduled</span>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
 
-    <div class="grpg-region-badge" style="top:48%;left:22%;--badge-color:var(--accent-sta);">
-      <span class="grpg-badge-icon" aria-hidden="true">🌊</span>
-      <span class="grpg-badge-label">RIVER<br><small>STA {{ user.STA }}</small></span>
+  <!-- Seeds Card (Future Quests) -->
+  <div class="grpg-overlay-card" style="bottom:4%;left:42%;">
+    <div class="grpg-panel-header" style="margin-bottom:4px;">
+      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌱 SEEDS</h3>
     </div>
-
-    <div class="grpg-region-badge" style="top:45%;left:76%;--badge-color:var(--accent-fcs);">
-      <span class="grpg-badge-icon" aria-hidden="true">🌙</span>
-      <span class="grpg-badge-label">MOON<br><small>FCS {{ user.FCS }}</small></span>
-    </div>
-
-    <!-- Petals Card (Today's Tasks) -->
-    <div class="grpg-overlay-card" style="bottom:4%;left:3%;">
-      <div class="grpg-panel-header" style="margin-bottom:4px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌸 PETALS</h3>
-      </div>
-      <p class="grpg-overlay-sub">Today's Tasks</p>
-      <ul class="grpg-checklist" id="grpg-petals-list">
-        {% if scheduled_tasks %}
-          {% for task in scheduled_tasks[:5] %}
-          <li class="grpg-check-row" data-done="false" data-task-id="{{ task.id }}">
-            <button class="grpg-check-toggle" aria-label="Toggle {{ task.sub_activity.name }}" aria-pressed="false"></button>
-            <span>{{ task.sub_activity.name }}</span>
-          </li>
-          {% endfor %}
-        {% else %}
-          <li class="grpg-check-row" data-done="true">
-            <button class="grpg-check-toggle" aria-label="Toggle rest" aria-pressed="true"></button>
-            <span>No tasks scheduled</span>
-          </li>
-        {% endif %}
-      </ul>
-    </div>
-
-    <!-- Seeds Card (Future Quests) -->
-    <div class="grpg-overlay-card" style="bottom:4%;left:42%;">
-      <div class="grpg-panel-header" style="margin-bottom:4px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌱 SEEDS</h3>
-      </div>
-      <p class="grpg-overlay-sub">Future Quests</p>
-      <ul class="grpg-checklist">
-        <li class="grpg-lock-row">🔒 <span>Start morning routine</span></li>
-        <li class="grpg-lock-row">🔒 <span>Weekly review</span></li>
-      </ul>
-      <button class="grpg-ghost-btn grpg-add-seed">+ ADD NEW SEED</button>
-    </div>
+    <p class="grpg-overlay-sub">Future Quests</p>
+    <ul class="grpg-checklist">
+      <li class="grpg-lock-row">🔒 <span>Start morning routine</span></li>
+      <li class="grpg-lock-row">🔒 <span>Weekly review</span></li>
+    </ul>
+    <button class="grpg-ghost-btn grpg-add-seed">+ ADD NEW SEED</button>
   </div>
 </div>

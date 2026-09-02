@@ -36,10 +36,10 @@
 
   <div class="grpg-metric-row">
     <span>Consistency</span>
-    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (dcp * 100 + 10)|round|min(100) }}" aria-valuemin="0" aria-valuemax="100" aria-label="Consistency score">
-      <div class="grpg-bar-fill" style="width:{{ (dcp * 100 + 10)|round|min(100) }}%;background:var(--accent-info);"></div>
+    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ [ (dcp * 100 + 10)|round, 100 ]|min }}" aria-valuemin="0" aria-valuemax="100" aria-label="Consistency score">
+      <div class="grpg-bar-fill" style="width:{{ [ (dcp * 100 + 10)|round, 100 ]|min }}%;background:var(--accent-info);"></div>
     </div>
-    <span>{{ (dcp * 100 + 10)|round|min(100) }}%</span>
+    <span>{{ [ (dcp * 100 + 10)|round, 100 ]|min }}%</span>
   </div>
 
   <div class="grpg-penalty-row">

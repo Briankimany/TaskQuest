@@ -35,6 +35,11 @@ SUPPORT_EMAIL =os.getenv('SUPPORT_EMAIL')
 APP_NAME = os.getenv("APP_NAME", "TaskQuest")
 APP_TAGLINE = os.getenv("APP_TAGLINE", "A framework for intentional living")
 
+## Debug mode toggle (dev vs prod)
+##   set FLASK_DEBUG=1 (or in .env) to run in DEV mode -> exceptions are
+##   re-raised and shown by Werkzeug's debugger instead of a 500 page.
+DEBUG_MODE = os.getenv("FLASK_DEBUG", "0").strip().lower() in {"1", "true", "yes", "on"}
+
 def modify_dotenv(key,value):
     set_key(DOT_ENV_LOCATION ,key ,value)
 

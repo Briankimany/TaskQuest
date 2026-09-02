@@ -46,7 +46,7 @@
   <div class="grpg-xp-block">
     <span class="grpg-xp-text grpg-xp-value">{{ xp_current }} / {{ xp_next }}</span>
     <div class="grpg-xp-bar" role="progressbar" aria-valuenow="{{ xp_current }}" aria-valuemin="0" aria-valuemax="{{ xp_next }}" aria-label="Experience points progress">
-      <div class="grpg-xp-bar-fill" style="width:{{ (xp_current / xp_next * 100)|round(1) }}%"></div>
+      <div class="grpg-xp-bar-fill" style="width:{{ (xp_pct if xp_pct is defined else 0) }}%"></div>
     </div>
   </div>
 
