@@ -1,0 +1,160 @@
+{% extends "base2.html" %}
+
+{% block title %}Stats — {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="grpg-profile" role="main">
+  <h1 class="grpg-panel-title" style="font-size:16px;margin-bottom:16px;">ANALYTICS</h1>
+
+  <div class="grpg-stats-grid">
+
+    <!-- Attribute history -->
+    <section class="grpg-panel" aria-labelledby="attr-analytics-heading">
+      <h3 id="attr-analytics-heading" class="grpg-panel-title">Attributes</h3>
+      {% set attrs = [
+        {'code': 'INT', 'value': user.INT, 'color': 'var(--accent-int)'},
+        {'code': 'STA', 'value': user.STA, 'color': 'var(--accent-sta)'},
+        {'code': 'FCS', 'value': user.FCS, 'color': 'var(--accent-fcs)'},
+        {'code': 'CHA', 'value': user.CHA, 'color': 'var(--accent-cha)'},
+        {'code': 'DSC', 'value': user.DSC, 'color': 'var(--accent-dsc)'}
+      ] %}
+      <div style="display:flex;gap:6px;margin-bottom:12px;" role="tablist" aria-label="Attribute history range">
+        <button class="grpg-range-btn" data-range="7" aria-pressed="true">7D</button>
+        <button class="grpg-range-btn" data-range="30" aria-pressed="false">30D</button>
+        <button class="grpg-range-btn" data-range="90" aria-pressed="false">90D</button>
+      </div>
+      {% for attr in attrs %}
+        <div class="grpg-attr-row" style="--attr-color: {{ attr.color }};">
+          <div class="grpg-attr-top">
+            <span class="grpg-attr-icon-badge">{{ attr.code[0] }}</span>
+            <span class="grpg-attr-code">{{ attr.code }}</span>
+            <span class="grpg-attr-value">{{ attr.value }}</span>
+          </div>
+          <div class="grpg-bar-track" role="progressbar" aria-valuenow="{{ attr.value }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ attr.code }} level">
+            <div class="grpg-bar-fill" style="width: {{ attr.value }}%; background: var(--attr-color);"></div>
+          </div>
+        </div>
+      {% endfor %}
+    </section>
+
+    <!-- Mission completion breakdown -->
+    <section class="grpg-panel" aria-labelledby="breakdown-heading">
+      <h3 id="breakdown-heading" class="grpg-panel-title">Mission Breakdown</h3>
+      {% set mb = mission_breakdown %}
+      <div class="grpg-metric-row">
+        <span>On-time</span>
+        <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (mb.on_time / mb.total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="On-time completion percentage">
+          <div class="grpg-bar-fill" style="width:{{ (mb.on_time / mb.total * 100)|round }}%;background:var(--accent-active);"></div>
+        </div>
+        <span>{{ (mb.on_time / mb.total * 100)|round }}%</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Late</span>
+        <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (mb.late / mb.total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Late completion percentage">
+          <div class="grpg-bar-fill" style="width:{{ (mb.late / mb.total * 100)|round }}%;background:var(--accent-warning);"></div>
+        </div>
+        <span>{{ (mb.late / mb.total * 100)|round }}%</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Skipped</span>
+        <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (mb.skipped / mb.total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Skipped percentage">
+          <div class="grpg-bar-fill" style="width:{{ (mb.skipped / mb.total * 100)|round }}%;background:var(--accent-danger);"></div>
+        </div>
+        <span>{{ (mb.skipped / mb.total * 100)|round }}%</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Partial</span>
+        <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (mb.partial / mb.total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Partial completion percentage">
+          <div class="grpg-bar-fill" style="width:{{ (mb.partial / mb.total * 100)|round }}%;background:var(--accent-info);"></div>
+        </div>
+        <span>{{ (mb.partial / mb.total * 100)|round }}%</span>
+      </div>
+    </section>
+
+    <!-- Streak history -->
+    <section class="grpg-panel" aria-labelledby="streak-heading">
+      <h3 id="streak-heading" class="grpg-panel-title">Streak</h3>
+      <div style="display:flex;gap:16px;margin-bottom:12px;">
+        <div style="text-align:center;flex:1;">
+          <div style="font-size:28px;font-weight:700;color:var(--accent-fcs);">{{ streak }}</div>
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">Current</div>
+        </div>
+        <div style="text-align:center;flex:1;">
+          <div style="font-size:28px;font-weight:700;color:var(--accent-fcs);">{{ streak_best }}</div>
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">Best</div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text-secondary);text-align:center;">Consecutive fully-completed days</p>
+    </section>
+
+    <!-- Time distribution -->
+    <section class="grpg-panel" aria-labelledby="time-heading">
+      <h3 id="time-heading" class="grpg-panel-title">Task Duration</h3>
+      {% set td = time_distribution %}
+      {% set td_total = max(1, td['<1h'] + td['1-2h'] + td['>2h']) %}
+      <div class="grpg-metric-row">
+        <span>&lt; 1h</span>
+        <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (td['<1h'] / td_total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Tasks under one hour">
+          <div class="grpg-bar-fill" style="width:{{ (td['<1h'] / td_total * 100)|round }}%;background:var(--accent-int);"></div>
+        </div>
+        <span>{{ td['<1h'] }}</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>1&ndash;2h</span>
+        <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (td['1-2h'] / td_total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Tasks one to two hours">
+          <div class="grpg-bar-fill" style="width:{{ (td['1-2h'] / td_total * 100)|round }}%;background:var(--accent-sta);"></div>
+        </div>
+        <span>{{ td['1-2h'] }}</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>&gt; 2h</span>
+        <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (td['>2h'] / td_total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Tasks over two hours">
+          <div class="grpg-bar-fill" style="width:{{ (td['>2h'] / td_total * 100)|round }}%;background:var(--accent-fcs);"></div>
+        </div>
+        <span>{{ td['>2h'] }}</span>
+      </div>
+    </section>
+
+    <!-- Penalty history -->
+    <section class="grpg-panel" aria-labelledby="penalty-heading">
+      <h3 id="penalty-heading" class="grpg-panel-title">Penalty History</h3>
+      <div style="max-height:220px;overflow-y:auto;">
+        {% if penalties %}
+          {% for p in penalties[:10] %}
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-hairline);">
+            <span style="color:var(--text-secondary);">{{ p.sub_activity.name if p.sub_activity else 'Unknown' }}</span>
+            <span style="color:var(--accent-danger);font-family:var(--font-mono);">{{ p.exp_impact }} XP</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px;">No penalties</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- Full log -->
+    <section class="grpg-panel grpg-stats-log" aria-labelledby="log-heading">
+      <h3 id="log-heading" class="grpg-panel-title">Activity Log</h3>
+      <div style="max-height:280px;overflow-y:auto;">
+        {% if completion_history %}
+          {% for log in completion_history[:25] %}
+          <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-hairline);">
+            <span class="font-mono" style="color:var(--text-muted);flex-shrink:0;">{{ log.completed_on.strftime('%m/%d') }}</span>
+            <span style="flex:1;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ log.sub_activity.name }}</span>
+            <span style="color:{% if log.status == 'completed' %}var(--accent-active){% elif log.status == 'skipped' %}var(--accent-danger){% else %}var(--accent-warning){% endif %};flex-shrink:0;">{{ log.status|capitalize }}</span>
+            <span class="font-mono" style="{% if log.exp_impact and log.exp_impact < 0 %}color:var(--accent-danger){% else %}color:var(--accent-fcs){% endif %};flex-shrink:0;">{{ log.exp_impact if log.exp_impact is not none else '-' }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px;">No activity logged</div>
+        {% endif %}
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/stats-garden-rpg.js') }}" defer></script>
+{% endblock %}

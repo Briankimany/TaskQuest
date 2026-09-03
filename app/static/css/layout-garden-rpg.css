@@ -252,12 +252,38 @@
   height: 20px;
 }
 
+[data-theme="garden-rpg"] .grpg-topbar-nav .grpg-nav-btn {
+  flex-direction: row;
+  gap: 5px;
+  padding: 4px 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+[data-theme="garden-rpg"] .grpg-topbar-nav .grpg-nav-btn:hover {
+  color: var(--text-secondary);
+  background: transparent;
+}
+[data-theme="garden-rpg"] .grpg-topbar-nav .grpg-nav-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 [data-theme="garden-rpg"] .grpg-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   border: 2px solid var(--border-hairline);
   object-fit: cover;
+  cursor: pointer;
+}
+
+[data-theme="garden-rpg"] .grpg-avatar-link {
+  display: inline-flex;
+  border-radius: 50%;
+}
+[data-theme="garden-rpg"] .grpg-avatar-link:focus-visible {
+  outline: 2px solid var(--accent-info);
+  outline-offset: 2px;
 }
 
 /* ── Attributes Panel ── */
@@ -335,8 +361,6 @@
 }
 
 /* ── Hero Garden ── */
-/* The hero fills the middle 1fr column so it spans the full available
-   viewport height between the topbar and bottom rows. */
 [data-theme="garden-rpg"] .grpg-hero {
   position: relative;
   border-radius: var(--radius-lg);
@@ -352,59 +376,166 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  z-index: 1;
 }
 
-[data-theme="garden-rpg"] .grpg-hero-art {
+/* ── Health Overlay (mood tint) ── */
+[data-theme="garden-rpg"] .grpg-health-overlay {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Hero Identity (quote + garden name) ── */
+[data-theme="garden-rpg"] .grpg-hero-identity {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  text-align: center;
 }
 
 [data-theme="garden-rpg"] .grpg-quote {
-  position: absolute;
-  top: 8%;
-  left: 50%;
-  transform: translateX(-50%);
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
   font-size: 16px;
   color: rgba(255,255,255,0.85);
-  text-align: center;
   text-shadow: 0 1px 8px rgba(0,0,0,0.6);
   line-height: 1.5;
+  margin: 0 0 8px 0;
 }
 
-[data-theme="garden-rpg"] .grpg-region-badge {
+[data-theme="garden-rpg"] .grpg-garden-label {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+/* ── Region Art Wrapper (positioned absolutely on the hero) ── */
+[data-theme="garden-rpg"] .grpg-region-art-wrapper {
   position: absolute;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 14px;
-  background: rgba(15,18,24,0.85);
-  border: 1px solid var(--badge-color, var(--border-hairline));
-  border-radius: var(--radius-md);
-  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: filter var(--transition);
 }
 
-[data-theme="garden-rpg"] .grpg-badge-icon {
-  font-size: 18px;
+[data-theme="garden-rpg"] .grpg-region-art-wrapper:hover {
+  filter: brightness(1.15);
 }
 
-[data-theme="garden-rpg"] .grpg-badge-label {
-  font-size: 10px;
+[data-theme="garden-rpg"] .grpg-region-art {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 50%;
+  box-shadow: 0 0 8px 0 var(--badge-color, var(--border));
+  transition: box-shadow var(--transition);
+}
+
+[data-theme="garden-rpg"] .grpg-region-art-wrapper:hover .grpg-region-art {
+  box-shadow: 0 0 14px 2px var(--badge-color, var(--border));
+}
+
+/* ── Region Badge (pill below art) ── */
+[data-theme="garden-rpg"] .grpg-region-badge {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+}
+
+[data-theme="garden-rpg"] .grpg-region-badge-text {
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-primary);
-  text-align: center;
-  line-height: 1.3;
+  letter-spacing: 0.06em;
+  color: var(--accent-text, #fff);
+  white-space: nowrap;
 }
 
-[data-theme="garden-rpg"] .grpg-badge-label small {
-  font-weight: 500;
+/* ── Region Expanded Panel ── */
+[data-theme="garden-rpg"] .grpg-region-expanded {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  margin-top: 8px;
+  background: rgba(15,18,24,0.92);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+[data-theme="garden-rpg"] .grpg-region-expanded-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+[data-theme="garden-rpg"] .grpg-region-expanded-bar {
+  margin-bottom: 8px;
+}
+
+[data-theme="garden-rpg"] .grpg-region-activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+[data-theme="garden-rpg"] .grpg-region-activity-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
   color: var(--text-secondary);
+  padding: 2px 0;
+}
+
+/* ── Region Pulse Animation ── */
+@keyframes grpg-pulse {
+  0%   { box-shadow: 0 0 8px 0 var(--badge-color); }
+  50%  { box-shadow: 0 0 24px 6px var(--badge-color); }
+  100% { box-shadow: 0 0 8px 0 var(--badge-color); }
+}
+
+[data-theme="garden-rpg"] .grpg-region-pulse .grpg-region-art {
+  animation: grpg-pulse 2s ease-out 1;
+}
+
+/* ── Placeholders (H0 — used when no image file exists) ── */
+[data-theme="garden-rpg"] .grpg-placeholder-hero {
+  width: 100%; height: 100%;
+  background: linear-gradient(180deg, #5B2A6E 0%, #C4416B 40%, #E86A3B 75%, #F4A93C 100%);
+}
+
+[data-theme="garden-rpg"] .grpg-placeholder-region {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px dashed var(--placeholder-color);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--placeholder-color) 15%, transparent);
+}
+
+[data-theme="garden-rpg"] .grpg-placeholder-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--placeholder-color); text-align: center; padding: 4px;
 }
 
 /* ── Overlay Cards (Petals, Seeds) ── */
@@ -451,8 +582,8 @@
 }
 
 [data-theme="garden-rpg"] .grpg-check-row[data-done="true"] .grpg-check-toggle {
-  background: var(--accent-success);
-  border-color: var(--accent-success);
+  background: var(--accent-active);
+  border-color: var(--accent-active);
 }
 
 [data-theme="garden-rpg"] .grpg-check-row[data-done="true"] span {
@@ -533,7 +664,7 @@
 [data-theme="garden-rpg"] .grpg-mission-xp {
   font-size: 12px;
   font-weight: 600;
-  color: var(--accent-success);
+  color: var(--accent-fcs);
   font-family: var(--font-mono);
 }
 
@@ -545,8 +676,112 @@
 }
 
 [data-theme="garden-rpg"] .grpg-done-label {
-  color: var(--accent-success);
+  color: var(--accent-active);
   font-weight: 600;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 26px;
+  margin-top: 4px;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-difficulty {
+  display: flex;
+  gap: 3px;
+}
+
+[data-theme="garden-rpg"] .grpg-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-strong);
+}
+
+[data-theme="garden-rpg"] .grpg-dot-filled {
+  background: var(--text-secondary);
+  border-color: var(--text-secondary);
+}
+
+[data-theme="garden-rpg"] .grpg-mission-attr-dots {
+  display: flex;
+  gap: 4px;
+}
+
+[data-theme="garden-rpg"] .grpg-attr-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Current Objective (H3) ── */
+[data-theme="garden-rpg"] .grpg-current-objective {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--obj-color, var(--border-hairline));
+  background: color-mix(in srgb, var(--obj-color, var(--border)) 6%, transparent);
+  margin-bottom: 12px;
+}
+
+[data-theme="garden-rpg"] .grpg-panel-divider {
+  height: 1px;
+  background: var(--border-hairline);
+  margin: 0 0 12px 0;
+}
+
+/* ── Expanded mission (H3) ── */
+[data-theme="garden-rpg"] .grpg-mission-expanded {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-expanded > * {
+  overflow: hidden;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-row.grpg-mission-expanded-open .grpg-mission-expanded {
+  grid-template-rows: 1fr;
+  margin-top: 8px;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-expanded-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-raised);
+  min-height: 0;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-expanded-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-expanded-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+[data-theme="garden-rpg"] .grpg-mission-action {
+  cursor: pointer;
+}
+[data-theme="garden-rpg"] .grpg-mission-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+[data-theme="garden-rpg"] .grpg-mission-abandon {
+  color: var(--accent-danger);
 }
 
 [data-theme="garden-rpg"] .grpg-count-pill {
@@ -809,6 +1044,19 @@
   [data-theme="garden-rpg"] .grpg-region-badge {
     transform: scale(0.85);
   }
+
+  [data-theme="garden-rpg"] .grpg-region-art {
+    width: 80px;
+    height: 80px;
+  }
+
+  [data-theme="garden-rpg"] .grpg-region-expanded {
+    width: 150px;
+  }
+
+  [data-theme="garden-rpg"] .grpg-garden-label {
+    font-size: 10px;
+  }
 }
 
 /* ── Shared component overrides for garden RPG contrast ── */
@@ -824,5 +1072,172 @@
   [data-theme="garden-rpg"] * {
     animation: none !important;
     transition-duration: 0s !important;
+  }
+}
+
+/* ── Inline completion feedback (H7) ── */
+[data-theme="garden-rpg"] .grpg-inline-feedback {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--accent, --accent-info);
+}
+[data-theme="garden-rpg"] .grpg-inline-feedback .grpg-feedback-arrow {
+  color: var(--text-secondary);
+}
+
+/* ── Night Mode overlay (H7 — driven by player.time_of_day) ── */
+[data-theme="garden-rpg"] .grpg-dashboard.grpg-night-mode .grpg-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 10, 30, 0.35);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Visual hierarchy tiering (H5) ── */
+/* Tier 1 (hero) — already the largest presence; soften edge */
+[data-theme="garden-rpg"] .grpg-hero {
+  box-shadow: 0 0 40px rgba(35, 40, 58, 0.4), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* Tier 2 panels (attributes) — standard treatment */
+/* Tier 4 panels (analytics) — muted, thinner */
+[data-theme="garden-rpg"] .grpg-bottom-row .grpg-stat-card {
+  padding: 10px;
+  opacity: 0.92;
+}
+
+/* ── Profile page (H9) ── */
+[data-theme="garden-rpg"] .grpg-profile {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  background: var(--bg-page);
+  min-height: 100vh;
+}
+
+[data-theme="garden-rpg"] .grpg-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+[data-theme="garden-rpg"] .grpg-profile-avatar-wrap .grpg-avatar {
+  width: 72px;
+  height: 72px;
+  border-width: 3px;
+}
+
+[data-theme="garden-rpg"] .grpg-profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+[data-theme="garden-rpg"] .grpg-profile-garden {
+  position: relative;
+  height: 420px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: linear-gradient(180deg, #5B2A6E 0%, #C4416B 40%, #E86A3B 75%, #F4A93C 100%);
+}
+
+[data-theme="garden-rpg"] .grpg-region-art-wrapper.grpg-static {
+  cursor: default;
+}
+[data-theme="garden-rpg"] .grpg-region-art-wrapper.grpg-static:hover {
+  filter: none;
+}
+
+@media (max-width: 900px) {
+  [data-theme="garden-rpg"] .grpg-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Stats page (H8) ── */
+[data-theme="garden-rpg"] .grpg-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+[data-theme="garden-rpg"] .grpg-stats-log {
+  grid-column: span 1;
+}
+
+[data-theme="garden-rpg"] .grpg-range-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-hairline);
+  background: var(--bg-panel-raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+[data-theme="garden-rpg"] .grpg-range-btn[aria-pressed="true"] {
+  color: var(--text-primary);
+  border-color: var(--accent-active);
+}
+
+/* ── Atmosphere/polish (H10) — ambient details, motion-gated ── */
+@media (not (prefers-reduced-motion: reduce)) {
+  /* Petals drifting across the hero */
+  [data-theme="garden-rpg"] .grpg-petal {
+    position: absolute;
+    z-index: 4;
+    width: 6px;
+    height: 6px;
+    border-radius: 50% 50% 50% 0;
+    background: var(--accent-fcs);
+    opacity: 0.7;
+    pointer-events: none;
+    animation: grpg-petal-fall var(--petal-duration) linear infinite;
+    animation-delay: var(--petal-delay);
+  }
+
+  @keyframes grpg-petal-fall {
+    0%   { transform: translate(0, -10px) rotate(0deg); }
+    100% { transform: translate(var(--petal-drift), calc(100vh + 20px)) rotate(360deg); }
+  }
+
+  /* Firefly glow near Moon region */
+  [data-theme="garden-rpg"] .grpg-firefly {
+    position: absolute;
+    z-index: 3;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent-fcs);
+    box-shadow: 0 0 8px 3px rgba(232, 169, 60, 0.4);
+    pointer-events: none;
+    animation: grpg-firefly-flicker 3s ease-in-out infinite;
+  }
+
+  @keyframes grpg-firefly-flicker {
+    0%, 100% { opacity: 0.2; transform: translateY(0); }
+    50%      { opacity: 0.9; transform: translateY(-6px); }
+  }
+
+  /* Water shimmer near River region */
+  [data-theme="garden-rpg"] .grpg-water-shimmer {
+    position: absolute;
+    z-index: 3;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, rgba(84, 198, 232, 0.5), transparent);
+    pointer-events: none;
+    animation: grpg-shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes grpg-shimmer {
+    0%   { opacity: 0.2; transform: translateX(-10px); }
+    50%  { opacity: 0.7; transform: translateX(10px); }
+    100% { opacity: 0.2; transform: translateX(-10px); }
   }
 }

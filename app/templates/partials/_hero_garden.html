@@ -1,62 +1,122 @@
 <div class="grpg-hero">
-  <!-- Background art: generated image, gradient fallback until it exists -->
-  <div class="grpg-hero-bg" style="background:linear-gradient(135deg, #0a0e1a 0%, #0f1a2e 30%, #0a1628 60%, #060a14 100%);">
-    {% set hero_img = url_for('static', filename='assets/img/garden-hero.jpg') %}
-    <img src="{{ hero_img }}" alt="A serene fantasy garden scene" class="grpg-hero-art"
-         onerror="this.style.display='none';">
+  {# ── Hero Background (seasonal, with placeholder fallback) ── #}
+  {% if hero_bg_data.exists %}
+    <img src="{{ url_for('static', filename=hero_bg_data.path) }}"
+         class="grpg-hero-bg" alt=""
+         onerror="this.outerHTML='<div class=&quot;grpg-hero-bg grpg-placeholder-hero&quot;></div>';"
+         loading="eager">
+  {% else %}
+    <div class="grpg-hero-bg grpg-placeholder-hero"></div>
+  {% endif %}
+
+  {# ── Health overlay (mood tint on top of hero) ── #}
+  {% if garden_health.overlay.exists %}
+    <img src="{{ url_for('static', filename=garden_health.overlay.path) }}"
+         class="grpg-health-overlay" alt=""
+         onerror="this.remove();"
+         loading="eager">
+  {% endif %}
+
+  {# ── Quote + player identity ── #}
+  <div class="grpg-hero-identity">
+    <p class="grpg-quote">"Discipline today.<br>Freedom tomorrow."</p>
+    <p class="grpg-garden-label">{{ player.garden_name }} &middot; Day {{ player.day }} &middot; {{ player.season }}</p>
   </div>
 
-  <p class="grpg-quote">"Discipline today.<br>Freedom tomorrow."</p>
+  {# ── Region overlays (tier-driven art or placeholder) ── #}
+  {% set region_positions = {
+    'academy': {'top': '32%', 'left': '46%'},
+    'river':   {'top': '48%', 'left': '22%'},
+    'moon':    {'top': '45%', 'left': '76%'},
+    'village': {'top': '68%', 'left': '58%'}
+  } %}
 
-  <!-- Region Badges -->
-  <div class="grpg-region-badge" style="top:12%;left:46%;--badge-color:var(--accent-int);">
-    <span class="grpg-badge-icon" aria-hidden="true">📚</span>
-    <span class="grpg-badge-label">ACADEMY<br><small>INT {{ user.INT }}</small></span>
-  </div>
+  {% for key, region in regions.items() %}
+    {% set pos = region_positions[key] %}
+    <div class="grpg-region-art-wrapper"
+         style="top:{{ pos.top }};left:{{ pos.left }};transform:translate(-50%,-50%);--badge-color:var(--accent-{{ region.code }});"
+         data-region="{{ key }}"
+         data-tier="{{ region.tier }}"
+         role="button" tabindex="0"
+         aria-label="{{ region.name }} region, {{ region.attr }} level {{ region.value }}, tier {{ region.tier }}">
 
-  <div class="grpg-region-badge" style="top:34%;left:20%;--badge-color:var(--accent-sta);">
-    <span class="grpg-badge-icon" aria-hidden="true">🌊</span>
-    <span class="grpg-badge-label">RIVER<br><small>STA {{ user.STA }}</small></span>
-  </div>
+      {% if region.art.exists %}
+        <img src="{{ url_for('static', filename=region.art.path) }}"
+             class="grpg-region-art" alt=""
+             onerror="this.outerHTML='<div class=&quot;grpg-region-art grpg-placeholder-region&quot; style=&quot;--placeholder-color:var(--accent-{{ region.code }});&quot;><span class=&quot;grpg-placeholder-label&quot;>{{ region.name }} &middot; T{{ region.tier }}</span></div>';"
+             loading="lazy">
+      {% else %}
+        <div class="grpg-region-art grpg-placeholder-region"
+             style="--placeholder-color: var(--accent-{{ region.code }});">
+          <span class="grpg-placeholder-label">{{ region.name }} &middot; T{{ region.tier }}</span>
+        </div>
+      {% endif %}
 
-  <div class="grpg-region-badge" style="top:30%;left:78%;--badge-color:var(--accent-fcs);">
-    <span class="grpg-badge-icon" aria-hidden="true">🌙</span>
-    <span class="grpg-badge-label">MOON<br><small>FCS {{ user.FCS }}</small></span>
-  </div>
+      <div class="grpg-region-badge" style="background:var(--accent-{{ region.code }});">
+        <span class="grpg-region-badge-text">{{ region.name }} &middot; {{ region.attr }} {{ region.value }}</span>
+      </div>
 
-  <!-- Petals Card (Today's Tasks) -->
+      {# ── Expanded info panel (shown on click via JS) ── #}
+      <div class="grpg-region-expanded" hidden>
+        <div class="grpg-region-expanded-header">
+          <span>{{ region.name }}</span>
+          <span style="font-size:10px;color:var(--text-muted);">TIER {{ region.tier }}</span>
+        </div>
+        <div class="grpg-region-expanded-bar">
+          <div class="grpg-bar-track" role="progressbar" aria-valuenow="{{ region.value }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="grpg-bar-fill" style="width:{{ region.value }}%;background:var(--accent-{{ region.code }});"></div>
+          </div>
+        </div>
+        <ul class="grpg-region-activity-list">
+          {% set region_activity = activity|selectattr('target_region', 'eq', key)|list %}
+          {% for act in region_activity[:3] %}
+            <li class="grpg-region-activity-item">
+              <span>{{ act.name }}</span>
+              <span style="color:var(--accent-{{ act.attr }});">{{ act.xp }} XP</span>
+            </li>
+          {% else %}
+            <li class="grpg-region-activity-item" style="color:var(--text-muted);">No recent activity</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endfor %}
+
+  {# ── Petals Card (Today's Tasks) ── #}
   <div class="grpg-overlay-card" style="bottom:4%;left:3%;">
     <div class="grpg-panel-header" style="margin-bottom:4px;">
-      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌸 PETALS</h3>
+      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">&#x1F338; PETALS</h3>
     </div>
     <p class="grpg-overlay-sub">Today's Tasks</p>
     <ul class="grpg-checklist" id="grpg-petals-list">
-      {% if scheduled_tasks %}
-        {% for task in scheduled_tasks[:5] %}
-        <li class="grpg-check-row" data-done="false" data-task-id="{{ task.id }}">
-          <button class="grpg-check-toggle" aria-label="Toggle {{ task.sub_activity.name }}" aria-pressed="false"></button>
-          <span>{{ task.sub_activity.name }}</span>
+      {% for seed in seeds %}
+        <li class="grpg-check-row" data-done="false" data-seed-id="{{ seed.id }}">
+          <button class="grpg-check-toggle" aria-label="Toggle {{ seed.label }}" aria-pressed="false"></button>
+          <span>{{ seed.label }}</span>
         </li>
-        {% endfor %}
-      {% else %}
-        <li class="grpg-check-row" data-done="true">
-          <button class="grpg-check-toggle" aria-label="Toggle rest" aria-pressed="true"></button>
-          <span>No tasks scheduled</span>
-        </li>
-      {% endif %}
+      {% endfor %}
     </ul>
   </div>
 
-  <!-- Seeds Card (Future Quests) -->
+  {# ── Seeds Card (Future Quests) ── #}
   <div class="grpg-overlay-card" style="bottom:4%;left:42%;">
     <div class="grpg-panel-header" style="margin-bottom:4px;">
-      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">🌱 SEEDS</h3>
+      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">&#x1F331; SEEDS</h3>
     </div>
     <p class="grpg-overlay-sub">Future Quests</p>
     <ul class="grpg-checklist">
-      <li class="grpg-lock-row">🔒 <span>Start morning routine</span></li>
-      <li class="grpg-lock-row">🔒 <span>Weekly review</span></li>
+      <li class="grpg-lock-row">&#x1F512; <span>Morning Routine</span></li>
+      <li class="grpg-lock-row">&#x1F512; <span>Weekly Review</span></li>
     </ul>
     <button class="grpg-ghost-btn grpg-add-seed">+ ADD NEW SEED</button>
   </div>
+
+  {# ── Ambient atmosphere (H10) — motion-gated in CSS ── #}
+  <span class="grpg-petal" style="top:20%;left:30%;--petal-duration:12s;--petal-delay:0s;--petal-drift:60px;" aria-hidden="true"></span>
+  <span class="grpg-petal" style="top:10%;left:55%;--petal-duration:15s;--petal-delay:2s;--petal-drift:-40px;" aria-hidden="true"></span>
+  <span class="grpg-petal" style="top:25%;left:70%;--petal-duration:14s;--petal-delay:4s;--petal-drift:30px;" aria-hidden="true"></span>
+  <span class="grpg-firefly" style="top:45%;left:76%;" aria-hidden="true"></span>
+  <span class="grpg-firefly" style="top:50%;left:74%;animation-delay:1.5s;" aria-hidden="true"></span>
+  <span class="grpg-water-shimmer" style="top:52%;left:20%;" aria-hidden="true"></span>
+  <span class="grpg-water-shimmer" style="top:58%;left:24%;animation-delay:2s;" aria-hidden="true"></span>
 </div>

@@ -10,6 +10,7 @@
   --text-muted: #9E9E9E;
   --accent: #4A6741;
   --accent-hover: #3D5636;
+  --accent-active: #4A6741;
   --accent-warm: #8B6F47;
   --accent-warm-hover: #7A603D;
   --accent-calm: #5B7B94;
@@ -56,6 +57,7 @@
   --text-muted: #6B6B6B;
   --accent: #7EC8A0;
   --accent-hover: #6BB890;
+  --accent-active: #7EC8A0;
   --accent-warm: #D4A574;
   --accent-warm-hover: #C49665;
   --accent-calm: #7EB8DA;

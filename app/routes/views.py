@@ -15,6 +15,7 @@ from app.utils.managers import UserManager
 from app.utils.logger import ui_logger
 
 from datetime import datetime
+from datetime import timedelta
 from app.config import DATE_PARSING_STRING
 
 views_bp = Blueprint('views', __name__)
@@ -132,6 +133,23 @@ def dashboard():
         streak_best = UserManager.get_best_streak(user_id)
         missed_count = UserManager.get_missed_count(user_id, date_obj.date())
 
+        # Build extended garden RPG context
+        from app.utils.assets.context_builder import build_garden_rpg_context
+        garden_ctx = build_garden_rpg_context(
+            user=user,
+            scheduled_tasks=scheduled_tasks,
+            date_logs=date_logs,
+            dcp=dcp,
+            date_obj=date_obj,
+            next_level=next_level,
+            xp_pct=xp_pct,
+            ring_offset=ring_offset,
+            streak=streak,
+            streak_best=streak_best,
+            missed_count=missed_count,
+            xp_week=xp_week,
+        )
+
         return render_template(
             'dashboard_garden_rpg.html',
             user=user,
@@ -149,7 +167,8 @@ def dashboard():
             streak_best=streak_best,
             xp_week=xp_week,
             current_time=current_time_str,
-            missed_count=missed_count
+            missed_count=missed_count,
+            **garden_ctx,
         )
 
     return render_template(
@@ -184,6 +203,51 @@ def stats():
     # Get completion history for charts
     completion_history = CompletionLog.query.filter_by(user_id=user.id).order_by(CompletionLog.completed_on).all()
 
+    today = datetime.now().date()
+
+    # Per-day completion percentages for the last 30 days (habit/streak analysis)
+    streak = UserManager.get_streak(user.id)
+    streak_best = UserManager.get_best_streak(user.id)
+
+    # Mission completion breakdown (last 30 days)
+    recent_logs = [l for l in completion_history if l.completed_on and l.completed_on >= today - timedelta(days=30)]
+    on_time = sum(1 for l in recent_logs if l.status == 'completed' and l.exp_impact is not None and l.exp_impact >= 0)
+    late = sum(1 for l in recent_logs if l.status == 'completed' and l.exp_impact is not None and l.exp_impact < 0)
+    skipped = sum(1 for l in recent_logs if l.status == 'skipped')
+    partial = sum(1 for l in recent_logs if l.status == 'partial')
+    total_logged = max(1, on_time + late + skipped + partial)
+
+    # Attribute history (accumulate deltas over last 30 days)
+    attr_history = {"INT": 0, "STA": 0, "FCS": 0, "CHA": 0, "DSC": 0}
+
+    # Penalty history
+    penalties = [l for l in completion_history if l.exp_impact is not None and l.exp_impact < 0]
+
+    # Time of day distribution from actual_time_taken
+    time_distribution = {"<1h": 0, "1-2h": 0, ">2h": 0}
+    for l in completion_history:
+        if l.actual_time_taken:
+            if l.actual_time_taken < 60:
+                time_distribution["<1h"] += 1
+            elif l.actual_time_taken <= 120:
+                time_distribution["1-2h"] += 1
+            else:
+                time_distribution[">2h"] += 1
+
+    theme = request.cookies.get('app_theme', 'default')
+
+    if theme == 'garden-rpg':
+        return render_template('stats_garden_rpg.html',
+            user=user,
+            completion_history=completion_history,
+            streak=streak,
+            streak_best=streak_best,
+            attr_history=attr_history,
+            mission_breakdown={'on_time': on_time, 'late': late, 'skipped': skipped, 'partial': partial, 'total': total_logged},
+            penalties=penalties,
+            time_distribution=time_distribution,
+        )
+
     return render_template('stats.html', user=user, completion_history=completion_history)
 
 @views_bp.route('/timetable')
@@ -203,3 +267,56 @@ def help():
 @views_bp.route("/docs")
 def docs():
     return render_template('docs.html',API_URL='https://funcwithme.com',TESTING_USED='test token')
+
+
+@views_bp.route('/profile')
+def profile():
+    """Render the player profile page."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+
+    user_id = user.id
+    today = datetime.now().date()
+
+    # Achievements / recent growth
+    recent_logs = CompletionLog.query.filter(
+        CompletionLog.user_id == user_id,
+        CompletionLog.completed_on >= today - timedelta(days=2),
+        CompletionLog.status == 'completed'
+    ).all()
+
+    dcp = UserManager.get_dcp(user_id=user_id, date_obj=today)
+    streak = UserManager.get_streak(user_id)
+    streak_best = UserManager.get_best_streak(user_id)
+
+    # Compute garden RPG context for read-only garden state view
+    from app.utils.assets.context_builder import build_garden_rpg_context
+    from app.utils.schedulers import TaskScheduler
+
+    scheduled_tasks = TaskScheduler.get_daily_schedule(
+        user_id=user_id, return_suggested=False, date_obj=today)
+
+    garden_ctx = build_garden_rpg_context(
+        user=user,
+        scheduled_tasks=scheduled_tasks,
+        date_logs=recent_logs,
+        dcp=dcp,
+        date_obj=datetime.now(),
+        next_level=None,
+        xp_pct=0,
+        ring_offset=0,
+        streak=streak,
+        streak_best=streak_best,
+        missed_count=0,
+        xp_week=[0]*7,
+    )
+
+    return render_template(
+        'profile.html',
+        user=user,
+        streak=streak,
+        streak_best=streak_best,
+        recent_growth=recent_logs,
+        **garden_ctx,
+    )

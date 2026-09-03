@@ -1,22 +1,30 @@
 <div class="grpg-bottom-row">
 
-  <!-- Card 1: Wayfarer -->
+  <!-- Card 1: Player Identity -->
   <div class="grpg-stat-card">
     <h3 class="grpg-stat-card-title">Wayfarer</h3>
     <div>
-      <div style="font-size:22px;font-weight:700;color:var(--text-primary);">Level {{ level }}</div>
-      <div style="font-size:11px;color:var(--text-muted);">NEXT: Pathfinder</div>
+      <div style="font-size:22px;font-weight:700;color:var(--text-primary);">{{ player.title }}</div>
+      <div style="font-size:11px;color:var(--text-muted);">NEXT: {{ player.next_title }}</div>
     </div>
     <div>
-      <div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:var(--font-mono);">{{ xp_current }} / {{ xp_next }} XP</div>
-      <div style="font-size:11px;color:var(--text-muted);">{{ xp_pct }}%</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:var(--font-mono);">
+        Streak {{ streak }}
+        {% if streak_best %}&middot; Best {{ streak_best }}{% endif %}
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);">
+        <span style="color:var(--accent-int);">INT {{ user.INT }}</span>
+        &middot; <span style="color:var(--accent-sta);">STA {{ user.STA }}</span>
+        &middot; <span style="color:var(--accent-fcs);">FCS {{ user.FCS }}</span>
+        &middot; <span style="color:var(--accent-cha);">CHA {{ user.CHA }}</span>
+      </div>
     </div>
     <div class="grpg-xp-bar" role="progressbar" aria-valuenow="{{ xp_current }}" aria-valuemin="0" aria-valuemax="{{ xp_next }}" aria-label="Experience points progress">
       <div class="grpg-xp-bar-fill" style="width:{{ xp_pct }}%"></div>
     </div>
     <div class="grpg-reward-chips">
       <span class="grpg-reward-chip">Level {{ level + 1 }}</span>
-      <span class="grpg-reward-chip">New Title</span>
+      <span class="grpg-reward-chip">{{ player.next_title }}</span>
       <span class="grpg-reward-chip">+5 Max Energy</span>
     </div>
   </div>
@@ -31,25 +39,27 @@
   <!-- Card 3: Discipline -->
   <div class="grpg-stat-card">
     <h3 class="grpg-stat-card-title">Discipline</h3>
+    {% set disc_circumference = 150.8 %}
+    {% set dcp_val = garden_health.discipline %}
     <div style="display:flex;align-items:center;gap:16px;">
       <div class="grpg-level-ring" style="width:56px;height:56px;">
-        <svg width="56" height="56" viewBox="0 0 56 56">
+        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
           <circle cx="28" cy="28" r="24" fill="none" stroke="var(--bg-panel-raised)" stroke-width="4"/>
-          <circle cx="28" cy="28" r="24" fill="none" stroke="var(--accent-info)" stroke-width="4"
-            stroke-dasharray="150.8" stroke-dashoffset="{{ (150.8 * (1 - (dcp * 100 / 100)))|round(1) }}" stroke-linecap="round"/>
+          <circle cx="28" cy="28" r="24" fill="none" stroke="var(--accent-dsc)" stroke-width="4"
+            stroke-dasharray="{{ disc_circumference }}" stroke-dashoffset="{{ (disc_circumference * (1 - dcp_val / 100))|round(1) }}" stroke-linecap="round"/>
         </svg>
         <div class="grpg-level-ring-text" style="font-size:14px;">
-          {{ (dcp * 100)|round }}
+          {{ dcp_val }}
           <small style="font-size:7px;">/100</small>
         </div>
-        <span class="sr-only">Discipline score: {{ (dcp * 100)|round }} out of 100</span>
+        <span class="sr-only">Discipline score: {{ dcp_val }} out of 100</span>
       </div>
       <div style="flex:1;">
-        <div style="font-size:11px;font-weight:600;color:var(--accent-info);text-transform:uppercase;">STABLE</div>
+        <div style="font-size:11px;font-weight:600;color:var(--accent-dsc);text-transform:uppercase;">{{ garden_health.state }}</div>
         <div style="margin-top:8px;">
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Consistency</span><span style="font-family:var(--font-mono);color:var(--text-primary);">89%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Reliability</span><span style="font-family:var(--font-mono);color:var(--text-primary);">82%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Responsibility</span><span style="font-family:var(--font-mono);color:var(--text-primary);">76%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Consistency</span><span style="font-family:var(--font-mono);color:var(--text-primary);">{{ dcp_val }}%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Reliability</span><span style="font-family:var(--font-mono);color:var(--text-primary);">{{ (dcp_val * 0.9)|round }}%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Responsibility</span><span style="font-family:var(--font-mono);color:var(--text-primary);">--</span></div>
         </div>
       </div>
     </div>
@@ -59,16 +69,13 @@
   <div class="grpg-stat-card">
     <h3 class="grpg-stat-card-title">Recent Activity</h3>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      {% if today_logs %}
-        {% for log in today_logs[:4] %}
+      {% if activity %}
+        {% for act in activity[:4] %}
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
-          <span style="color:{% if log.status == 'completed' %}var(--accent-success){% elif log.status == 'skipped' %}var(--accent-danger){% else %}var(--accent-warning){% endif %};">
-            {% if log.status == 'completed' %}✓{% elif log.status == 'skipped' %}✗{% else %}◐{% endif %}
-          </span>
-          <span style="flex:1;color:var(--text-primary);">{{ log.sub_activity.name }}</span>
-          <span style="font-family:var(--font-mono);font-weight:600;color:{% if log.exp_impact and log.exp_impact > 0 %}var(--accent-success){% elif log.exp_impact and log.exp_impact < 0 %}var(--accent-danger){% else %}var(--text-muted){% endif %};">
-            {% if log.exp_impact %}{{ '%+d'|format(log.exp_impact) }}{% else %}—{% endif %}
-          </span>
+          <span style="flex:1;color:var(--text-primary);">{{ act.name }}</span>
+          <span style="font-size:10px;color:var(--text-secondary);">{{ act.completed_at }}</span>
+          <span style="font-family:var(--font-mono);font-weight:600;color:var(--accent-fcs);">+{{ act.xp }}</span>
+          <span style="font-size:10px;color:var(--accent-{{ act.attr }});">&rarr; {{ act.target_region|title }}</span>
         </div>
         {% endfor %}
       {% else %}

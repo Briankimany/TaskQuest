@@ -1,0 +1,108 @@
+{% extends "base2.html" %}
+
+{% block title %}{{ user.username }}'s Profile — {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="grpg-profile" role="main">
+  <div class="grpg-profile-header">
+    <div class="grpg-profile-avatar-wrap">
+      <img src="{{ url_for('static', filename='assets/img/favicon.ico') }}" alt="{{ user.username }}'s avatar" class="grpg-avatar">
+    </div>
+    <div>
+      <h1 style="margin:0;font-size:24px;color:var(--text-primary);">{{ user.username }}</h1>
+      <p style="margin:2px 0 0;color:var(--text-secondary);font-size:12px;">
+        {{ player.title }} &middot; Level {{ level }} &middot; Day {{ player.day }}
+      </p>
+      <p style="margin:2px 0 0;color:var(--text-muted);font-size:11px;">{{ player.garden_name }} &middot; {{ player.season }}</p>
+    </div>
+  </div>
+
+  <div class="grpg-profile-grid">
+
+    <!-- Left column: attributes -->
+    <section aria-labelledby="attr-heading">
+      <h3 id="attr-heading" class="grpg-panel-title">Attributes</h3>
+      <div class="grpg-panel">
+        {% set attrs = [
+          {'code': 'INT', 'name': 'Intelligence', 'value': user.INT, 'color': 'var(--accent-int)'},
+          {'code': 'STA', 'name': 'Stamina', 'value': user.STA, 'color': 'var(--accent-sta)'},
+          {'code': 'FCS', 'name': 'Focus', 'value': user.FCS, 'color': 'var(--accent-fcs)'},
+          {'code': 'CHA', 'name': 'Charisma', 'value': user.CHA, 'color': 'var(--accent-cha)'},
+          {'code': 'DSC', 'name': 'Discipline', 'value': user.DSC, 'color': 'var(--accent-dsc)'}
+        ] %}
+        {% for attr in attrs %}
+        <div class="grpg-attr-row" style="--attr-color: {{ attr.color }};">
+          <div class="grpg-attr-top">
+            <span class="grpg-attr-icon-badge">{{ attr.code[0] }}</span>
+            <span class="grpg-attr-code">{{ attr.code }}</span>
+            <span class="grpg-attr-name">{{ attr.name }}</span>
+            <span class="grpg-attr-value">{{ attr.value }}</span>
+          </div>
+          <div class="grpg-bar-track" role="progressbar" aria-valuenow="{{ attr.value }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ attr.name }} level">
+            <div class="grpg-bar-fill" style="width: {{ attr.value }}%; background: var(--attr-color);"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Center column: garden state (read-only) -->
+    <section aria-labelledby="garden-heading">
+      <h3 id="garden-heading" class="grpg-panel-title">Garden</h3>
+      <div class="grpg-profile-garden">
+        {% set region_positions = {
+          'academy': {'top': '32%', 'left': '46%'},
+          'river':   {'top': '48%', 'left': '22%'},
+          'moon':    {'top': '45%', 'left': '76%'},
+          'village': {'top': '68%', 'left': '58%'}
+        } %}
+        {% for key, region in regions.items() %}
+          {% set pos = region_positions[key] %}
+          <div class="grpg-region-art-wrapper grpg-static"
+               style="top:{{ pos.top }};left:{{ pos.left }};transform:translate(-50%,-50%);--badge-color:var(--accent-{{ region.code }});"
+               aria-hidden="true">
+            {% if region.art.exists %}
+              <img src="{{ url_for('static', filename=region.art.path) }}" class="grpg-region-art" alt="" loading="lazy">
+            {% else %}
+              <div class="grpg-region-art grpg-placeholder-region" style="--placeholder-color: var(--accent-{{ region.code }});">
+                <span class="grpg-placeholder-label">{{ region.name }} &middot; T{{ region.tier }}</span>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Right column: stats summary -->
+    <section aria-labelledby="stats-heading">
+      <h3 id="stats-heading" class="grpg-panel-title">Progress</h3>
+      <div class="grpg-panel">
+        <div class="grpg-metric-row">
+          <span>Streak</span>
+          <span class="grpg-penalty-value" style="color:var(--accent-fcs);">{{ streak }}</span>
+        </div>
+        <div class="grpg-metric-row">
+          <span>Best Streak</span>
+          <span class="grpg-penalty-value" style="color:var(--accent-fcs);">{{ streak_best }}</span>
+        </div>
+        <div class="grpg-metric-row">
+          <span>Level</span>
+          <span class="grpg-penalty-value">{{ level }}</span>
+        </div>
+        <div class="grpg-metric-row">
+          <span>Title</span>
+          <span class="grpg-penalty-value">{{ player.title }}</span>
+        </div>
+        <div class="grpg-metric-row">
+          <span>Next Title</span>
+          <span class="grpg-penalty-value">{{ player.next_title }}</span>
+        </div>
+        <div class="grpg-metric-row">
+          <span>Total XP</span>
+          <span class="grpg-penalty-value" style="color:var(--accent-fcs);">{{ user.total_exp }}</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
