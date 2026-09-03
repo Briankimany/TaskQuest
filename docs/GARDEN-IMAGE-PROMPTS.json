@@ -1,0 +1,215 @@
+{
+  "_meta": {
+    "note": "Standalone prompt dictionary for the garden RPG image set. The script generate_garden_images.py embeds the same data; this file is for reading/editing the prompts separately. The style preamble is prepended programmatically to every entry.at generation time.",
+    "preamble": "Painterly digital illustration style, semi-realistic, soft painterly brushwork. Not a photograph. Not a 3D render. Not flat vector or cartoon style. Not anime. Single warm light source from the upper-left of the frame, low golden-hour sun, shadows falling toward the lower-right. Color grading: sky gradient from deep violet (#5B2A6E) at top, through magenta-red (#C4416B) and orange (#E86A3B), to warm gold (#F4A93C) near the horizon, where relevant. No humans or people anywhere in the image. No readable text, no logos, no watermarks, no signature. No lens flare, no film grain, no heavy HDR glow. sRGB color."
+  },
+  "IMAGES": [
+    {
+      "id": "hero-spring",
+      "filename": "garden-hero-spring.jpg",
+      "folder": "img",
+      "kind": "hero",
+      "size": [1800, 1200],
+      "transparent": false,
+      "scene": "Spring version of the garden valley scene described above. Wide-angle Japanese garden valley at dusk, elevated vantage point, distant mountain silhouettes across the top third, open sky above them, garden terrain filling the bottom two-thirds, a path or stream running from the lower-left corner toward the center. Areas where the Academy, River bridge, Moon shrine, and Village will go are open undeveloped terrain — no buildings drawn. Cherry blossom trees in full pink bloom scattered through the terrain. Green grass. No snow, no fallen leaves."
+    },
+    {
+      "id": "hero-summer",
+      "filename": "garden-hero-summer.jpg",
+      "folder": "img",
+      "kind": "hero",
+      "size": [1800, 1200],
+      "transparent": false,
+      "scene": "Summer version of the same garden valley scene, identical composition to the spring version. Wide-angle Japanese garden valley at dusk, elevated vantage point, distant mountain silhouettes across the top third, open sky above, garden terrain in the bottom two-thirds, a path or stream from the lower-left corner toward the center. No buildings drawn. Dense deep-green foliage, no blossoms. Green grass. Slightly brighter, warmer sky near the horizon."
+    },
+    {
+      "id": "hero-autumn",
+      "filename": "garden-hero-autumn.jpg",
+      "folder": "img",
+      "kind": "hero",
+      "size": [1800, 1200],
+      "transparent": false,
+      "scene": "Autumn version of the same garden valley scene, identical composition to the spring version. Wide-angle Japanese garden valley at dusk, elevated vantage point, distant mountain silhouettes across the top third, open sky above, garden terrain in the bottom two-thirds, a path or stream from the lower-left corner toward the center. No buildings drawn. Foliage in red, orange, and yellow tones with some trees bare, a scatter of fallen leaves along the path, warmer amber cast overall."
+    },
+    {
+      "id": "hero-winter",
+      "filename": "garden-hero-winter.jpg",
+      "folder": "img",
+      "kind": "hero",
+      "size": [1800, 1200],
+      "transparent": false,
+      "scene": "Winter version of the same garden valley scene, identical composition to the spring version. Wide-angle Japanese garden valley at dusk, elevated vantage point, distant mountain silhouettes across the top third, open sky above, garden terrain in the bottom two-thirds, a path or stream from the lower-left corner toward the center. No buildings drawn. Bare branches, or branches with a light dusting of snow, a light dusting of snow on the path edges only, no deep drifts, sky shifted slightly cooler and bluer than the other seasons."
+    },
+    {
+      "id": "academy-tier1",
+      "filename": "academy-tier1.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Academy tier 1. One small wooden hut with a thatched roof, isolated on transparent background. No lit lantern. 1-2 sparse small bushes nearby. A short fragment of dirt path. Muted, low-saturation colors."
+    },
+    {
+      "id": "academy-tier2",
+      "filename": "academy-tier2.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Academy tier 2. A small single-story wooden building, isolated on transparent background, with one paper lantern lit, glowing cyan-white. 3-4 small trees or shrubs around it. A short stone path segment leading to the door."
+    },
+    {
+      "id": "academy-tier3",
+      "filename": "academy-tier3.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Academy tier 3. A two-story pagoda-style building, isolated on transparent background. Two lit lanterns with cyan-tinted glow. A small stone courtyard in front. One stone lantern post. A denser line of trees behind. A small hanging fabric banner, plain, no text."
+    },
+    {
+      "id": "academy-tier4",
+      "filename": "academy-tier4.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Academy tier 4. A full academy complex, isolated on transparent background: a two-story pagoda plus one smaller adjoining library building connected by a covered walkway. Four or more lit lanterns with soft cyan glow halos. A stone-paved courtyard. Cherry blossom trees flanking the entrance. A small torii gate at the courtyard entrance. Warm illuminated windows."
+    },
+    {
+      "id": "river-tier1",
+      "filename": "river-tier1.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "River tier 1. A thin trickling stream over bare rocks, isolated on transparent background. No bridge. A few sparse reeds at the bank."
+    },
+    {
+      "id": "river-tier2",
+      "filename": "river-tier2.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "River tier 2. A wider stream, isolated on transparent background. A handful of flat stepping stones crossing it. Small clusters of reed grass on both banks."
+    },
+    {
+      "id": "river-tier3",
+      "filename": "river-tier3.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "River tier 3. A flowing river with visible ripple linework on the surface, rendered in teal-blue tones, isolated on transparent background. A simple flat wooden plank bridge crosses it. A few koi fish silhouettes visible just beneath the surface."
+    },
+    {
+      "id": "river-tier4",
+      "filename": "river-tier4.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "River tier 4. A full river scene, isolated on transparent background: an arched ornate wooden bridge with simple railings in traditional Japanese garden style. Stone-lined riverbanks. Multiple visible koi fish. Small lanterns along the bank with reflections in the water. A willow tree or dense reed bed on one bank."
+    },
+    {
+      "id": "moon-tier1",
+      "filename": "moon-tier1.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Moon tier 1. A single small flat stone marker under open sky, isolated on transparent background. A faint pale moon visible above it. No structure."
+    },
+    {
+      "id": "moon-tier2",
+      "filename": "moon-tier2.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Moon tier 2. A small stone shrine fragment or single torii post, isolated on transparent background. Dim moonlight. One or two flat meditation stones nearby."
+    },
+    {
+      "id": "moon-tier3",
+      "filename": "moon-tier3.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Moon tier 3. A small shrine building with a circular moon-gate opening, isolated on transparent background. A patch of deep indigo-violet sky directly above it. Gold-lit lanterns flanking the shrine. A small arrangement of meditation stones in front."
+    },
+    {
+      "id": "moon-tier4",
+      "filename": "moon-tier4.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Moon tier 4. A full moon shrine, isolated on transparent background: an elevated circular moon-gate structure on a raised stone platform, accessed by a few stone steps. Multiple gold-glowing lanterns. A pronounced indigo-violet glow in the sky directly above. Drifting cherry blossom petals in the air around it."
+    },
+    {
+      "id": "village-tier1",
+      "filename": "village-tier1.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Village tier 1. A single empty market stall frame, isolated on transparent background: wooden posts and a bare roof beam, no walls, no goods, no lanterns."
+    },
+    {
+      "id": "village-tier2",
+      "filename": "village-tier2.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Village tier 2. Two small stalls or huts, isolated on transparent background. A few paper lanterns present but unlit. Minimal decoration."
+    },
+    {
+      "id": "village-tier3",
+      "filename": "village-tier3.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Village tier 3. A small cluster of 3-4 buildings resembling a teahouse district, isolated on transparent background. Purple paper lanterns, lit. Simple plain-colored fabric banners, no text."
+    },
+    {
+      "id": "village-tier4",
+      "filename": "village-tier4.png",
+      "folder": "img/regions",
+      "kind": "region",
+      "size": [400, 400],
+      "transparent": true,
+      "scene": "Village tier 4. A full village/festival district, isolated on transparent background: several buildings, strings of lit purple lanterns strung between them, plain fabric banners, a small gathering square with empty benches or low tables, possibly a small footbridge connecting to the rest of the garden. No people."
+    },
+    {
+      "id": "health-flourishing",
+      "filename": "garden-health-flourishing.png",
+      "folder": "img",
+      "kind": "wash",
+      "size": [1800, 1200],
+      "transparent": true,
+      "scene": "A very subtle warm gold-tinted brightening wash, strongest as a soft vignette lightening near the edges, roughly 15-20% opacity overall. No scene content, just a translucent color wash. Transparent PNG."
+    },
+    {
+      "id": "health-stable",
+      "filename": "garden-health-stable.png",
+      "folder": "img",
+      "kind": "wash_blank",
+      "size": [1800, 1200],
+      "transparent": true,
+      "scene": "blank"
+    },
+    {
+      "id": "health-neglected",
+      "filename": "garden-health-neglected.png",
+      "folder": "img",
+      "kind": "wash",
+      "size": [1800, 1200],
+      "transparent": true,
+      "scene": "A subtle desaturating dark vignette wash, strongest near the edges, roughly 20-25% opacity overall, with a faint cool grey-blue mist tint. No scene content, just a translucent color wash. Transparent PNG."
+    }
+  ]
+}
