@@ -91,7 +91,8 @@
     <section class="grpg-panel" aria-labelledby="time-heading">
       <h3 id="time-heading" class="grpg-panel-title">Task Duration</h3>
       {% set td = time_distribution %}
-      {% set td_total = max(1, td['<1h'] + td['1-2h'] + td['>2h']) %}
+      {% set td_total = td['<1h'] + td['1-2h'] + td['>2h'] %}
+      {% if td_total == 0 %}{% set td_total = 1 %}{% endif %}
       <div class="grpg-metric-row">
         <span>&lt; 1h</span>
         <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ (td['<1h'] / td_total * 100)|round }}" aria-valuemin="0" aria-valuemax="100" aria-label="Tasks under one hour">

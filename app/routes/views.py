@@ -165,8 +165,6 @@ def dashboard():
             ring_offset=ring_offset,
             streak=streak,
             streak_best=streak_best,
-            xp_week=xp_week,
-            current_time=current_time_str,
             missed_count=missed_count,
             **garden_ctx,
         )
