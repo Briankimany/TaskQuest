@@ -38,6 +38,30 @@
 /* Fixed full-viewport shell: topbar / main 1fr / bottom rows / nav.
    Main row is 1fr so it absorbs remaining height; its columns scroll
    internally when their content is taller than the viewport. */
+
+/* Override base2's <main class="container py-4"> so the dashboard fills
+   edge-to-edge with no padding — the scrollbar culprit. Also kill
+   body { padding-top: 72px } which pushes the 100vh grid below the
+   viewport and creates an unwanted vertical scrollbar. */
+[data-theme="garden-rpg"] html,
+[data-theme="garden-rpg"] body {
+  padding-top: 0;
+  overflow: hidden;
+  height: 100%;
+}
+[data-theme="garden-rpg"] .container {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline: 0;
+}
+[data-theme="garden-rpg"] main.container {
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 [data-theme="garden-rpg"] .grpg-dashboard {
   display: grid;
   grid-template-rows: 72px 1fr 156px 56px;
@@ -47,28 +71,27 @@
 }
 
 /* Bottom stat row: fixed 156px per design so topbar/bottom-nav always sit
-   on-screen together (no page scroll). Content scrolls inside if needed. */
+   on-screen together (no page scroll). */
 [data-theme="garden-rpg"] .grpg-bottom-row {
   max-height: 156px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 [data-theme="garden-rpg"] .grpg-main-row {
   display: grid;
-  grid-template-columns: 300px 1fr 340px;
-  gap: 16px;
-  padding: 16px;
-  min-height: 0;            /* allow children to shrink/scroll within 1fr */
+  grid-template-columns: 280px 1fr 320px;
+  gap: 12px;
+  padding: 12px;
+  min-height: 0;
 }
 
 [data-theme="garden-rpg"] .grpg-col-left,
 [data-theme="garden-rpg"] .grpg-col-right {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   min-height: 0;
-  overflow-y: auto;         /* long panels scroll within the viewport */
-  scrollbar-width: thin;
+  overflow: hidden;
 }
 
 /* ── Panel base ── */
@@ -76,14 +99,16 @@
   background: var(--bg-panel);
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
-  padding: 18px;
+  padding: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 [data-theme="garden-rpg"] .grpg-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 [data-theme="garden-rpg"] .grpg-panel-title {
@@ -290,8 +315,8 @@
 [data-theme="garden-rpg"] .grpg-attr-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 0;
+  gap: 4px;
+  padding: 6px 0;
 }
 
 [data-theme="garden-rpg"] .grpg-attr-row + .grpg-attr-row {
@@ -619,7 +644,7 @@
 
 /* ── Missions Panel ── */
 [data-theme="garden-rpg"] .grpg-mission-row {
-  padding: 10px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--border-hairline);
 }
 
@@ -720,17 +745,17 @@
 
 /* ── Current Objective (H3) ── */
 [data-theme="garden-rpg"] .grpg-current-objective {
-  padding: 12px;
+  padding: 8px;
   border-radius: var(--radius-md);
   border: 1px solid var(--obj-color, var(--border-hairline));
   background: color-mix(in srgb, var(--obj-color, var(--border)) 6%, transparent);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 [data-theme="garden-rpg"] .grpg-panel-divider {
   height: 1px;
   background: var(--border-hairline);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
 }
 
 /* ── Expanded mission (H3) ── */
@@ -889,10 +914,10 @@
   background: var(--bg-panel);
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
-  padding: 18px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 [data-theme="garden-rpg"] .grpg-reward-chips {
