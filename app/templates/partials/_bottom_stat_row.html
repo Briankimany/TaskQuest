@@ -38,7 +38,7 @@
       <svg class="grpg-card-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3AB6F0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M3 21h18"/></svg>
       XP Flow
     </h3>
-    <canvas id="grpg-xp-chart" height="86" role="img" aria-label="XP earned over the last 7 days"></canvas>
+    <canvas id="grpg-xp-chart" role="img" aria-label="XP earned over the last 7 days"></canvas>
     <div class="grpg-chart-x" aria-hidden="true">
       {% for lbl in (xp_week_labels if xp_week_labels is defined else ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) %}<span>{{ lbl }}</span>{% endfor %}
     </div>

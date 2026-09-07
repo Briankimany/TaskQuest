@@ -127,47 +127,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var MAX_XP = 2400;
     var ticks = [0, 800, 1600, 2400];
+    var fmtTick = function (v) {
+      return v >= 1000 ? (v / 1000) + 'k' : String(v);
+    };
 
     var ctx = canvas.getContext('2d');
     var dpr = window.devicePixelRatio || 1;
     var rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
+    canvas.width = Math.max(10, Math.round(rect.width * dpr));
+    canvas.height = Math.max(10, Math.round(rect.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     var w = rect.width;
     var h = rect.height;
-    var plotTop = 6;
-    var plotBottom = h - 2;
+    var gutter = Math.max(24, Math.min(34, w / 16)); // left room for y-tick labels
+    var plotTop = 4;
+    var plotBottom = h - 6;
     var plotH = plotBottom - plotTop;
+    var plotW = w - gutter;
     var barCount = data.length;
-    var gap = 6;
-    var barWidth = Math.max(2, (w - gap * (barCount + 1)) / barCount);
+
+    // moderate-width bars: ~60% of each day slot, ~40% visible gap
+    var slot = plotW / barCount;
+    var barWidth = Math.max(3, slot * 0.6);
 
     var style = getComputedStyle(document.documentElement);
     var infoColor = style.getPropertyValue('--accent-info').trim() || '#3AB6F0';
     var gridColor = 'rgba(150,180,200,0.12)';
 
-    // fixed y-axis gridlines ("0 / 800 / 1.6k / 2.4k")
-    ctx.font = (Math.max(9, Math.min(10, w / 46))) + 'px Rajdhani, sans-serif';
-    ctx.textBaseline = 'bottom';
-    ctx.lineWidth = 1;
-    for (var t = 0; t < ticks.length; t++) {
-      var yy = plotBottom - (ticks[t] / MAX_XP) * plotH;
-      ctx.strokeStyle = gridColor;
-      ctx.beginPath();
-      ctx.moveTo(0, yy);
-      ctx.lineTo(w, yy);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(180,200,215,0.5)';
-      ctx.textAlign = 'left';
-      ctx.fillText(String(ticks[t]), 2, yy - 1);
+    var tickFont = (Math.max(8, Math.min(10, w / 48))) + 'px Rajdhani, sans-serif';
+
+    function drawGridAndLabels() {
+      ctx.font = tickFont;
+      ctx.textBaseline = 'bottom';
+      ctx.lineWidth = 1;
+      for (var t = 0; t < ticks.length; t++) {
+        var yy = plotBottom - (ticks[t] / MAX_XP) * plotH;
+        ctx.strokeStyle = gridColor;
+        ctx.beginPath();
+        ctx.moveTo(gutter, yy);
+        ctx.lineTo(w, yy);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(180,200,215,0.55)';
+        ctx.textAlign = 'right';
+        ctx.fillText(fmtTick(ticks[t]), gutter - 6, yy - 1);
+      }
     }
 
     var progress = animate ? 0 : 1;
 
     function renderFrame(p) {
       ctx.clearRect(0, 0, w, h);
+      drawGridAndLabels();
       ctx.shadowColor = infoColor;
 
       for (var i = 0; i < barCount; i++) {
@@ -176,14 +187,15 @@ document.addEventListener('DOMContentLoaded', function () {
         var barHeight = (value / MAX_XP) * plotH;
         barHeight = barHeight * p; // animate height, not position
 
-        var x = gap + i * (barWidth + gap);
+        // edge-to-edge: first bar starts at gutter, last ends at w
+        var x = gutter + i * slot + (slot - barWidth) / 2;
         var y = plotBottom - barHeight;
 
         ctx.shadowBlur = 5;
         ctx.fillStyle = infoColor;
-        ctx.globalAlpha = 0.55;
+        ctx.globalAlpha = 0.9;
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(x, y, barWidth, barHeight, 3);
+        if (ctx.roundRect) ctx.roundRect(x, y, barWidth, barHeight, [3, 3, 0, 0]);
         else ctx.rect(x, y, barWidth, barHeight);
         ctx.fill();
         ctx.globalAlpha = 1;

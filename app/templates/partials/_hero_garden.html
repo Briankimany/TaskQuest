@@ -72,8 +72,12 @@
     </div>
   {% endfor %}
 
-  {# ── Petals Card (Today's Tasks) ── #}
-  <div class="grpg-overlay-card" style="bottom:4%;left:3%;">
+  {# ── Petals Card (Today's Tasks) — anchored below the River/STA pin.
+       Uses River's own anchor (top/left from region_positions) so it stays
+       positioned relative to the pin if the pin is ever moved. Gap ~14px
+       below the pin's bottom edge (pin is centered, ~24px tall). #}
+  {% set river_pos = region_positions['river'] %}
+  <div class="grpg-overlay-card" style="left:calc({{ river_pos.left }} - 3%);top:calc({{ river_pos.top }} + 26px);">
     <div class="grpg-panel-header" style="margin-bottom:4px;">
       <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">PETALS</h3>
     </div>

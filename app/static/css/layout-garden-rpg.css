@@ -62,12 +62,32 @@
   overflow: hidden;
 }
 
+/* Lock the dashboard to the viewport: no page scroll. The vertical budget
+   must sum to exactly 100dvh (topbar 72 + main 1fr + bottom row 156 + nav 64). */
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) {
+  height: 100dvh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Bootstrap's py-4 on <main> uses !important and would push the 100dvh grid
+   past the viewport (scrollable page + flat bg showing beneath the bottom
+   row). Kill it for the dashboard path. */
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) main.container,
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) main.container.py-4 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
 [data-theme="garden-rpg"] .grpg-dashboard {
   display: grid;
-  grid-template-rows: 72px minmax(0, 1fr) 156px 56px;
+  grid-template-rows: 72px minmax(0, 1fr) 156px 64px;
+  height: 100dvh;
+  min-height: 100dvh;
   height: 100vh;
   min-height: 100vh;
   overflow: hidden;
+  position: relative;
 }
 
 /* Bottom stat row: fixed 156px; cards hold their own content (safety
@@ -224,6 +244,16 @@
   font-size: 9px;
   letter-spacing: 0.06em;
   color: var(--text-muted);
+}
+
+/* XP Flow canvas must fill the card's remaining height (card height minus
+   header and axis-label space), not a hardcoded stub. The draw function reads
+   getBoundingClientRect() so it tracks whatever height flex gives it. */
+[data-theme="garden-rpg"] #grpg-xp-chart {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 /* ── Topbar ── */
@@ -655,10 +685,13 @@
 }
 
 /* Full-bleed layer spanning the whole art area: pins, loc-cards, petals, seeds, quote */
+/* Sits above the side-column panels (z3) so petals/pins render on top of the glass
+   columns when positioned near them. Internal order: pin glow/lines 4, badges 5,
+   petals/seeds 6, quote 7 (all relative to this layer). */
 [data-theme="garden-rpg"] .grpg-hero-overlay {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 4;
   overflow: hidden;
   pointer-events: none;
 }
@@ -1238,6 +1271,8 @@
   flex-direction: column;
   gap: 6px;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 [data-theme="garden-rpg"] .grpg-reward-chips {
@@ -1260,7 +1295,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  height: 64px;
   padding: 0 16px;
   border-top: 1px solid var(--border);
   background: var(--navbar-bg);
