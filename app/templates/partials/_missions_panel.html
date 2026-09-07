@@ -1,37 +1,40 @@
-<div class="grpg-panel" style="flex:1;">
+<div class="grpg-panel grpg-missions-panel" id="grpg-missions-card">
 
   {# ── Current Objective (highest-priority ACTIVE mission) ── #}
   {% set active_missions = missions|selectattr('status', 'eq', 'ACTIVE')|list %}
   {% set objective = active_missions[0] if active_missions else none %}
-  {% if objective %}
-    <div class="grpg-current-objective" style="--obj-color: var(--accent-{{ objective.target_region|replace('academy','int')|replace('river','sta')|replace('moon','fcs')|replace('village','cha') }});">
-      <div class="grpg-panel-header">
-        <h3 class="grpg-panel-title" style="color:var(--accent-active);">CURRENT OBJECTIVE</h3>
+  <div id="grpg-missions-objective">
+    {% if objective %}
+      <div class="grpg-current-objective" style="--obj-color: var(--accent-{{ objective.target_region|replace('academy','int')|replace('river','sta')|replace('moon','fcs')|replace('village','cha') }});">
+        <div class="grpg-panel-header">
+          <h3 class="grpg-panel-title" style="color:var(--accent-active);">CURRENT OBJECTIVE</h3>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin:4px 0 2px;">{{ objective.title }}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
+          <span style="color:var(--accent-fcs);">+{{ objective.xp }} XP</span>
+          &middot; Deadline {{ objective.deadline }}
+          {% if objective.countdown %}&middot; <span style="color:var(--accent-warning);">{{ objective.countdown }}</span>{% endif %}
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="grpg-ghost-btn grpg-mission-action" data-action="reschedule" aria-label="Reschedule {{ objective.title }}">RESCHEDULE</button>
+        </div>
       </div>
-      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin:4px 0 2px;">{{ objective.title }}</div>
-      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
-        <span style="color:var(--accent-fcs);">+{{ objective.xp }} XP</span>
-        &middot; Deadline {{ objective.deadline }}
-        {% if objective.countdown %}&middot; <span style="color:var(--accent-warning);">{{ objective.countdown }}</span>{% endif %}
-      </div>
-      <div style="display:flex;gap:6px;">
-        <button class="grpg-ghost-btn grpg-mission-action" data-action="reschedule" aria-label="Reschedule {{ objective.title }}">RESCHEDULE</button>
-      </div>
-    </div>
-    <div class="grpg-panel-divider" role="separator"></div>
-  {% endif %}
+      <div class="grpg-panel-divider" role="separator"></div>
+    {% endif %}
+  </div>
 
   <div class="grpg-panel-header">
     <h3 class="grpg-panel-title">Today's Missions</h3>
-    <span class="grpg-count-pill">{{ missions|length }}</span>
+    <span class="grpg-count-pill" id="grpg-missions-count">{{ missions|length }}</span>
   </div>
 
+  <div id="grpg-missions-list">
   {% if missions %}
     {% set mission_tag_colors = {'MAIN': 'var(--accent-info)', 'DAILY': 'var(--accent-dsc)', 'SIDE': 'var(--accent-fcs)'} %}
     {% for m in missions %}
       {% set attr_code = m.target_region|replace('academy','int')|replace('river','sta')|replace('moon','fcs')|replace('village','cha') %}
       {% set tag_color = mission_tag_colors.get(m.tag, 'var(--accent-pink)') %}
-      <div class="grpg-mission-row" data-mission-id="{{ m.id }}"
+      <div class="grpg-mission-row{% if loop.index > 3 %} grpg-missions-hidden-row{% endif %}" data-mission-id="{{ m.id }}"
            data-done="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE') else 'false' }}"
            data-target-region="{{ m.target_region }}"
            data-attr-deltas="{{ m.attr_delta_str }}"
@@ -119,11 +122,14 @@
       </div>
     {% endfor %}
   {% else %}
-    <div style="text-align:center;padding:24px 0;color:var(--text-muted);font-size:13px;">
+    <div id="grpg-missions-empty" style="text-align:center;padding:24px 0;color:var(--text-muted);font-size:13px;">
       No missions today.<br>
       <a href="{{ url_for('views.timetable') }}" style="color:var(--accent);font-size:12px;">Schedule tasks &rarr;</a>
     </div>
   {% endif %}
+  </div>
 
-  <a href="{{ url_for('views.timetable') }}" class="grpg-ghost-btn" style="display:block;text-align:center;margin-top:8px;">VIEW ALL MISSIONS &rarr;</a>
+  <button id="grpg-missions-toggle" class="grpg-ghost-btn"
+          style="display:{{ 'block' if missions|length > 3 else 'none' }};text-align:center;margin-top:8px;"
+          data-expanded="false">VIEW ALL ({{ missions|length }}) &or;</button>
 </div>

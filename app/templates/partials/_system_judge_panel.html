@@ -1,8 +1,11 @@
-<div class="grpg-panel">
+<div class="grpg-panel" id="grpg-judge-card">
   <div class="grpg-panel-header">
     <h3 class="grpg-panel-title">System Judge</h3>
     {% if missed_count %}<span class="grpg-danger-pill" title="Missed tasks" aria-label="Missed tasks">{{ missed_count }} missed</span>{% endif %}
-    <a href="{{ url_for('views.judge_log') }}" class="grpg-link" aria-label="View full system judge log">View log</a>
+    <button type="button" id="grpg-judge-toggle"
+            class="grpg-link"
+            aria-expanded="false"
+            {% if not judge_reviews %}hidden{% endif %}>View Log</button>
   </div>
 
   {% set review = judge_reviews[0] if judge_reviews else none %}
@@ -18,41 +21,43 @@
   </p>
 
   {% if review and review.user_reason %}
-    <p style="font-size:10px;color:var(--text-muted);margin:4px 0 8px;font-style:italic;">"{{ review.user_reason }}"</p>
+    <p id="grpg-judge-reason" style="font-size:10px;color:var(--text-muted);margin:4px 0 8px;font-style:italic;">"{{ review.user_reason }}"</p>
   {% endif %}
 
-  <!-- Metrics (neutral values when no review yet) -->
-  {% set nz = {'validity': review.metrics.validity if review else 0,
-               'responsibility': review.metrics.responsibility if review else 0,
-               'consistency': review.metrics.consistency if review else 0} %}
+  <!-- Metrics: hidden by default, revealed via View Log toggle -->
+  <div id="grpg-judge-metrics" class="grpg-judge-metrics" hidden>
+    {% set nz = {'validity': review.metrics.validity if review else 0,
+                 'responsibility': review.metrics.responsibility if review else 0,
+                 'consistency': review.metrics.consistency if review else 0} %}
 
-  <div class="grpg-metric-row">
-    <span>Validity</span>
-    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ nz.validity }}" aria-valuemin="0" aria-valuemax="100" aria-label="Validity score">
-      <div class="grpg-bar-fill" style="width:{{ nz.validity }}%;background:var(--accent-info);"></div>
+    <div class="grpg-metric-row">
+      <span>Validity</span>
+      <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ nz.validity }}" aria-valuemin="0" aria-valuemax="100" aria-label="Validity score">
+        <div class="grpg-bar-fill" style="width:{{ nz.validity }}%;background:var(--accent-info);"></div>
+      </div>
+      <span>{{ nz.validity }}%</span>
     </div>
-    <span>{{ nz.validity }}%</span>
-  </div>
 
-  <div class="grpg-metric-row">
-    <span>Responsibility</span>
-    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ nz.responsibility }}" aria-valuemin="0" aria-valuemax="100" aria-label="Responsibility score">
-      <div class="grpg-bar-fill" style="width:{{ nz.responsibility }}%;background:var(--accent-info);"></div>
+    <div class="grpg-metric-row">
+      <span>Responsibility</span>
+      <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ nz.responsibility }}" aria-valuemin="0" aria-valuemax="100" aria-label="Responsibility score">
+        <div class="grpg-bar-fill" style="width:{{ nz.responsibility }}%;background:var(--accent-info);"></div>
+      </div>
+      <span>{{ nz.responsibility }}%</span>
     </div>
-    <span>{{ nz.responsibility }}%</span>
-  </div>
 
-  <div class="grpg-metric-row">
-    <span>Consistency</span>
-    <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ nz.consistency }}" aria-valuemin="0" aria-valuemax="100" aria-label="Consistency score">
-      <div class="grpg-bar-fill" style="width:{{ nz.consistency }}%;background:var(--accent-info);"></div>
+    <div class="grpg-metric-row">
+      <span>Consistency</span>
+      <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ nz.consistency }}" aria-valuemin="0" aria-valuemax="100" aria-label="Consistency score">
+        <div class="grpg-bar-fill" style="width:{{ nz.consistency }}%;background:var(--accent-info);"></div>
+      </div>
+      <span>{{ nz.consistency }}%</span>
     </div>
-    <span>{{ nz.consistency }}%</span>
-  </div>
 
-  <div class="grpg-penalty-row">
-    <span>Penalty</span>
-    <span class="grpg-penalty-value" style="color:var(--accent-danger);">{{ review.penalty if review else 0 }} XP</span>
+    <div class="grpg-penalty-row">
+      <span>Penalty</span>
+      <span class="grpg-penalty-value" style="color:var(--accent-danger);">{{ review.penalty if review else 0 }} XP</span>
+    </div>
   </div>
 
   {% if review and review.review_status == 'PENDING' %}

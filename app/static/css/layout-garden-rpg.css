@@ -1684,3 +1684,29 @@
     100% { opacity: 0.2; transform: translateX(-10px); }
   }
 }
+
+/* ── Missions collapse: rows beyond the first three are hidden until toggled ── */
+[data-theme="garden-rpg"] .grpg-mission-row.grpg-missions-hidden-row {
+  display: none !important;
+}
+
+/* ── Toggle / inline-log buttons that inherit .grpg-link look but are <button> ── */
+[data-theme="garden-rpg"] .grpg-link-btn,
+[data-theme="garden-rpg"] button.grpg-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+}
+
+[data-theme="garden-rpg"] .grpg-missions-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Judge metrics: hidden by default, revealed via View Log toggle */
+[data-theme="garden-rpg"] .grpg-judge-metrics[hidden] {
+  display: none;
+}

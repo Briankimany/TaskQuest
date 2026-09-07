@@ -83,18 +83,19 @@
   <!-- Card 4: Recent Activity -->
   <div class="grpg-stat-card">
     <h3 class="grpg-stat-card-title">Recent Activity</h3>
-    <div style="display:flex;flex-direction:column;gap:8px;">
+    <div id="grpg-activity-list" style="display:flex;flex-direction:column;gap:8px;">
       {% if activity %}
         {% for act in activity[:4] %}
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+          <span style="flex-shrink:0;width:44px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:{{ 'var(--accent-active)' if act.status == 'DONE' else ('var(--accent-warning)' if act.status == 'LATE' else 'var(--accent-danger)') }};">{{ act.status }}</span>
           <span style="flex:1;color:var(--text-primary);">{{ act.name }}</span>
-          <span style="font-size:10px;color:var(--text-secondary);">{{ act.completed_at }}</span>
-          <span style="font-family:var(--font-mono);font-weight:600;color:var(--accent-fcs);">+{{ act.xp }}</span>
+          <span style="font-size:10px;color:var(--text-secondary);">{{ act.time }}</span>
+          <span style="font-family:var(--font-mono);font-weight:600;color:{{ 'var(--accent-fcs)' if act.xp >= 0 else 'var(--accent-danger)' }};">{% if act.xp >= 0 %}+{% endif %}{{ act.xp }}</span>
           <span style="font-size:10px;color:var(--accent-{{ act.attr }});">&rarr; {{ act.target_region|title }}</span>
         </div>
         {% endfor %}
       {% else %}
-        <div style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px;">No activity yet today</div>
+        <div id="grpg-activity-empty" style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px;">No activity yet today</div>
       {% endif %}
     </div>
   </div>

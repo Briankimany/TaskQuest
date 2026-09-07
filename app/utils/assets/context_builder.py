@@ -9,6 +9,9 @@ from app.models.base import db
 from app.utils.schedulers import TaskScheduler
 from app.utils.managers import UserManager
 from app.utils.assets import region_art, hero_bg, health_overlay
+from app.utils.assets.dashboard_payloads import (
+    build_missions, build_activity, build_judge_reviews,
+)
 
 
 def _compute_tier(value):
@@ -129,83 +132,7 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
     hero_bg_data = hero_bg()
 
     # ── Missions (from scheduled tasks) ──
-    attr_keys = {"int", "sta", "fcs", "cha", "dsc"}
-    missions = []
-    for i, task in enumerate(scheduled_tasks):
-        sub = task.sub_activity
-        log_for_task = None
-        for log in date_logs:
-            if log.timetable_entry_id == task.id:
-                log_for_task = log
-                break
-
-        # Determine status from log
-        if log_for_task:
-            if log_for_task.status == "completed":
-                if log_for_task.exp_impact is not None and log_for_task.exp_impact < 0:
-                    status = "COMPLETED_LATE"
-                else:
-                    status = "COMPLETED"
-            elif log_for_task.status == "skipped":
-                status = "MISSED"
-            else:
-                status = "COMPLETED"
-        else:
-            status = "ACTIVE"
-
-        # Build attr_deltas from attribute_weights
-        weights = sub.attribute_weights or {}
-        attr_deltas = {}
-        for k, v in weights.items():
-            if v > 0:
-                attr_deltas[k.lower()] = max(1, round(v * sub.difficulty_multiplier))
-
-        # Determine target region from highest-weight attribute
-        target_region = "academy"
-        if weights:
-            top_attr = max(weights, key=weights.get)
-            region_map = {"INT": "academy", "STA": "river", "FCS": "moon", "CHA": "village", "DSC": "academy"}
-            target_region = region_map.get(top_attr, "academy")
-
-        # Difficulty dots
-        diff = min(5, max(1, int(sub.difficulty_multiplier)))
-
-        # Countdown
-        remaining = ""
-        if status == "ACTIVE" and task.end_time:
-            end_dt = datetime.combine(today, task.end_time)
-            delta = end_dt - now
-            if delta.total_seconds() > 0:
-                hours = int(delta.total_seconds() // 3600)
-                mins = int((delta.total_seconds() % 3600) // 60)
-                remaining = f"{hours}h {mins}m left"
-            else:
-                remaining = "Overdue"
-
-        # Duration (minutes) so the client can preserve it on reschedule
-        duration_minutes = 0
-        if task.start_time and task.end_time:
-            start_dt = datetime.combine(today, task.start_time)
-            end_dt = datetime.combine(today, task.end_time)
-            duration_minutes = int((end_dt - start_dt).total_seconds() // 60)
-            if duration_minutes <= 0:
-                duration_minutes = 0
-
-        missions.append({
-            "id": f"mission-{task.id}",
-            "tag": "MAIN" if i == 0 else ("DAILY" if i == 1 else "SIDE"),
-            "title": sub.name,
-            "status": status,
-            "difficulty": diff,
-            "attr_deltas": attr_deltas,
-            "attr_delta_str": " + ".join(f"{k.upper()} {v}" for k, v in attr_deltas.items()),
-            "xp": int(sub.calculate_potential_exp()),
-            "duration": duration_minutes,
-            "deadline": task.end_time.strftime("%H:%M") if task.end_time else "",
-            "countdown": remaining,
-            "streak_risk": -3 if i < 2 else 0,
-            "target_region": target_region,
-        })
+    missions = build_missions(scheduled_tasks, date_logs, today)
 
     # ── Seeds (placeholder — no seed model yet) ──
     seeds = [
@@ -216,39 +143,10 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
     ]
 
     # ── Judge reviews (persisted, one per penalized log, generated via LLM) ──
-    from app.utils.managers.judge_manager import JudgeManager
-    judge_reviews = []
-    for log in date_logs:
-        if log.exp_impact is not None and log.exp_impact < 0:
-            review = JudgeManager.get_or_create_for_log(log, dcp)
-            if review:
-                judge_reviews.append(JudgeManager.to_context_dict(review))
+    judge_reviews = build_judge_reviews(date_logs, dcp)
 
-    # ── Activity (today's completed logs) ──
-    activity = []
-    for log in date_logs:
-        if log.status == "completed":
-            # Determine target region from sub_activity weights
-            weights = log.sub_activity.attribute_weights if log.sub_activity else {}
-            target = "academy"
-            if weights:
-                top_attr = max(weights, key=weights.get)
-                region_map = {"INT": "academy", "STA": "river", "FCS": "moon", "CHA": "village", "DSC": "academy"}
-                target = region_map.get(top_attr, "academy")
-
-            # Find the attr with highest weight
-            primary_attr = "int"
-            if weights:
-                primary_attr = max(weights, key=lambda k: weights.get(k, 0)).lower()
-
-            activity.append({
-                "name": log.sub_activity.name if log.sub_activity else "Unknown",
-                "completed_at": log.completed_on.strftime("%H:%M") if log.completed_on else "",
-                "xp": log.exp_impact or 0,
-                "attr": primary_attr,
-                "attr_delta": 1,
-                "target_region": target,
-            })
+    # ── Activity (all of today's completion logs — completed, late, skipped) ──
+    activity = build_activity(date_logs)
 
     # ── World events (from today's data) ──
     world_events = []
