@@ -2,7 +2,7 @@
   <div class="grpg-panel-header">
     <h3 class="grpg-panel-title">System Judge</h3>
     {% if missed_count %}<span class="grpg-danger-pill" title="Missed tasks" aria-label="Missed tasks">{{ missed_count }} missed</span>{% endif %}
-    <a href="#" class="grpg-link" aria-label="View full system judge log">View log</a>
+    <a href="{{ url_for('views.judge_log') }}" class="grpg-link" aria-label="View full system judge log">View log</a>
   </div>
 
   {% set review = judge_reviews[0] if judge_reviews else none %}
@@ -64,5 +64,5 @@
     <p style="font-size:10px;color:var(--text-muted);margin-top:8px;text-align:center;">{{ review.review_status }}</p>
   {% endif %}
 
-  <a href="#" class="grpg-ghost-btn" style="display:block;text-align:center;margin-top:8px;">OPEN FULL LOG &rarr;</a>
+  <a href="{{ url_for('views.judge_log') }}" class="grpg-ghost-btn" style="display:block;text-align:center;margin-top:8px;">OPEN FULL LOG &rarr;</a>
 </div>

@@ -12,5 +12,6 @@ from .activity import Activity, SubActivity
 from .completion import CompletionLog
 from .timetable import Timetable
 from .level import Level
+from .judge import JudgeReview
 from .base import db ,BASE_EXP ,STANDARD_TIME_UNIT ,GRACE_PERIOD
 from .timetable import Timetable ,TimetableEntry ,WeekDay

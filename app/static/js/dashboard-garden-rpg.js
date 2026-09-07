@@ -45,37 +45,79 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ── Mission Toggles + expandable rows (H3) ──
+  // ── Mission helpers ──
+  function missionTaskId(row) {
+    var n = parseInt((row.getAttribute('data-mission-id') || '').replace('mission-', ''), 10);
+    return isNaN(n) ? null : n;
+  }
+
+  function nowFormatted() {
+    var d = new Date();
+    function p(v) { return (v < 10 ? '0' : '') + v; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+      'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function browserTimezone() {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Nairobi';
+    } catch (e) {
+      return 'Africa/Nairobi';
+    }
+  }
+
+  // ── Complete mission (✓ toggle) → backend ──
   document.querySelectorAll('.grpg-mission-status').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var row = this.closest('.grpg-mission-row');
-      var isDone = row.getAttribute('data-done') === 'true';
-      row.setAttribute('data-done', isDone ? 'false' : 'true');
-      this.setAttribute('aria-pressed', isDone ? 'false' : 'true');
-
+      if (btn.getAttribute('aria-pressed') === 'true') return; // one-way commit
+      var row = btn.closest('.grpg-mission-row');
+      var taskId = missionTaskId(row);
+      if (!taskId) return;
       var meta = row.querySelector('.grpg-mission-meta');
-      var xp = parseInt(this.getAttribute('data-xp')) || 0;
+      var xp = parseInt(btn.getAttribute('data-xp')) || 0;
+      var region = row.getAttribute('data-target-region');
+      var attrs = row.getAttribute('data-attr-deltas') || '';
 
-      if (!isDone) {
+      btn.disabled = true;
+      fetch('/api/complete/complete_activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timetable_entry_id: taskId,
+          status: 'completed',
+          completed_on: nowFormatted(),
+          comment: ''
+        })
+      }).then(function (res) {
+        if (res.status !== 201) {
+          return res.json().catch(function () { return {}; }).then(function (j) {
+            throw new Error((j && j.msg) || 'Status ' + res.status);
+          });
+        }
+        return res.json();
+      }).then(function (result) {
+        row.setAttribute('data-done', 'true');
+        btn.setAttribute('aria-pressed', 'true');
         meta.innerHTML = '<span class="grpg-done-label">\u2713 DONE</span>';
-        updateTopbarXP(xp);
 
-        // Feedback loop: identify target region and attrs from the row
-        var region = row.getAttribute('data-target-region');
-        var attrs = row.getAttribute('data-attr-deltas') || '';
+        var change = typeof result.exp_change === 'number' ? result.exp_change : xp;
+        updateTopbarXP(change);
+
         if (region) {
           meta.insertAdjacentHTML('beforeend',
             '<span class="grpg-inline-feedback">' + attrs + ' <span class="grpg-feedback-arrow">\u2192</span> ' + regionLabel(region) + '</span>');
           triggerRegionPulse(region);
         }
-      } else {
-        meta.textContent = row.getAttribute('data-time-range') || '';
-        updateTopbarXP(-xp);
-      }
+        showNotification(change >= 0 ? 'success' : 'warning', 'Mission Complete',
+          change >= 0 ? 'Gained <strong>' + change + '</strong> XP!' : 'Lost <strong>' + Math.abs(change) + '</strong> XP!');
+      }).catch(function (err) {
+        btn.disabled = false;
+        showNotification('danger', 'Error', 'Could not complete mission: ' + err.message);
+      });
     });
   });
 
-  // Toggle expanded mission detail when the row (not the status button) is clicked
+  // Toggle expanded mission detail when the row (not a button) is clicked
   document.querySelectorAll('.grpg-mission-row').forEach(function (row) {
     row.addEventListener('click', function (e) {
       if (e.target.closest('button')) return; // let button handlers deal with their own actions
@@ -83,19 +125,166 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Mission action buttons (START/RESCHEDULE/ABANDON) — demo interactions
-  document.querySelectorAll('.grpg-mission-action').forEach(function (btn) {
-    btn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var action = btn.getAttribute('data-action');
-      var row = btn.closest('.grpg-mission-row') ||
-           (btn.closest('.grpg-current-objective') ? null : null);
-      if (action === 'abandon' && row) {
+  // Resolve the mission row for an action button (objective block has no row → first ACTIVE mission)
+  function resolveMissionRow(btn) {
+    var row = btn.closest('.grpg-mission-row');
+    if (row) return row;
+    return document.querySelector('.grpg-mission-row[data-status="ACTIVE"]');
+  }
+
+  // ── RESCHEDULE (modal → PUT /api/timetable/task/<id>) ──
+  function openRescheduleModal(btn) {
+    var row = resolveMissionRow(btn);
+    var taskId = missionTaskId(row);
+    if (!taskId) { showNotification('warning', 'No Mission', 'No active mission to reschedule.'); return; }
+    var titleEl = row.querySelector('.grpg-mission-title');
+    var title = titleEl ? titleEl.textContent.trim() : 'Mission';
+    var duration = parseInt(row.getAttribute('data-duration')) || 0;
+
+    var existing = document.getElementById('grpgRescheduleModal');
+    if (existing) existing.remove();
+
+    var html = '<div class="modal fade" id="grpgRescheduleModal" tabindex="-1" aria-hidden="true">' +
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content grpg-modal">' +
+      '<div class="modal-header"><h5 class="modal-title">RESCHEDULE</h5>' +
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>' +
+      '<div class="modal-body">' +
+      '<div style="font-size:13px;color:var(--text-primary);margin-bottom:10px;">' + title + '</div>' +
+      '<label class="form-label" style="font-size:12px;">NEW START TIME</label>' +
+      '<input type="time" class="form-control" id="grpg-reschedule-time" value="09:00">' +
+      '</div><div class="modal-footer">' +
+      '<button type="button" class="btn-app btn-app-secondary" data-bs-dismiss="modal">Cancel</button>' +
+      '<button type="button" class="btn-app btn-app-primary" id="grpg-reschedule-confirm">Reschedule</button>' +
+      '</div></div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    var modal = new bootstrap.Modal(document.getElementById('grpgRescheduleModal'));
+    modal.show();
+
+    document.getElementById('grpgRescheduleModal').addEventListener('hidden.bs.modal', function () { this.remove(); });
+    document.getElementById('grpg-reschedule-confirm').addEventListener('click', function () {
+      var confirmBtn = this;
+      var start = document.getElementById('grpg-reschedule-time').value;
+      if (!start) {
+        showNotification('warning', 'Incomplete', 'Pick a start time.');
+        return;
+      }
+      var payload = { start_time: start, time_zone: browserTimezone() };
+      if (duration > 0) payload.task_duration = duration;
+
+      confirmBtn.disabled = true;
+      fetch('/api/timetable/task/' + taskId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        if (!res.ok) {
+          return res.json().catch(function () { return {}; }).then(function (j) {
+            throw new Error((j && j.msg) || 'Status ' + res.status);
+          });
+        }
+        return res.json();
+      }).then(function () {
+        modal.hide();
+        row.setAttribute('data-time-range', start);
+        row.setAttribute('data-status', 'RESCHEDULED');
+        var meta = row.querySelector('.grpg-mission-meta');
+        var done = row.getAttribute('data-done') === 'true';
+        if (meta && !done) {
+          meta.innerHTML = start + ' <span class="grpg-done-label" style="color:var(--text-muted);">\u23F1 RESCHEDULED</span>';
+        }
+        row.classList.remove('grpg-mission-expanded-open');
+        showNotification('info', 'Rescheduled', 'Mission moved to ' + start + '.');
+      }).catch(function (err) {
+        confirmBtn.disabled = false;
+        showNotification('danger', 'Error', 'Could not reschedule: ' + err.message);
+      });
+    });
+  }
+
+  // ── ABANDON (reason modal → complete_activity skipped) ──
+  function openAbandonModal(btn) {
+    var row = resolveMissionRow(btn);
+    var taskId = missionTaskId(row);
+    if (!taskId) { showNotification('warning', 'No Mission', 'No active mission to abandon.'); return; }
+    var titleEl = row.querySelector('.grpg-mission-title');
+    var title = titleEl ? titleEl.textContent.trim() : 'Mission';
+
+    var existing = document.getElementById('grpgAbandonModal');
+    if (existing) existing.remove();
+
+    var html = '<div class="modal fade" id="grpgAbandonModal" tabindex="-1" aria-hidden="true">' +
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content grpg-modal">' +
+      '<div class="modal-header"><h5 class="modal-title">ABANDON MISSION</h5>' +
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>' +
+      '<div class="modal-body">' +
+      '<div style="font-size:13px;color:var(--text-primary);margin-bottom:10px;">' + title + '</div>' +
+      '<div class="alert alert-warning" style="font-size:0.85rem;">Abandoning results in EXP penalties and a judge review.</div>' +
+      '<label class="form-label" style="font-size:12px;">REASON</label>' +
+      '<textarea class="form-control" id="grpg-abandon-reason" rows="2" placeholder="Why are you abandoning this?"></textarea>' +
+      '</div><div class="modal-footer">' +
+      '<button type="button" class="btn-app btn-app-secondary" data-bs-dismiss="modal">Cancel</button>' +
+      '<button type="button" class="btn-app btn-app-danger" id="grpg-abandon-confirm">Abandon</button>' +
+      '</div></div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    var modal = new bootstrap.Modal(document.getElementById('grpgAbandonModal'));
+    modal.show();
+
+    document.getElementById('grpgAbandonModal').addEventListener('hidden.bs.modal', function () { this.remove(); });
+    document.getElementById('grpg-abandon-confirm').addEventListener('click', function () {
+      var confirmBtn = this;
+      var reason = document.getElementById('grpg-abandon-reason').value.trim();
+      if (!reason) {
+        showNotification('warning', 'Incomplete', 'A reason is required to abandon.');
+        return;
+      }
+
+      confirmBtn.disabled = true;
+      fetch('/api/complete/complete_activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timetable_entry_id: taskId,
+          status: 'skipped',
+          reason: reason,
+          comment: ''
+        })
+      }).then(function (res) {
+        if (res.status !== 201) {
+          return res.json().catch(function () { return {}; }).then(function (j) {
+            throw new Error((j && j.msg) || 'Status ' + res.status);
+          });
+        }
+        return res.json();
+      }).then(function (result) {
+        modal.hide();
         row.setAttribute('data-status', 'ABANDONED');
         row.setAttribute('data-done', 'false');
         var meta = row.querySelector('.grpg-mission-meta');
         if (meta) meta.innerHTML = '<span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">\u2716 ABANDONED</span>';
         row.classList.remove('grpg-mission-expanded-open');
+
+        var change = typeof result.exp_change === 'number' ? result.exp_change : 0;
+        if (change) updateTopbarXP(change);
+        showNotification(change >= 0 ? 'success' : 'warning', 'Mission Abandoned',
+          change ? (change >= 0 ? 'Gained <strong>' + change + '</strong> XP' : 'Lost <strong>' + Math.abs(change) + '</strong> XP') : 'Recorded.');
+      }).catch(function (err) {
+        confirmBtn.disabled = false;
+        showNotification('danger', 'Error', 'Could not abandon mission: ' + err.message);
+      });
+    });
+  }
+
+  // Mission action buttons (RESCHEDULE / ABANDON) → wired modals
+  document.querySelectorAll('.grpg-mission-action').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var action = btn.getAttribute('data-action');
+      if (action === 'reschedule') {
+        openRescheduleModal(btn);
+      } else if (action === 'abandon') {
+        openAbandonModal(btn);
       }
     });
   });
@@ -287,17 +476,50 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── Judge Review Actions ──
   document.querySelectorAll('[data-review-id]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var id = this.getAttribute('data-review-id');
-      var action = this.getAttribute('data-action');
-      var container = this.closest('.grpg-panel');
-      this.disabled = true;
-      this.textContent = action === 'accept' ? 'ACCEPTED' : 'DISPUTED';
-      // Hide the other action button
-      var siblings = this.closest('div').querySelectorAll('button');
-      siblings.forEach(function (s) {
-        if (s !== btn) s.disabled = true;
-      });
-      container.querySelector('.grpg-penalty-row').style.display = 'none';
+      var id = btn.getAttribute('data-review-id');
+      var action = btn.getAttribute('data-action');
+      var container = btn.closest('.grpg-panel');
+
+      function finalize() {
+        btn.disabled = true;
+        btn.textContent = action === 'accept' ? 'ACCEPTED' : 'DISPUTED';
+        var siblings = btn.closest('div').querySelectorAll('button');
+        siblings.forEach(function (s) {
+          if (s !== btn) s.disabled = true;
+        });
+        var penaltyRow = container.querySelector('.grpg-penalty-row');
+        if (penaltyRow) penaltyRow.style.display = 'none';
+      }
+
+      if (action === 'accept') {
+        fetch('/api/judge/' + id + '/accept', { method: 'POST' })
+          .then(function (res) { if (!res.ok) throw new Error('Status ' + res.status); return res.json(); })
+          .then(function () { finalize(); showNotification('success', 'System Judge', 'Verdict accepted.'); })
+          .catch(function (e) { showNotification('danger', 'Error', 'Could not accept: ' + e.message); });
+        return;
+      }
+
+      var reason = prompt('Why do you dispute this review?');
+      if (!reason) return;
+      fetch('/api/judge/' + id + '/dispute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason })
+      })
+        .then(function (res) { if (!res.ok) throw new Error('Status ' + res.status); return res.json(); })
+        .then(function (result) {
+          var metrics = result.metrics || {};
+          container.querySelectorAll('.grpg-metric-row').forEach(function (row) {
+            var label = row.querySelector('span').textContent.toLowerCase();
+            if (metrics[label] !== undefined) {
+              row.querySelector('.grpg-bar-fill').style.width = metrics[label] + '%';
+              row.querySelector('span:last-child').textContent = metrics[label] + '%';
+            }
+          });
+          finalize();
+          showNotification('warning', 'System Judge', 'Verdict re-judged. Status: DISPUTED.');
+        })
+        .catch(function (e) { showNotification('danger', 'Error', 'Could not dispute: ' + e.message); });
     });
   });
 

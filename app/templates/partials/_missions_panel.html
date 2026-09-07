@@ -15,7 +15,6 @@
         {% if objective.countdown %}&middot; <span style="color:var(--accent-warning);">{{ objective.countdown }}</span>{% endif %}
       </div>
       <div style="display:flex;gap:6px;">
-        <button class="grpg-solid-btn grpg-mission-action" data-action="start" aria-label="Start mission {{ objective.title }}">START MISSION</button>
         <button class="grpg-ghost-btn grpg-mission-action" data-action="reschedule" aria-label="Reschedule {{ objective.title }}">RESCHEDULE</button>
       </div>
     </div>
@@ -37,6 +36,7 @@
            data-target-region="{{ m.target_region }}"
            data-attr-deltas="{{ m.attr_delta_str }}"
            data-time-range="{{ m.deadline }}"
+           data-duration="{{ m.duration }}"
            data-status="{{ m.status }}">
         <div class="grpg-mission-top">
           <button class="grpg-mission-status {% if m.status == 'COMPLETED' %}grpg-mission-completed{% elif m.status == 'COMPLETED_LATE' %}grpg-mission-late{% endif %}"
@@ -112,7 +112,6 @@
             </div>
           </div>
           <div style="display:flex;gap:6px;margin-top:10px;">
-            <button class="grpg-solid-btn grpg-mission-action" style="flex:1;" data-action="start" aria-label="Start {{ m.title }}">START MISSION</button>
             <button class="grpg-ghost-btn grpg-mission-action" style="flex:1;" data-action="reschedule" aria-label="Reschedule {{ m.title }}">RESCHEDULE</button>
             <button class="grpg-ghost-btn grpg-mission-action grpg-mission-abandon" style="flex:1;" data-action="abandon" aria-label="Abandon {{ m.title }}">ABANDON</button>
           </div>

@@ -182,6 +182,15 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
             else:
                 remaining = "Overdue"
 
+        # Duration (minutes) so the client can preserve it on reschedule
+        duration_minutes = 0
+        if task.start_time and task.end_time:
+            start_dt = datetime.combine(today, task.start_time)
+            end_dt = datetime.combine(today, task.end_time)
+            duration_minutes = int((end_dt - start_dt).total_seconds() // 60)
+            if duration_minutes <= 0:
+                duration_minutes = 0
+
         missions.append({
             "id": f"mission-{task.id}",
             "tag": "MAIN" if i == 0 else ("DAILY" if i == 1 else "SIDE"),
@@ -191,6 +200,7 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
             "attr_deltas": attr_deltas,
             "attr_delta_str": " + ".join(f"{k.upper()} {v}" for k, v in attr_deltas.items()),
             "xp": int(sub.calculate_potential_exp()),
+            "duration": duration_minutes,
             "deadline": task.end_time.strftime("%H:%M") if task.end_time else "",
             "countdown": remaining,
             "streak_risk": -3 if i < 2 else 0,
@@ -205,21 +215,14 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
          "potential_xp": 60, "potential_attr": "fcs"},
     ]
 
-    # ── Judge reviews (from today's penalized logs) ──
+    # ── Judge reviews (persisted, one per penalized log, generated via LLM) ──
+    from app.utils.managers.judge_manager import JudgeManager
     judge_reviews = []
     for log in date_logs:
         if log.exp_impact is not None and log.exp_impact < 0:
-            judge_reviews.append({
-                "id": log.id,
-                "task": log.sub_activity.name if log.sub_activity else "Unknown",
-                "status": log.status.upper(),
-                "user_reason": log.reason or "",
-                "metrics": {"validity": round(dcp * 100), "responsibility": round(dcp * 95),
-                            "consistency": min(100, round(dcp * 100 + 10))},
-                "penalty": log.exp_impact,
-                "discipline_delta": 0,
-                "review_status": "PENDING",
-            })
+            review = JudgeManager.get_or_create_for_log(log, dcp)
+            if review:
+                judge_reviews.append(JudgeManager.to_context_dict(review))
 
     # ── Activity (today's completed logs) ──
     activity = []

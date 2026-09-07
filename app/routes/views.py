@@ -9,6 +9,8 @@ stats, and timetable pages.
 from flask import Blueprint, render_template, redirect, url_for, flash, session,request
 from datetime import date,time
 from app.models import User, Activity, CompletionLog, Level
+from app.models.judge import JudgeReview
+from app.utils.managers.judge_manager import JudgeManager
 from app.models.base import db
 from app.utils.schedulers import TaskScheduler
 from app.utils.managers import UserManager
@@ -291,6 +293,17 @@ def timetable():
 @views_bp.route('/help')
 def help():
     return render_template('guide.html')
+
+@views_bp.route('/judge-log')
+def judge_log():
+    """Render the full System Judge log for the logged-in user."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+
+    reviews = JudgeReview.query.filter_by(user_id=user.id)\
+        .order_by(JudgeReview.created_at.desc()).all()
+    return render_template('judge_log.html', user=user, reviews=reviews)
 @views_bp.route("/docs")
 def docs():
     return render_template('docs.html',API_URL='https://funcwithme.com',TESTING_USED='test token')

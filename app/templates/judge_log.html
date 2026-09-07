@@ -1,0 +1,127 @@
+{% extends "base2.html" %}
+
+{% block title %}Judge Log — {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="grpg-profile" role="main">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;">
+    <h1 class="grpg-panel-title" style="font-size:16px;">SYSTEM JUDGE LOG</h1>
+    <a href="{{ url_for('views.dashboard') }}" class="grpg-ghost-btn">BACK TO GARDEN</a>
+  </div>
+
+  {% if reviews %}
+    <div class="grpg-stats-grid">
+      {% for review in reviews %}
+        <section class="grpg-panel" id="judge-review-{{ review.id }}" aria-label="Judge review {{ review.id }}">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+            <h3 class="grpg-panel-title" style="font-size:13px;">{{ review.task_name }}</h3>
+            <span class="grpg-done-label" style="font-size:10px;">
+              {% if review.task_status == 'MISSED' %}&#x2717; MISSED
+              {% elif review.task_status == 'COMPLETED_LATE' %}&#x23F0; LATE
+              {% else %}{{ review.task_status }}{% endif %}
+            </span>
+          </div>
+
+          {% if review.user_reason %}
+            <p style="font-size:11px;color:var(--text-muted);margin:6px 0 10px;font-style:italic;">"{{ review.user_reason }}"</p>
+          {% endif %}
+
+          {% set metrics = [review.validity, review.responsibility, review.consistency] %}
+          {% set labels = [('Validity', 'var(--accent-info)'), ('Responsibility', 'var(--accent-info)'), ('Consistency', 'var(--accent-info)')] %}
+          {% for label, color in labels %}
+            <div class="grpg-metric-row">
+              <span>{{ label }}</span>
+              <div class="grpg-bar-track" style="flex:1;" role="progressbar" aria-valuenow="{{ metrics[loop.index0] }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ label }} score">
+                <div class="grpg-bar-fill" style="width:{{ metrics[loop.index0] }}%;background:{{ color }};"></div>
+              </div>
+              <span>{{ metrics[loop.index0] }}%</span>
+            </div>
+          {% endfor %}
+
+          <div class="grpg-penalty-row">
+            <span>Penalty</span>
+            <span class="grpg-penalty-value" style="color:var(--accent-danger);">{{ review.penalty }} XP &middot; {{ review.discipline }}% disc.</span>
+          </div>
+
+          {% if review.explanation %}
+            <p style="font-size:11px;color:var(--text-secondary);margin-top:8px;">{{ review.explanation }}</p>
+          {% endif %}
+          {% if review.dispute_reason %}
+            <p style="font-size:11px;color:var(--accent-warning);margin-top:4px;">Dispute: "{{ review.dispute_reason }}"</p>
+          {% endif %}
+
+          <div class="grpg-mission-detail" style="margin-top:8px;justify-content:space-between;">
+            <span class="grpg-done-label" style="font-size:10px;">
+              {% if review.review_status == 'PENDING' %}&#x23F3; PENDING
+              {% elif review.review_status == 'ACCEPTED' %}&#x2713; ACCEPTED
+              {% elif review.review_status == 'DISPUTED' %}&#x26A0; DISPUTED
+              {% else %}{{ review.review_status }}{% endif %}
+            </span>
+            <span class="font-mono" style="font-size:10px;color:var(--text-muted);">{{ review.created_at.strftime('%b %d %H:%M') if review.created_at else '' }}</span>
+          </div>
+
+          {% if review.review_status == 'PENDING' %}
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="grpg-solid-btn" style="flex:1;" data-review-id="{{ review.id }}" data-action="accept">ACCEPT</button>
+              <button class="grpg-ghost-btn" style="flex:1;" data-review-id="{{ review.id }}" data-action="dispute">DISPUTE</button>
+            </div>
+          {% endif %}
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="grpg-panel" style="text-align:center;padding:32px 0;color:var(--text-muted);font-size:13px;">
+      No reviews yet &middot; you're clear.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('[data-review-id]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-review-id');
+      var action = btn.getAttribute('data-action');
+      var panel = document.getElementById('judge-review-' + id);
+
+      function finalize() {
+        btn.disabled = true;
+        btn.textContent = action === 'accept' ? 'ACCEPTED' : 'DISPUTED';
+        panel.querySelectorAll('button').forEach(function (s) { s.disabled = true; });
+      }
+
+      if (action === 'accept') {
+        fetch('/api/judge/' + id + '/accept', { method: 'POST' })
+          .then(function (res) { if (!res.ok) throw new Error('Request failed'); return res.json(); })
+          .then(function () { finalize(); showNotification('success', 'Review', 'Verdict accepted.'); })
+          .catch(function (e) { showNotification('danger', 'Error', 'Could not accept: ' + e.message); });
+        return;
+      }
+
+      // Dispute → prompt for a reason inline
+      var reason = prompt('Why do you dispute this review?');
+      if (!reason) return;
+      fetch('/api/judge/' + id + '/dispute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason })
+      })
+        .then(function (res) { if (!res.ok) throw new Error('Request failed'); return res.json(); })
+        .then(function (result) {
+          var metrics = result.metrics || {};
+          panel.querySelectorAll('.grpg-metric-row').forEach(function (row) {
+            var label = row.querySelector('span').textContent.toLowerCase();
+            if (metrics[label] !== undefined) {
+              row.querySelector('.grpg-bar-fill').style.width = metrics[label] + '%';
+              row.querySelector('span:last-child').textContent = metrics[label] + '%';
+            }
+          });
+          finalize();
+          showNotification('warning', 'Review', 'Verdict re-judged. Status: DISPUTED.');
+        })
+        .catch(function (e) { showNotification('danger', 'Error', 'Could not dispute: ' + e.message); });
+    });
+  });
+</script>
+{% endblock %}
