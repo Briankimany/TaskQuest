@@ -250,6 +250,33 @@ def stats():
 
     return render_template('stats.html', user=user, completion_history=completion_history)
 
+@views_bp.route('/garden')
+def garden():
+    """Render the garden world page."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+    return render_template('garden_rpg.html', user=user)
+
+
+@views_bp.route('/journal')
+def journal():
+    """Render the journal page."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+    return render_template('journal.html', user=user)
+
+
+@views_bp.route('/shop')
+def shop():
+    """Render the shop page."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+    return render_template('shop.html', user=user)
+
+
 @views_bp.route('/timetable')
 def timetable():
     """Render the timetable planning page."""

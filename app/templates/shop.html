@@ -1,0 +1,26 @@
+{% extends "base2.html" %}
+
+{% block title %}Shop — {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="grpg-profile" role="main">
+  <div class="grpg-profile-header">
+    <div class="grpg-profile-avatar-wrap">
+      <img src="{{ url_for('static', filename='assets/img/favicon.ico') }}" alt="" class="grpg-avatar">
+    </div>
+    <div>
+      <h1 style="margin:0;font-size:24px;color:var(--text-primary);">Shop</h1>
+      <p style="margin:2px 0 0;color:var(--text-secondary);font-size:12px;">Spend your hard-earned progress, {{ user.username }}.</p>
+      <p style="margin:2px 0 0;color:var(--text-muted);font-size:11px;">Boosts, cosmetics, and rewards will live here.</p>
+    </div>
+  </div>
+
+  <div class="grpg-panel" style="margin-top:16px;">
+    <h2 class="grpg-panel-title">Under construction</h2>
+    <p style="font-size:12px;color:var(--text-muted);">
+      The Shop page is coming soon. For now, head back to the dashboard.
+    </p>
+    <a href="{{ url_for('views.dashboard') }}" class="grpg-solid-btn" style="margin-top:8px;">&larr; Back to Dashboard</a>
+  </div>
+</div>
+{% endblock %}
