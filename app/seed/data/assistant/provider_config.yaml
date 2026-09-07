@@ -1,0 +1,11 @@
+# ── Provider transport config ──────────────────────────────────────────────
+# Transport concerns only. Prompt templates live in llm_prompts.yaml.
+# default_model is an OmniRoute combo id that auto-switches between free
+# provider connections (see OmniRoute dashboard -> Combos).
+
+default_model: free-coders
+base_url: http://127.0.0.1:20128/v1
+api_key_env: OMNIROUTE_API_KEY
+session_id_env: OMNIROUTE_SESSION_ID
+timeout: 60.0
+retries: 3

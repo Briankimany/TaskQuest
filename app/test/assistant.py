@@ -4,15 +4,16 @@ sys.path.append(str(Path().cwd().parent.parent.absolute()))
 
 from time import sleep
 from app.utils.routes_api_utils import format_time
-from app.utils.managers.llm_assistant import * 
+from app.utils.managers.ai_assistant import AIAssistant
+from app.utils.managers.penalty_evaluator import PenaltyEvaluator, LlmPenalty
+from app.utils.exceptions import AssistantError
 from datetime import datetime,timedelta ,time
 import json
 
 from concurrent.futures import ThreadPoolExecutor ,as_completed
 from tqdm.auto import tqdm 
-from groq import BadRequestError
 
-assistant = LLMAssistant()
+assistant = PenaltyEvaluator(AIAssistant())
 
 starting = datetime.combine(datetime.now(),time(hour=13))
 end = starting + timedelta(hours=4)
@@ -119,10 +120,7 @@ timing_profiles = {
 
 results = {}
 models = {
-    "llama3-70b-8192": assistant.config.get("default_model"),
-    "qwen-qwq-32b": assistant.config.get("qwen"),
-    "deepseek-r1-distill-llama-70b": assistant.config.get("deep_seek"),
-    "gemma2-9b-it": assistant.config.get("google")
+    "default_provider": assistant.assistant.config.get("default_model"),
 }
 
 def run_test(*args):
@@ -135,12 +133,11 @@ def run_test(*args):
             reason=args[3],
             task_difficulty=args[4],
             task_description=args[5],
-            model=args[6],
-            test=args[7] 
+            model=args[6]
         )
 
         return g
-    except BadRequestError as e:
+    except (AssistantError, ValueError) as e:
         print(f"Error : | {str(e)}")
         return None 
 
@@ -163,7 +160,7 @@ for model_name, model_id in models.items():
 
             def test(reason_type,reason_text):
                
-                args = (start_time,completion_time,scheduled_duration,reason_text,task_difficulty,activity,model_id,False)
+                args = (start_time,completion_time,scheduled_duration,reason_text,task_difficulty,activity,model_id)
                 g = run_test(*args)
 
                 score ,model_reasoning = None ,None

@@ -1,21 +1,19 @@
+# ── Prompt templates (domain logic) ────────────────────────────────────────
+# Transport config (base_url, default_model, escriptions) lives in
+# provider_config.yaml — this file holds ONLY prompts.
 
-default_model: llama3-70b-8192
-qwen: qwen-qwq-32b
-deep_seek: deepseek-r1-distill-llama-70b
-google: gemma2-9b-it
 prompts:
   late_penalty:
-    model: qwen-qwq-32b
     system_prompt: |
       You are a penalty calculator. Analyze task completion timing and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
       - The reason provided (Key factor. Evaluate if the reason was within the user's control. If it was, treat it as negligence.)
       - How late the completion was relative to scheduled duration
       - Task difficulty
-      - The maximum  value for a task's difficulty is 2.0 with the minimum as 0.1.
-      - If the task was completed to early and it has not been mentioned in  the reason, treat that as neglegence.
+      - The maximum value for a task's difficulty is 2.0 with the minimum as 0.1.
+      - If the task was completed too early and it has not been mentioned in the reason, treat that as negligence.
       - Even if the user provides an excuse, evaluate its reasonableness. For example, seeking early gratification to improve mood should be penalized heavily.
       - If the reason was outside the user's control, the penalty should be zero or minimal, depending on the degree of control.
-      
+
       Respond only with JSON using this format: {"penalty_score": 0.5, "explanation": "..."}
     user_prompt: |
       Task: {task_description}
@@ -23,29 +21,45 @@ prompts:
       Scheduled: {start_time} for {scheduled_duration} mins
       Completed: {completion_time}
       Reason: {reason}
-      
-      Calculate penalty score considering: 
+
+      Calculate penalty score considering:
       1. Time deviation from schedule
       2. Task difficulty
       3. Reason strength
   skip_penalty:
-    model: qwen-qwq-32b
     system_prompt: |
-      You are an  penalty calculator. Analyze skip reasons and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
+      You are a penalty calculator. Analyze skip reasons and return a penalty score between 0 (no penalty) and 1 (full penalty) as JSON. Consider:
       - Reason validity
       - The reason provided (Key factor. Evaluate if the reason was within the user's control. If it was, treat it as negligence.)
       - Task difficulty
-      - The maximum  value for a task's difficulty is 2.0 with the minimum as 0.1.
+      - The maximum value for a task's difficulty is 2.0 with the minimum as 0.1.
       - Even if the user provides an excuse, evaluate its reasonableness. For example, seeking early gratification to improve mood should be penalized heavily.
       - If the reason was outside the user's control, the penalty should be zero or minimal, depending on the degree of control.
-      
+
       Return format: {"penalty_score": 0.5, "explanation": "..."}
     user_prompt: |
       Task: {task_description}
       Difficulty: {task_difficulty}
       Reason: {reason}
-  
+
       Calculate penalty score considering:
       1. Reason legitimacy
-    
- 
+  judge_review:
+    system_prompt: |
+      You are the System Judge for a discipline RPG. You evaluate a missed, late, or skipped task and score the player on three metrics from 0 to 100. Consider:
+      - The player's stated reason and whether it was within their control (negligence should score low).
+      - Whether the task was penalized appropriately given its importance and the reason.
+      - Consistency and responsibility shown by how the player handled the miss (acknowledged it, gave a valid reason).
+      Do not inflate scores. Be strict but fair.
+
+      Respond only with JSON using this format:
+      {"validity": 42, "responsibility": 55, "consistency": 68, "explanation": "..."}
+    user_prompt: |
+      Task: {task_name}
+      Why it counts: {task_status}
+      Player's reason: {reason}
+      Existing penalty: {penalty}
+      Today's discipline score: {discipline}
+      Additional dispute context (may be empty): {dispute_reason}
+
+      Score validity, responsibility, and consistency (0-100 integers) and explain your verdict in one short paragraph.

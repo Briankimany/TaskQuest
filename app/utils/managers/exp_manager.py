@@ -2,7 +2,9 @@ from datetime import datetime, time, timedelta
 from typing import Optional
 from app.utils.logger import api_logger
 from app.models import SubActivity ,User ,db
-from .llm_assistant import LLMAssistant ,AssistantError,APIConnectionError,APITimeoutError,BadRequestError
+from .ai_assistant import AIAssistant
+from .penalty_evaluator import PenaltyEvaluator, LlmPenalty
+from app.utils.exceptions import AssistantError
 from app.utils.routes_api_utils import format_time
 
 class ExpManager:
@@ -10,7 +12,7 @@ class ExpManager:
     Handles all EXP-related calculations with strict input validation and error handling.
     Implements the EXP calculation rules from the project documentation.
     """
-    assistant = LLMAssistant()
+    assistant = PenaltyEvaluator(AIAssistant())
     STANDARD_UNIT_TIME = timedelta(hours=1)
     GRACE_PERIOD = timedelta(minutes=15)
     
@@ -211,8 +213,11 @@ class ExpManager:
             if penalty:
                 penalty = penalty.score * exp_per_task
 
-        except (AssistantError,APIConnectionError,APITimeoutError,BadRequestError):
+        except (AssistantError, ValueError):
             self.logger.warning("Un able to use assistant for late penalty calculations. ")
+            penalty = None
+
+        if penalty is None:
             penalty = max(0, (time_diff / scheduled_time) * exp_per_task) 
 
         
@@ -237,8 +242,11 @@ class ExpManager:
             if penalty_multiplier:
                 penalty_multiplier = penalty_multiplier.score
 
-        except (AssistantError,APIConnectionError,APITimeoutError,BadRequestError):
+        except (AssistantError, ValueError):
             self.logger.warning("Un able to use assistant for skipped penalty calculations. ")
+            penalty_multiplier = None
+
+        if penalty_multiplier is None:
             penalty_multiplier = self._get_skip_penalty_multiplier(reason)
 
         penalty = -int(base_exp * difficulty_multiplier * penalty_multiplier)
