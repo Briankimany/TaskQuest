@@ -15,9 +15,9 @@
   --bg-hover: #1C2738;
 
   /* Borders — muted blue-gray technical lines */
-  --border: rgba(150, 180, 200, 0.18);
-  --border-hairline: rgba(150, 180, 200, 0.16);
-  --border-strong: rgba(160, 190, 210, 0.32);
+  --border: rgba(42, 48, 64, 0.12);
+  --border-hairline: rgba(42, 48, 64, 0.18);
+  --border-strong: rgba(42, 48, 64, 0.28);
 
   /* Text */
   --text-primary: #F2F4F7;
@@ -82,7 +82,7 @@
   --radius-pill: 999px;
 
   /* Translucent HUD glass surface */
-  --panel-glass: linear-gradient(135deg, rgba(18,25,34,0.82), rgba(7,12,19,0.88));
+  --panel-glass: linear-gradient(135deg, rgba(15, 19, 29, 0.85), rgba(7, 11, 17, 0.90));
   --panel-blur: blur(10px);
   --icon-glass: rgba(150,180,200,0.10);
 
