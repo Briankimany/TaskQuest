@@ -1,60 +1,50 @@
-<div class="grpg-hero">
-  {# ── Hero Background (seasonal, with placeholder fallback) ── #}
-  {% if hero_bg_data.exists %}
-    <img src="{{ url_for('static', filename=hero_bg_data.path) }}"
-         class="grpg-hero-bg" alt=""
-         onerror="this.outerHTML='<div class=&quot;grpg-hero-bg grpg-placeholder-hero&quot;></div>';"
-         loading="eager">
-  {% else %}
-    <div class="grpg-hero-bg grpg-placeholder-hero"></div>
-  {% endif %}
-
-  {# ── Health overlay (mood tint on top of hero) ── #}
-  {% if garden_health.overlay.exists %}
-    <img src="{{ url_for('static', filename=garden_health.overlay.path) }}"
-         class="grpg-health-overlay" alt=""
-         onerror="this.remove();"
-         loading="eager">
-  {% endif %}
+<{# ── Garden Scene Overlay (center column).
+     No background art here — the full-bleed scene lives in _hero_scene.html
+     and shows through this transparent column. #}
+<div class="grpg-hero-overlay">
 
   {# ── Quote + player identity ── #}
   <div class="grpg-hero-identity">
     <p class="grpg-quote">"Discipline today.<br>Freedom tomorrow."</p>
-    <p class="grpg-garden-label">{{ player.garden_name }} &middot; Day {{ player.day }} &middot; {{ player.season }}</p>
+    <p class="grpg-garden-label">{{ player.garden_name }} &middot; Day {{ player.day }}</p>
   </div>
 
-  {# ── Region overlays (tier-driven art or placeholder) ── #}
+  {# ── Region HUD location cards (Academy / River / Moon) — embedded in the scene ── #}
   {% set region_positions = {
-    'academy': {'top': '32%', 'left': '46%'},
-    'river':   {'top': '48%', 'left': '22%'},
-    'moon':    {'top': '45%', 'left': '76%'},
-    'village': {'top': '68%', 'left': '58%'}
+    'academy': {'top': '28%', 'left': '50%'},
+    'river':   {'top': '56%', 'left': '33%'},
+    'moon':    {'top': '48%', 'left': '67%'}
   } %}
 
-  {% for key, region in regions.items() %}
+  {% set region_icons = {
+    'academy': '<path d="M8 2 2 5v8h12V5L8 2z"/><path d="M8 2v8M11 10v-2.5"/>',
+    'river':   '<path d="M8 2.5s5 5.2 5 8A5 5 0 0 1 8 15.5a5 5 0 0 1-5-5c0-2.8 5-8 5-8z"/><path d="M7 5.5a2.6 2.6 0 0 0-2 4"/>',
+    'moon':    '<path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.75 4.75 0 0 0 7 7z"/>'
+  } %}
+
+  {% for key in ['academy', 'river', 'moon'] %}
+    {% set region = regions[key] %}
     {% set pos = region_positions[key] %}
-    <div class="grpg-region-art-wrapper"
-         style="top:{{ pos.top }};left:{{ pos.left }};transform:translate(-50%,-50%);--badge-color:var(--accent-{{ region.code }});"
+    <div class="grpg-region-art-wrapper grpg-loc-card"
+         style="top:{{ pos.top }};left:{{ pos.left }};transform:translate(-50%,-50%);--loc-color:var(--accent-{{ region.code }});"
          data-region="{{ key }}"
          data-tier="{{ region.tier }}"
          role="button" tabindex="0"
+         aria-expanded="false"
          aria-label="{{ region.name }} region, {{ region.attr }} level {{ region.value }}, tier {{ region.tier }}">
 
-      {% if region.art.exists %}
-        <img src="{{ url_for('static', filename=region.art.path) }}"
-             class="grpg-region-art" alt=""
-             onerror="this.outerHTML='<div class=&quot;grpg-region-art grpg-placeholder-region&quot; style=&quot;--placeholder-color:var(--accent-{{ region.code }});&quot;><span class=&quot;grpg-placeholder-label&quot;>{{ region.name }} &middot; T{{ region.tier }}</span></div>';"
-             loading="lazy">
-      {% else %}
-        <div class="grpg-region-art grpg-placeholder-region"
-             style="--placeholder-color: var(--accent-{{ region.code }});">
-          <span class="grpg-placeholder-label">{{ region.name }} &middot; T{{ region.tier }}</span>
-        </div>
-      {% endif %}
+      <span class="grpg-loc-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">{{ region_icons[key] | safe }}</svg>
+      </span>
+      <span class="grpg-loc-name">{{ region.name }}</span>
+      <span class="grpg-loc-divider"></span>
+      <span class="grpg-loc-value">{{ region.attr }} {{ region.value }}</span>
 
-      <div class="grpg-region-badge" style="background:var(--accent-{{ region.code }});">
-        <span class="grpg-region-badge-text">{{ region.name }} &middot; {{ region.attr }} {{ region.value }}</span>
-      </div>
+      {# connector line + glowing scene dot below the card #}
+      <span class="grpg-loc-link" aria-hidden="true">
+        <span class="grpg-loc-line"></span>
+        <span class="grpg-loc-dot"></span>
+      </span>
 
       {# ── Expanded info panel (shown on click via JS) ── #}
       <div class="grpg-region-expanded" hidden>
@@ -85,7 +75,7 @@
   {# ── Petals Card (Today's Tasks) ── #}
   <div class="grpg-overlay-card" style="bottom:4%;left:3%;">
     <div class="grpg-panel-header" style="margin-bottom:4px;">
-      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">&#x1F338; PETALS</h3>
+      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">PETALS</h3>
     </div>
     <p class="grpg-overlay-sub">Today's Tasks</p>
     <ul class="grpg-checklist" id="grpg-petals-list">
@@ -99,14 +89,15 @@
   </div>
 
   {# ── Seeds Card (Future Quests) ── #}
-  <div class="grpg-overlay-card" style="bottom:4%;left:42%;">
+  <div class="grpg-overlay-card" style="bottom:4%;left:64%;">
     <div class="grpg-panel-header" style="margin-bottom:4px;">
-      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">&#x1F331; SEEDS</h3>
+      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">SEEDS</h3>
     </div>
     <p class="grpg-overlay-sub">Future Quests</p>
     <ul class="grpg-checklist">
+      <li class="grpg-lock-row">&#x1F512; <span>Learn Japanese</span></li>
+      <li class="grpg-lock-row">&#x1F512; <span>Finish Portfolio</span></li>
       <li class="grpg-lock-row">&#x1F512; <span>Morning Routine</span></li>
-      <li class="grpg-lock-row">&#x1F512; <span>Weekly Review</span></li>
     </ul>
     <button class="grpg-ghost-btn grpg-add-seed">+ ADD NEW SEED</button>
   </div>

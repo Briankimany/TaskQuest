@@ -28,8 +28,10 @@
   </div>
 
   {% if missions %}
+    {% set mission_tag_colors = {'MAIN': 'var(--accent-info)', 'DAILY': 'var(--accent-dsc)', 'SIDE': 'var(--accent-fcs)'} %}
     {% for m in missions %}
       {% set attr_code = m.target_region|replace('academy','int')|replace('river','sta')|replace('moon','fcs')|replace('village','cha') %}
+      {% set tag_color = mission_tag_colors.get(m.tag, 'var(--accent-pink)') %}
       <div class="grpg-mission-row" data-mission-id="{{ m.id }}"
            data-done="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE') else 'false' }}"
            data-target-region="{{ m.target_region }}"
@@ -44,7 +46,7 @@
                   data-xp="{{ m.xp }}">
             {% if m.status == 'COMPLETED' %}&#x2713;{% elif m.status == 'COMPLETED_LATE' %}&#x23F0;{% elif m.status == 'MISSED' %}&#x2717;{% endif %}
           </button>
-          <span class="grpg-mission-tag" style="color:var(--accent-{{ attr_code }});">[{{ m.tag }}]</span>
+          <span class="grpg-mission-tag" style="color:{{ tag_color }};">[{{ m.tag }}]</span>
           <span class="grpg-mission-title">{{ m.title }} {% if m.status == 'LOCKED' %}&#x1F512;{% elif m.status == 'ABANDONED' %}&#x2716;{% elif m.status == 'RESCHEDULED' %}&#x23F1;{% endif %}</span>
           <span class="grpg-mission-xp">{% if m.xp > 0 %}+{{ m.xp }} XP{% endif %}</span>
         </div>

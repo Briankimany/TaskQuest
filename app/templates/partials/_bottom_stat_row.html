@@ -2,14 +2,17 @@
 
   <!-- Card 1: Player Identity -->
   <div class="grpg-stat-card">
-    <h3 class="grpg-stat-card-title">Wayfarer</h3>
+    <h3 class="grpg-stat-card-title">
+      <svg class="grpg-card-icon grpg-wayfarer-crest" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3DDC84" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 20 5v6c0 4.5-3.2 8.2-8 11-4.8-2.8-8-6.5-8-11V5l8-3z"/><path d="M9.5 11.5l2 2 3.5-4"/></svg>
+      Wayfarer
+    </h3>
     <div>
       <div style="font-size:22px;font-weight:700;color:var(--text-primary);">{{ player.title }}</div>
       <div style="font-size:11px;color:var(--text-muted);">NEXT: {{ player.next_title }}</div>
     </div>
     <div>
-      <div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:var(--font-mono);">
-        Streak {{ streak }}
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:var(--font-numeral);font-variant-numeric:tabular-nums;">
+        &#x1F525; Streak {{ streak }}
         {% if streak_best %}&middot; Best {{ streak_best }}{% endif %}
       </div>
       <div style="font-size:11px;color:var(--text-secondary);">
@@ -29,16 +32,25 @@
     </div>
   </div>
 
-  <!-- Card 2: XP Flow -->
+  <!-- Card 2: XP Flow (fixed y-scale 0/800/1.6k/2.4k, Mon–Sun x labels) -->
   <div class="grpg-stat-card">
-    <h3 class="grpg-stat-card-title">XP Flow</h3>
-    <canvas id="grpg-xp-chart" height="100" role="img" aria-label="XP earned over the last 7 days"></canvas>
+    <h3 class="grpg-stat-card-title">
+      <svg class="grpg-card-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3AB6F0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M3 21h18"/></svg>
+      XP Flow
+    </h3>
+    <canvas id="grpg-xp-chart" height="86" role="img" aria-label="XP earned over the last 7 days"></canvas>
+    <div class="grpg-chart-x" aria-hidden="true">
+      {% for lbl in (xp_week_labels if xp_week_labels is defined else ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) %}<span>{{ lbl }}</span>{% endfor %}
+    </div>
     <script type="application/json" id="grpg-xp-data">{{ xp_week|tojson if xp_week is defined else '[0,0,0,0,0,0,0]'|safe }}</script>
   </div>
 
   <!-- Card 3: Discipline -->
   <div class="grpg-stat-card">
-    <h3 class="grpg-stat-card-title">Discipline</h3>
+    <h3 class="grpg-stat-card-title">
+      <svg class="grpg-card-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3DDC84" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+      Discipline
+    </h3>
     {% set disc_circumference = 150.8 %}
     {% set dcp_val = garden_health.discipline %}
     <div style="display:flex;align-items:center;gap:16px;">
@@ -46,7 +58,7 @@
         <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
           <circle cx="28" cy="28" r="24" fill="none" stroke="var(--bg-panel-raised)" stroke-width="4"/>
           <circle cx="28" cy="28" r="24" fill="none" stroke="var(--accent-dsc)" stroke-width="4"
-            stroke-dasharray="{{ disc_circumference }}" stroke-dashoffset="{{ (disc_circumference * (1 - dcp_val / 100))|round(1) }}" stroke-linecap="round"/>
+            stroke-dasharray="{{ disc_circumference }}" stroke-dashoffset="{{ (disc_circumference * (1 - dcp_val / 100))|round(1) }}" stroke-linecap="round" class="grpg-ring-progress"/>
         </svg>
         <div class="grpg-level-ring-text" style="font-size:14px;">
           {{ dcp_val }}
@@ -55,11 +67,14 @@
         <span class="sr-only">Discipline score: {{ dcp_val }} out of 100</span>
       </div>
       <div style="flex:1;">
-        <div style="font-size:11px;font-weight:600;color:var(--accent-dsc);text-transform:uppercase;">{{ garden_health.state }}</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--accent-dsc);text-transform:uppercase;">
+          {{ garden_health.state }}
+          <svg class="grpg-status-sparkline" width="34" height="10" viewBox="0 0 34 10" fill="none" stroke="#3DDC84" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1,8 7,6 13,7 19,4 25,5 31,2 33,1"/></svg>
+        </div>
         <div style="margin-top:8px;">
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Consistency</span><span style="font-family:var(--font-mono);color:var(--text-primary);">{{ dcp_val }}%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Reliability</span><span style="font-family:var(--font-mono);color:var(--text-primary);">{{ (dcp_val * 0.9)|round }}%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Responsibility</span><span style="font-family:var(--font-mono);color:var(--text-primary);">--</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Consistency</span><span style="font-family:var(--font-numeral);color:var(--text-primary);font-variant-numeric:tabular-nums;">{{ dcp_val }}%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Reliability</span><span style="font-family:var(--font-numeral);color:var(--text-primary);font-variant-numeric:tabular-nums;">{{ (dcp_val * 0.9)|round }}%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);padding:2px 0;"><span>Responsibility</span><span style="font-family:var(--font-numeral);color:var(--text-primary);font-variant-numeric:tabular-nums;">--</span></div>
         </div>
       </div>
     </div>

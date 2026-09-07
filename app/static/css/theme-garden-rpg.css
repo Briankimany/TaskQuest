@@ -2,81 +2,110 @@
    Garden RPG Theme Tokens
    Active when data-theme="garden-rpg" is set on <html>
    TOKENS ONLY — no component/layout styles here.
-   New skins: copy this file, change values, done.
+   Palette per docs/ui upgrade step 2.md §20.
    ═══════════════════════════════════════════════════════════════ */
 
 [data-theme="garden-rpg"] {
   /* Background */
-  --bg-page: #05060A;
-  --bg-surface: #0F1218;
-  --bg-panel: #0F1218;
-  --bg-panel-raised: #151923;
-  --bg-muted: #151923;
-  --bg-hover: #1C2130;
+  --bg-page: #070B11;
+  --bg-surface: #0B1119;
+  --bg-panel: #101720;
+  --bg-panel-raised: #182031;
+  --bg-muted: #0E1520;
+  --bg-hover: #1C2738;
 
-  /* Borders */
-  --border: #232838;
-  --border-hairline: #232838;
-  --border-strong: #34394A;
+  /* Borders — muted blue-gray technical lines */
+  --border: rgba(150, 180, 200, 0.18);
+  --border-hairline: rgba(150, 180, 200, 0.16);
+  --border-strong: rgba(160, 190, 210, 0.32);
 
   /* Text */
-  --text-primary: #F2F3F5;
-  --text-secondary: #9BA1AE;
-  --text-muted: #8A8FA0;
+  --text-primary: #F2F4F7;
+  --text-secondary: #9AA6B2;
+  --text-muted: #6B7686;
 
   /* Dark text for use on bright accent backgrounds (buttons, badges) — WCAG AA */
-  --accent-text: #0F1218;
+  --accent-text: #0B1119;
 
-  /* Attribute accents */
-  --accent-int: #34C6E8;
-  --accent-sta: #E85B4B;
-  --accent-fcs: #E8A93C;
-  --accent-cha: #9B7FE8;
-  --accent-dsc: #4FCB7C;
+  /* Attribute accents — desaturated "colored light", not solid paint */
+  --accent-int: #3AB6F0;
+  --accent-sta: #E5484D;
+  --accent-fcs: #F0A830;
+  --accent-cha: #9B7FE0;
+  --accent-dsc: #3DDC84;
+
+  /* Palette accents (§20) */
+  --accent-pink: #E8578F;
+  --accent-magenta: #C4416B;
+  --accent-gold: #F0A830;
+  --accent-orange: #E86A3B;
 
   /* Semantic */
-  --accent: #34C6E8;
-  --accent-hover: #2AB5D8;
+  --accent: #3AB6F0;
+  --accent-hover: #4FC3F7;
   --accent-active: #E8E8F0;
-  --accent-success: #3FCB7C;
-  --accent-danger: #E8544B;
-  --accent-warning: #E8A93C;
-  --accent-info: #34C6E8;
-  --danger: #E8544B;
-  --warning: #E8A93C;
-  --success: #3FCB7C;
+  --accent-success: #3DDC84;
+  --accent-danger: #E5484D;
+  --accent-warning: #F0A830;
+  --accent-info: #3AB6F0;
+  --danger: #E5484D;
+  --warning: #F0A830;
+  --success: #3DDC84;
 
   /* Alias old token names to garden values */
-  --accent-warm: #E8A93C;
-  --accent-calm: #34C6E8;
+  --accent-warm: #F0A830;
+  --accent-calm: #3AB6F0;
 
   /* Badges */
-  --badge-int: #34C6E8;
-  --badge-sta: #E85B4B;
-  --badge-fcs: #E8A93C;
-  --badge-cha: #9B7FE8;
-  --badge-dsc: #4FCB7C;
+  --badge-int: #3AB6F0;
+  --badge-sta: #E5484D;
+  --badge-fcs: #F0A830;
+  --badge-cha: #9B7FE0;
+  --badge-dsc: #3DDC84;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.5);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+  /* Bottom nav active pill — deep maroon */
+  --nav-active: #7A1F2B;
+  --nav-active-hover: #8C2635;
 
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  /* Per-card accent inner glow (set --card-accent per card) */
+  --card-accent: #3AB6F0;
+
+  /* Shadows — soft, shallow */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.35);
+  --shadow-md: 0 2px 10px rgba(0,0,0,0.45);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.55);
+
+  /* Radii — soft rounded card corners (10/14/16) */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Translucent HUD glass surface */
+  --panel-glass: linear-gradient(135deg, rgba(18,25,34,0.82), rgba(7,12,19,0.88));
+  --panel-blur: blur(10px);
+  --icon-glass: rgba(150,180,200,0.10);
+
+  /* Temperature gradients */
+  --xp-gradient: linear-gradient(90deg, #E8578F, #F0A830, #3AB6F0);
+  --level-ring-gradient: linear-gradient(135deg, #E8578F, #F0A830, #3AB6F0);
 
   /* Typography */
   --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Rajdhani', 'Segoe UI', -apple-system, sans-serif;
+  --font-numeral: 'Rajdhani', 'JetBrains Mono', monospace;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --tracking-caps: 0.11em;
 
   /* Transitions */
   --transition: 0.2s ease;
 
+  /* Environment gradient (art layer only — not UI components) */
+  --env-gradient: linear-gradient(180deg, #5B2A6E, #C4416B, #E86A3B, #F4A93C);
+
   /* Navbar */
-  --navbar-bg: rgba(5,6,10,0.95);
+  --navbar-bg: rgba(7, 11, 17, 0.92);
   --navbar-border: var(--border);
 
   /* Cards */
@@ -93,8 +122,5 @@
   --modal-header-bg: var(--bg-panel-raised);
 
   /* Charts */
-  --chart-grid: rgba(255,255,255,0.06);
-
-  /* Garden RPG specific */
-  --xp-gradient: linear-gradient(90deg, #34C6E8, #E85B9C);
+  --chart-grid: rgba(255,255,255,0.05);
 }

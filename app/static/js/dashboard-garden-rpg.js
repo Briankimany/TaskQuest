@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ── XP Chart (Canvas 2D) ──
-  function drawXpChart() {
+  // ── XP Chart (Canvas 2D) — fixed axis 0/800/1.6k/2.4k, Mon–Sun, animate-in ──
+  function drawXpChart(animate) {
     var canvas = document.getElementById('grpg-xp-chart');
     if (!canvas) return;
 
@@ -122,6 +122,11 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {
       data = [0, 0, 0, 0, 0, 0, 0];
     }
+    data = (data || []).slice(0, 7);
+    while (data.length < 7) data.push(0);
+
+    var MAX_XP = 2400;
+    var ticks = [0, 800, 1600, 2400];
 
     var ctx = canvas.getContext('2d');
     var dpr = window.devicePixelRatio || 1;
@@ -132,31 +137,124 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var w = rect.width;
     var h = rect.height;
-    var max = Math.max.apply(null, data) || 1;
+    var plotTop = 6;
+    var plotBottom = h - 2;
+    var plotH = plotBottom - plotTop;
     var barCount = data.length;
     var gap = 6;
-    var barWidth = (w - gap * (barCount + 1)) / barCount;
+    var barWidth = Math.max(2, (w - gap * (barCount + 1)) / barCount);
 
     var style = getComputedStyle(document.documentElement);
-    var infoColor = style.getPropertyValue('--accent-info').trim() || '#34C6E8';
+    var infoColor = style.getPropertyValue('--accent-info').trim() || '#3AB6F0';
+    var gridColor = 'rgba(150,180,200,0.12)';
 
-    ctx.clearRect(0, 0, w, h);
-
-    for (var i = 0; i < barCount; i++) {
-      var barHeight = (data[i] / max) * (h - 8);
-      var x = gap + i * (barWidth + gap);
-      var y = h - barHeight;
-
-      ctx.fillStyle = infoColor;
-      ctx.globalAlpha = 0.8;
+    // fixed y-axis gridlines ("0 / 800 / 1.6k / 2.4k")
+    ctx.font = (Math.max(9, Math.min(10, w / 46))) + 'px Rajdhani, sans-serif';
+    ctx.textBaseline = 'bottom';
+    ctx.lineWidth = 1;
+    for (var t = 0; t < ticks.length; t++) {
+      var yy = plotBottom - (ticks[t] / MAX_XP) * plotH;
+      ctx.strokeStyle = gridColor;
       ctx.beginPath();
-      ctx.roundRect(x, y, barWidth, barHeight, 3);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      ctx.moveTo(0, yy);
+      ctx.lineTo(w, yy);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(180,200,215,0.5)';
+      ctx.textAlign = 'left';
+      ctx.fillText(String(ticks[t]), 2, yy - 1);
     }
+
+    var progress = animate ? 0 : 1;
+
+    function renderFrame(p) {
+      ctx.clearRect(0, 0, w, h);
+      ctx.shadowColor = infoColor;
+
+      for (var i = 0; i < barCount; i++) {
+        // clamp above fixed max
+        var value = Math.min(data[i], MAX_XP);
+        var barHeight = (value / MAX_XP) * plotH;
+        barHeight = barHeight * p; // animate height, not position
+
+        var x = gap + i * (barWidth + gap);
+        var y = plotBottom - barHeight;
+
+        ctx.shadowBlur = 5;
+        ctx.fillStyle = infoColor;
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x, y, barWidth, barHeight, 3);
+        else ctx.rect(x, y, barWidth, barHeight);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    if (!animate) {
+      renderFrame(1);
+      return;
+    }
+
+    var start = null;
+    var duration = 900;
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min(1, (ts - start) / duration);
+      p = 1 - Math.pow(1 - p, 3);
+      renderFrame(p);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
 
-  drawXpChart();
+  drawXpChart(false);
+
+  // ── Load animations: XP fill bar + progress rings (skip if reduced motion) ──
+  function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function animateXpBars() {
+    document.querySelectorAll('.grpg-xp-bar-fill').forEach(function (fill) {
+      var target = fill.style.width;
+      if (!target) return;
+      fill.style.transition = 'none';
+      fill.style.width = '0%';
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          fill.style.transition = '';
+          fill.style.width = target;
+        });
+      });
+    });
+  }
+
+  function animateRings() {
+    document.querySelectorAll('.grpg-ring-progress').forEach(function (ring) {
+      var dasharray = parseFloat(ring.getAttribute('stroke-dasharray'));
+      var finalOffset = parseFloat(ring.getAttribute('stroke-dashoffset'));
+      if (isNaN(dasharray) || isNaN(finalOffset)) return;
+      ring.setAttribute('stroke-dashoffset', dasharray);
+      var start = null;
+      var duration = 900;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min(1, (ts - start) / duration);
+        p = 1 - Math.pow(1 - p, 3);
+        ring.setAttribute('stroke-dashoffset', (dasharray - (dasharray - finalOffset) * p).toFixed(1));
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  if (!prefersReducedMotion()) {
+    window.addEventListener('load', function () {
+      animateXpBars();
+      animateRings();
+    });
+  }
 
   var resizeTimer;
   window.addEventListener('resize', function () {

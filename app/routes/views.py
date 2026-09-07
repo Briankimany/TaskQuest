@@ -119,6 +119,7 @@ def dashboard():
         from datetime import timedelta
         today = date_obj.date()
         xp_week = []
+        xp_week_labels = []
         for i in range(6, -1, -1):
             day = today - timedelta(days=i)
             day_exp = db.session.query(func.coalesce(func.sum(CompletionLog.exp_impact), 0)).filter(
@@ -126,6 +127,7 @@ def dashboard():
                 CompletionLog.completed_on == day
             ).scalar()
             xp_week.append(int(day_exp))
+            xp_week_labels.append(day.strftime('%a'))
 
         current_time_str = datetime.now().strftime('%H:%M')
 
@@ -165,7 +167,7 @@ def dashboard():
             ring_offset=ring_offset,
             streak=streak,
             streak_best=streak_best,
-            missed_count=missed_count,
+            xp_week_labels=xp_week_labels,
             **garden_ctx,
         )
 

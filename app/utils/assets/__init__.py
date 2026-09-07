@@ -20,9 +20,9 @@ def region_art(region_key, tier):
     return {"path": rel_path, "exists": asset_exists(rel_path)}
 
 
-def hero_bg(season):
-    """Return path + existence flag for a seasonal hero background."""
-    rel_path = f"img/garden-hero-{season.lower()}.jpg"
+def hero_bg():
+    """Return path + existence flag for the default garden world background."""
+    rel_path = "img/garden-hero-default.jpg"
     return {"path": rel_path, "exists": asset_exists(rel_path)}
 
 

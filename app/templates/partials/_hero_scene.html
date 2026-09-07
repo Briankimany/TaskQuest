@@ -1,0 +1,24 @@
+<div class="grpg-scene" aria-hidden="true">
+  {# ── Full-bleed world art (spans the whole main row, behind every panel) ── #}
+  {% if hero_bg_data.exists %}
+    <img src="{{ url_for('static', filename=hero_bg_data.path) }}"
+         class="grpg-scene-art" alt=""
+         onerror="this.outerHTML='<div class=&quot;grpg-scene-art grpg-placeholder-hero&quot;></div>';"
+         loading="eager">
+  {% else %}
+    <div class="grpg-scene-art grpg-placeholder-hero"></div>
+  {% endif %}
+
+  {# ── Atmospheric vignette: edges fade toward the surrounding HUD ── #}
+  <div class="grpg-scene-vignette"></div>
+
+  {# ── Health mood wash (CSS-driven by state; PNG overlay wins if present) ── #}
+  {% if garden_health.overlay.exists %}
+    <img src="{{ url_for('static', filename=garden_health.overlay.path) }}"
+         class="grpg-scene-wash-img" alt=""
+         onerror="this.remove();"
+         loading="eager">
+  {% else %}
+    <div class="grpg-scene-wash grpg-health-{{ garden_health.state | lower }}"></div>
+  {% endif %}
+</div>

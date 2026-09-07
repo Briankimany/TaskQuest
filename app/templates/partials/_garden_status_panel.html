@@ -1,38 +1,58 @@
 <div class="grpg-panel">
   <div class="grpg-panel-header">
     <h3 class="grpg-panel-title">Garden Status</h3>
+    <span class="grpg-status-day-chip" aria-label="Day {{ player.day }}">
+      <span class="grpg-status-day-flower" aria-hidden="true">&#x273F;</span>
+      DAY {{ player.day }}
+    </span>
   </div>
 
   {% set dcp_pct = garden_health.discipline %}
-  {% set circumference = 175.93 %}
+  {% set circumference = 150.8 %}
   <div style="display:flex;align-items:center;gap:16px;">
-    <!-- Growth Ring -->
-    <div class="grpg-level-ring" style="width:64px;height:64px;">
+    <!-- Growth Ring (dual-tone pink→cyan) with purple tree centered -->
+    <div class="grpg-level-ring grpg-garden-ring" style="width:64px;height:64px;">
       <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="32" cy="32" r="28" fill="none" stroke="var(--bg-panel-raised)" stroke-width="5"/>
-        <circle cx="32" cy="32" r="28" fill="none" stroke="var(--accent-dsc)" stroke-width="5"
-          stroke-dasharray="{{ circumference }}" stroke-dashoffset="{{ (circumference * (1 - dcp / 100))|round(1) }}" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="grpg-garden-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#E8578F"/>
+            <stop offset="100%" stop-color="#3AB6F0"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(150,180,200,0.14)" stroke-width="6"/>
+        <circle cx="32" cy="32" r="26" fill="none" stroke="url(#grpg-garden-grad)" stroke-width="6"
+          stroke-dasharray="{{ circumference }}" stroke-dashoffset="{{ (circumference * (1 - dcp / 100))|round(1) }}" stroke-linecap="round" class="grpg-ring-progress"/>
+        <circle cx="32" cy="32" r="17.5" fill="rgba(7,12,19,0.72)" stroke="rgba(150,180,200,0.16)"/>
       </svg>
-      <div class="grpg-level-ring-text" style="font-size:18px;">
-        {{ dcp_pct }}
-        <small style="font-size:8px;">%</small>
-      </div>
-      <span class="sr-only">Garden discipline: {{ dcp_pct }}%</span>
+      <span class="grpg-garden-tree" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="34" height="34">
+          <path d="M20 19v10" stroke="#6E5644" stroke-width="3" stroke-linecap="round"/>
+          <path d="M17 28h6" stroke="#6E5644" stroke-width="2.5" stroke-linecap="round"/>
+          <g fill="#9B7FE0"><circle cx="12" cy="14" r="6.5"/><circle cx="27" cy="12" r="7"/><circle cx="20" cy="8" r="6.5"/></g>
+          <g fill="#C4A6F5"><circle cx="14" cy="11" r="2.6"/><circle cx="24" cy="9" r="2.8"/><circle cx="19" cy="15" r="3"/></g>
+        </svg>
+      </span>
+      <span class="sr-only">Garden growth: {{ dcp_pct }}%</span>
     </div>
 
-    <div>
-      <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">{{ user.username }}'s Garden</div>
-      <div style="font-size:12px;color:var(--text-secondary);">
-        Day {{ player.day }} &middot;
-        {% if garden_health.state == 'FLOURISHING' %}
-          <span style="color:var(--accent-dsc);">Flourishing</span>
-        {% elif garden_health.state == 'STABLE' %}
-          <span style="color:var(--accent-info);">Stable</span>
-        {% else %}
-          <span style="color:var(--accent-danger);">Neglected</span>
-        {% endif %}
-      </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Level {{ level }} &middot; {{ xp_current }} total XP</div>
+    <div class="grpg-status-info">
+      <span class="grpg-status-micro">Growth</span>
+      <span class="grpg-status-growth">{{ dcp_pct }}%</span>
+      <svg class="grpg-status-sparkline" width="46" height="16" viewBox="0 0 46 16" fill="none" stroke="#3AB6F0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1,11 8,9 15,10 22,6 29,8 36,4 43,5 45,2"/></svg>
+      <span class="grpg-status-season">
+        <span style="color:var(--accent-pink);" aria-hidden="true">&#x273F;</span>
+        Season &middot; Spring
+      </span>
     </div>
+  </div>
+  <div class="grpg-status-state">
+    {% if garden_health.state == 'FLOURISHING' %}
+      <span style="color:var(--accent-dsc);">Flourishing</span>
+    {% elif garden_health.state == 'STABLE' %}
+      <span style="color:var(--accent-info);">Stable</span>
+    {% else %}
+      <span style="color:var(--accent-danger);">Neglected</span>
+    {% endif %}
+    &middot; Level {{ level }} &middot; {{ xp_current }} total XP
   </div>
 </div>

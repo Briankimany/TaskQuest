@@ -31,18 +31,6 @@ def _compute_health_state(dcp):
     return "NEGLECTED"
 
 
-def _get_season(dt):
-    """Determine season from month."""
-    month = dt.month
-    if month in (3, 4, 5):
-        return "SPRING"
-    elif month in (6, 7, 8):
-        return "SUMMER"
-    elif month in (9, 10, 11):
-        return "AUTUMN"
-    return "WINTER"
-
-
 def _get_time_of_day(dt):
     """Determine time of day from hour."""
     hour = dt.hour
@@ -129,18 +117,16 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
 
     # ── Player ──
     current_title, next_title = _get_titles(user.level)
-    season = _get_season(now)
     player = {
         "title": current_title,
         "next_title": next_title,
         "garden_name": f"{user.username}'s Garden",
         "day": (today - user.created_at.date()).days + 1 if user.created_at else 1,
-        "season": season,
         "time_of_day": _get_time_of_day(now),
     }
 
-    # ── Hero background ──
-    hero_bg_data = hero_bg(season)
+    # ── Hero background (single default world art) ──
+    hero_bg_data = hero_bg()
 
     # ── Missions (from scheduled tasks) ──
     attr_keys = {"int", "sta", "fcs", "cha", "dsc"}
@@ -198,7 +184,7 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
 
         missions.append({
             "id": f"mission-{task.id}",
-            "tag": "MAIN" if i < 2 else "DAILY",
+            "tag": "MAIN" if i == 0 else ("DAILY" if i == 1 else "SIDE"),
             "title": sub.name,
             "status": status,
             "difficulty": diff,
@@ -282,6 +268,7 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
         "missions": missions,
         "seeds": seeds,
         "judge_reviews": judge_reviews,
+        "missed_count": missed_count,
         "activity": activity,
         "world_events": world_events,
         "xp_week": xp_week,
