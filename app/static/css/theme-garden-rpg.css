@@ -2,103 +2,151 @@
    Garden RPG Theme Tokens
    Active when data-theme="garden-rpg" is set on <html>
    TOKENS ONLY — no component/layout styles here.
-   Palette per docs/ui upgrade step 2.md §20.
+   Palette = canonical final merged set (single source of truth).
    ═══════════════════════════════════════════════════════════════ */
 
 [data-theme="garden-rpg"] {
-  /* Background */
-  --bg-page: #070B11;
-  --bg-surface: #0B1119;
-  --bg-panel: #101720;
-  --bg-panel-raised: #182031;
-  --bg-muted: #0E1520;
-  --bg-hover: #1C2738;
 
-  /* Borders — muted blue-gray technical lines */
+  /* ── Surfaces (dark blue-black, never pure black) ── */
+  --ui-bg-0: #01060F;
+  --ui-bg-1: #050D16;
+  --ui-bg-2: #07131C;
+  --ui-bg-3: #0A1821;
+
+  /* Surface aliases used across layout CSS */
+  --bg-page: var(--ui-bg-0);
+  --bg-surface: var(--ui-bg-1);
+  --bg-panel: var(--ui-bg-2);
+  --bg-panel-raised: var(--ui-bg-3);
+  --bg-muted: var(--ui-bg-2);
+  --bg-hover: var(--ui-bg-3);
+
+  /* ── Text ── */
+  --text-primary: #DCE8EA;
+  --text-secondary: #87979D;
+  --text-muted: #59686E;
+
+  /* Dark text for use on bright accent backgrounds — WCAG AA */
+  --accent-text: var(--ui-bg-1);
+
+  /* ── Cyan (3-tier) ── */
+  --cyan-muted: #147A96;
+  --cyan: #1CAED5;
+  --cyan-bright: #31D2F2;
+
+  /* ── Pink (3-tier) ── */
+  --pink-muted: #9D4D60;
+  --pink: #E36C83;
+  --pink-bright: #F28FA0;
+
+  /* ── Purple (3-tier) ── */
+  --purple-muted: #66539A;
+  --purple: #9B7FE8;
+  --purple-bright: #B59AF5;
+
+  /* ── Gold (3-tier) ── */
+  --gold-muted: #9D702A;
+  --gold: #E9A83D;
+  --gold-bright: #FFC45C;
+
+  /* ── Status ── */
+  --success: #39C979;
+  --success-bright: #4EE596;
+  --warning: var(--gold);
+  --danger: #E46B78;
+  --danger-bright: #F2909C;
+
+  /* ── Borders — thin translucent blue-gray lines ── */
   --border: rgba(42, 48, 64, 0.12);
   --border-hairline: rgba(42, 48, 64, 0.18);
   --border-strong: rgba(42, 48, 64, 0.28);
+  --border-neutral: rgba(110, 150, 160, 0.20);
+  --border-soft: rgba(120, 160, 170, 0.14);
+  --border-hover: rgba(110, 170, 185, 0.34);
 
-  /* Text */
-  --text-primary: #F2F4F7;
-  --text-secondary: #9AA6B2;
-  --text-muted: #6B7686;
+  /* ── Atmospheric washes (card surfaces, near-imperceptible) ── */
+  --cyan-wash: rgba(28, 174, 213, 0.065);
+  --pink-wash: rgba(227, 108, 131, 0.075);
+  --purple-wash: rgba(155, 127, 232, 0.065);
+  --gold-wash: rgba(233, 168, 61, 0.045);
+  --seed-wash: rgba(120, 180, 85, 0.10);
+  --surface-wash: transparent;
 
-  /* Dark text for use on bright accent backgrounds (buttons, badges) — WCAG AA */
-  --accent-text: #0B1119;
+  /* ── Attribute accents — mapped onto the canonical set ── */
+  --accent-int: var(--cyan);
+  --accent-sta: var(--danger);
+  --accent-fcs: var(--gold);
+  --accent-cha: var(--purple);
+  --accent-dsc: var(--success);
 
-  /* Attribute accents — desaturated "colored light", not solid paint */
-  --accent-int: #3AB6F0;
-  --accent-sta: #E5484D;
-  --accent-fcs: #F0A830;
-  --accent-cha: #9B7FE0;
-  --accent-dsc: #3DDC84;
+  /* ── Palette accents ── */
+  --accent-pink: var(--pink);
+  --accent-magenta: var(--pink-muted);
+  --accent-gold: var(--gold);
 
-  /* Palette accents (§20) */
-  --accent-pink: #E8578F;
-  --accent-magenta: #C4416B;
-  --accent-gold: #F0A830;
-  --accent-orange: #E86A3B;
+  /* ── Semantic ── */
+  --accent: var(--cyan);
+  --accent-hover: var(--cyan-bright);
+  --accent-active: var(--success);
+  --accent-success: var(--success);
+  --accent-danger: var(--danger);
+  --accent-warning: var(--warning);
+  --accent-info: var(--cyan);
 
-  /* Semantic */
-  --accent: #3AB6F0;
-  --accent-hover: #4FC3F7;
-  --accent-active: #E8E8F0;
-  --accent-success: #3DDC84;
-  --accent-danger: #E5484D;
-  --accent-warning: #F0A830;
-  --accent-info: #3AB6F0;
-  --danger: #E5484D;
-  --warning: #F0A830;
-  --success: #3DDC84;
+  /* ── Mission-type accent names (payload `color` field) ── */
+  --accent-cyan: var(--cyan);
+  --accent-green: var(--success);
+  --accent-amber: var(--gold);
+  --accent-purple: var(--purple);
+  --accent-red: var(--danger);
 
-  /* Mission-type accent names — single canonical names matching the payload's
-     stored `color` field so templates can use var(--accent-{{ color }}). */
-  --accent-cyan: #3AB6F0;
-  --accent-green: #3DDC84;
-  --accent-amber: #F0A830;
-  --accent-purple: #9B7FE0;
-  --accent-red: #E5484D;
+  /* ── Aliases ── */
+  --accent-warm: var(--gold);
+  --accent-calm: var(--cyan);
 
-  /* Alias old token names to garden values */
-  --accent-warm: #F0A830;
-  --accent-calm: #3AB6F0;
+  /* ── Badges (attribute map) ── */
+  --badge-int: var(--cyan);
+  --badge-sta: var(--danger);
+  --badge-fcs: var(--gold);
+  --badge-cha: var(--purple);
+  --badge-dsc: var(--success);
 
-  /* Badges */
-  --badge-int: #3AB6F0;
-  --badge-sta: #E5484D;
-  --badge-fcs: #F0A830;
-  --badge-cha: #9B7FE0;
-  --badge-dsc: #3DDC84;
+  /* ── Intent colors (hand-drawn icons + growth/petal accents) ── */
+  --petal: var(--pink);
+  --petal-bright: var(--pink-bright);
+  --seed-stem: var(--success);
+  --seed-leaf: var(--success-bright);
+  --locked: var(--purple);
+  --reward: var(--gold);
 
-  /* Bottom nav active pill — deep maroon */
+  /* ── Bottom nav active pill — deep maroon ── */
   --nav-active: #7A1F2B;
   --nav-active-hover: #8C2635;
 
-  /* Per-card accent inner glow (set --card-accent per card) */
-  --card-accent: #3AB6F0;
+  /* ── Per-card accent inner glow (set --card-accent per card) ── */
+  --card-accent: var(--cyan);
 
-  /* Shadows — soft, shallow */
+  /* ── Shadows — soft, shallow ── */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.35);
   --shadow-md: 0 2px 10px rgba(0,0,0,0.45);
   --shadow-lg: 0 12px 32px rgba(0,0,0,0.55);
 
-  /* Radii — soft rounded card corners (10/14/16) */
+  /* ── Radii — soft rounded card corners ── */
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 16px;
   --radius-pill: 999px;
 
-  /* Translucent HUD glass surface */
-  --panel-glass: linear-gradient(135deg, rgba(15, 19, 29, 0.85), rgba(7, 11, 17, 0.90));
-  --panel-blur: blur(10px);
+  /* ── Translucent smoked-glass surface (never pure black) ── */
+  --panel-glass: linear-gradient(135deg, rgba(7, 19, 28, 0.92), rgba(2, 8, 16, 0.88));
+  --panel-blur: blur(7px);
   --icon-glass: rgba(150,180,200,0.10);
 
-  /* Temperature gradients */
-  --xp-gradient: linear-gradient(90deg, #E8578F, #F0A830, #3AB6F0);
-  --level-ring-gradient: linear-gradient(135deg, #E8578F, #F0A830, #3AB6F0);
+  /* ── Temperature gradients (canonical tokens) ── */
+  --xp-gradient: linear-gradient(90deg, var(--pink), var(--gold), var(--cyan));
+  --level-ring-gradient: linear-gradient(135deg, var(--pink), var(--gold), var(--cyan));
 
-  /* Typography */
+  /* ── Typography ── */
   --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Rajdhani', 'Segoe UI', -apple-system, sans-serif;
@@ -106,29 +154,29 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --tracking-caps: 0.11em;
 
-  /* Transitions */
+  /* ── Transitions ── */
   --transition: 0.2s ease;
 
-  /* Environment gradient (art layer only — not UI components) */
+  /* ── Environment gradient (art layer only — not UI components) ── */
   --env-gradient: linear-gradient(180deg, #5B2A6E, #C4416B, #E86A3B, #F4A93C);
 
-  /* Navbar */
+  /* ── Navbar ── */
   --navbar-bg: rgba(7, 11, 17, 0.92);
   --navbar-border: var(--border);
 
-  /* Cards */
+  /* ── Cards ── */
   --card-bg: var(--bg-panel);
   --card-border: var(--border);
 
-  /* Inputs */
+  /* ── Inputs ── */
   --input-bg: var(--bg-panel-raised);
   --input-border: var(--border);
   --input-focus: var(--accent);
 
-  /* Modals */
+  /* ── Modals ── */
   --modal-bg: var(--bg-panel);
   --modal-header-bg: var(--bg-panel-raised);
 
-  /* Charts */
+  /* ── Charts ── */
   --chart-grid: rgba(255,255,255,0.05);
 }

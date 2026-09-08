@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ── Complete mission (✓ toggle) → backend ──
+  // ── Complete mission (check toggle) → backend ──
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('.grpg-mission-status');
     if (!btn) return;
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var meta = row.querySelector('.grpg-mission-meta');
         var done = row.getAttribute('data-done') === 'true';
         if (meta && !done) {
-          meta.innerHTML = start + ' <span class="grpg-done-label" style="color:var(--text-muted);">\u23F1 RESCHEDULED</span>';
+          meta.innerHTML = start + ' <span class="grpg-done-label" style="color:var(--text-muted);">RESCHEDULED</span>';
         }
         showNotification('info', 'Rescheduled', 'Mission moved to ' + start + '.');
         reconcileCards();
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
         row.setAttribute('data-status', 'ABANDONED');
         row.setAttribute('data-done', 'false');
         var meta = row.querySelector('.grpg-mission-meta');
-        if (meta) meta.innerHTML = '<span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">\u2716 ABANDONED</span>';
+        if (meta) meta.innerHTML = '<span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">ABANDONED</span>';
         var change = typeof result.exp_change === 'number' ? result.exp_change : 0;
         if (change) updateTopbarXP(change);
         showNotification(change >= 0 ? 'success' : 'warning', 'Mission Abandoned',
@@ -323,8 +323,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var barWidth = Math.max(3, slot * 0.6);
 
     var style = getComputedStyle(document.documentElement);
-    var infoColor = style.getPropertyValue('--accent-info').trim() || '#3AB6F0';
-    var gridColor = 'rgba(150,180,200,0.12)';
+    var cyan = style.getPropertyValue('--cyan').trim() || '#1CAED5';
+    var cyanMuted = style.getPropertyValue('--cyan-muted').trim() || '#147A96';
+    var cyanBright = style.getPropertyValue('--cyan-bright').trim() || '#31D2F2';
+    var gridColor = 'rgba(110,150,160,0.10)';
 
     var tickFont = (Math.max(8, Math.min(10, w / 48))) + 'px Rajdhani, sans-serif';
 
@@ -347,10 +349,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var progress = animate ? 0 : 1;
 
+    // Highest value drives the "today/current" bright bar accent
+    var peak = 0;
+    for (var i = 0; i < barCount; i++) {
+      var pv = Math.min(data[i], MAX_XP);
+      if (pv > peak) peak = pv;
+    }
+
     function renderFrame(p) {
       ctx.clearRect(0, 0, w, h);
       drawGridAndLabels();
-      ctx.shadowColor = infoColor;
+      ctx.shadowColor = 'rgba(49,210,242,0.30)';
 
       for (var i = 0; i < barCount; i++) {
         // clamp above fixed max
@@ -363,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var y = plotBottom - barHeight;
 
         ctx.shadowBlur = 5;
-        ctx.fillStyle = infoColor;
+        ctx.fillStyle = value <= 0 ? cyanMuted : (value >= peak ? cyanBright : cyan);
         ctx.globalAlpha = 0.9;
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(x, y, barWidth, barHeight, [3, 3, 0, 0]);
@@ -612,18 +621,17 @@ document.addEventListener('DOMContentLoaded', function () {
             statusBtn.setAttribute('aria-pressed', done ? 'true' : 'false');
             statusBtn.classList.toggle('grpg-mission-completed', m.status === 'COMPLETED');
             statusBtn.classList.toggle('grpg-mission-late', m.status === 'COMPLETED_LATE');
-            var sym = m.status === 'COMPLETED' ? '\u2713' : (m.status === 'COMPLETED_LATE' ? '\u23F0' : (m.status === 'MISSED' ? '\u2717' : ''));
-            statusBtn.textContent = sym;
+            statusBtn.textContent = '';
           }
           var meta = row.querySelector('.grpg-mission-meta');
           if (meta) {
             var label = '';
-            if (m.status === 'COMPLETED') label = '<span class="grpg-done-label">\u2713 DONE</span>';
-            else if (m.status === 'COMPLETED_LATE') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">\u23F0 LATE</span>';
-            else if (m.status === 'MISSED') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">\u2717 MISSED</span>';
-            else if (m.status === 'LOCKED') label = '<span class="grpg-done-label" style="opacity:0.5;">\u1F512 LOCKED</span>';
-            else if (m.status === 'ABANDONED') label = '<span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">\u2716 ABANDONED</span>';
-            else if (m.status === 'RESCHEDULED') label = '<span class="grpg-done-label" style="color:var(--text-muted);">\u23F1 RESCHEDULED</span>';
+            if (m.status === 'COMPLETED') label = '<span class="grpg-done-label">DONE</span>';
+            else if (m.status === 'COMPLETED_LATE') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">LATE</span>';
+            else if (m.status === 'MISSED') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">MISSED</span>';
+            else if (m.status === 'LOCKED') label = '<span class="grpg-done-label" style="opacity:0.5;">LOCKED</span>';
+            else if (m.status === 'ABANDONED') label = '<span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">ABANDONED</span>';
+            else if (m.status === 'RESCHEDULED') label = '<span class="grpg-done-label" style="color:var(--text-muted);">RESCHEDULED</span>';
             else label = (m.deadline || '') + (m.countdown ? ' \u00B7 ' + m.countdown : '');
             meta.innerHTML = label;
           }
@@ -671,8 +679,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (toggleBtn && toggleBtn.hidden) toggleBtn.hidden = false;
 
         var badge = '';
-        if (review.status === 'COMPLETED_LATE') badge = ' <span class="grpg-danger-pill" style="color:var(--accent-warning);">\u23F0 LATE</span>';
-        else if (review.status === 'MISSED') badge = ' <span class="grpg-danger-pill">\u2717 MISSED</span>';
+        if (review.status === 'COMPLETED_LATE') badge = ' <span class="grpg-danger-pill" style="color:var(--accent-warning);">LATE</span>';
+        else if (review.status === 'MISSED') badge = ' <span class="grpg-danger-pill">MISSED</span>';
         if (titleEl) titleEl.innerHTML = (review.task || '') + badge;
 
         // Update reason text

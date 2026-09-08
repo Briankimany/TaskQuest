@@ -77,9 +77,12 @@
        positioned relative to the pin if the pin is ever moved. Gap ~14px
        below the pin's bottom edge (pin is centered, ~24px tall). #}
   {% set river_pos = region_positions['river'] %}
-  <div class="grpg-overlay-card" style="left:calc({{ river_pos.left }} - 3%);top:calc({{ river_pos.top }} + 26px);">
+  <div class="grpg-overlay-card grpg-surface--pink" style="left:calc({{ river_pos.left }} - 3%);top:calc({{ river_pos.top }} + 26px);--wash-x:15%;--wash-y:15%;">
     <div class="grpg-panel-header" style="margin-bottom:4px;">
-      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">PETALS</h3>
+      <h3 style="display:flex;align-items:center;gap:6px;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">
+        {% set icon_size = 24 %}{% include "partials/_icon_flower.html" %}
+        <span>PETALS</span>
+      </h3>
     </div>
     <p class="grpg-overlay-sub">Today's Tasks</p>
     <ul class="grpg-checklist" id="grpg-petals-list">
@@ -93,23 +96,57 @@
   </div>
 
   {# ── Seeds Card (Future Quests) ── #}
-  <div class="grpg-overlay-card" style="bottom:4%;left:64%;">
+  <div class="grpg-overlay-card grpg-surface--seed" style="bottom:4%;left:64%;--wash-x:20%;--wash-y:15%;--gold-x:85%;--gold-y:12%;">
     <div class="grpg-panel-header" style="margin-bottom:4px;">
-      <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">SEEDS</h3>
+      <h3 style="display:flex;align-items:center;gap:6px;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);font-weight:600;margin:0;">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12.7 22c0-5 .1-8-.7-11h-1.4c-.8 3-.7 6-.7 11z" style="fill: var(--seed-stem);"/>
+          <path d="M12 11c1.6-4 4.4-6.6 8.4-7C19.9 8 17.8 11 14.4 13l-2.4-2z" style="fill: var(--seed-leaf);"/>
+          <path d="M12 13.5c-1.9-4-4.7-5.9-8-5.7.4 3.3 2.2 5.8 5.7 7.2L12 13.5z" style="fill: var(--seed-leaf);"/>
+        </svg>
+        <span>SEEDS</span>
+      </h3>
     </div>
     <p class="grpg-overlay-sub">Future Quests</p>
     <ul class="grpg-checklist">
-      <li class="grpg-lock-row">&#x1F512; <span>Learn Japanese</span></li>
-      <li class="grpg-lock-row">&#x1F512; <span>Finish Portfolio</span></li>
-      <li class="grpg-lock-row">&#x1F512; <span>Morning Routine</span></li>
+      <li class="grpg-lock-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <g fill="none" style="stroke: var(--locked);" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.75 7.5h6.5a1.25 1.25 0 0 1 1.25 1.25v3.5a1.25 1.25 0 0 1-1.25 1.25h-6.5A1.25 1.25 0 0 1 3.5 12.25v-3.5a1.25 1.25 0 0 1 1.25-1.25z"/>
+            <path d="M5.5 7.5a2.5 2.5 0 0 1 5 0"/>
+            <circle cx="8" cy="10.3" r="1.1"/>
+          </g>
+        </svg>
+        <span>Learn Japanese</span>
+      </li>
+      <li class="grpg-lock-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <g fill="none" style="stroke: var(--locked);" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.75 7.5h6.5a1.25 1.25 0 0 1 1.25 1.25v3.5a1.25 1.25 0 0 1-1.25 1.25h-6.5A1.25 1.25 0 0 1 3.5 12.25v-3.5a1.25 1.25 0 0 1 1.25-1.25z"/>
+            <path d="M5.5 7.5a2.5 2.5 0 0 1 5 0"/>
+            <circle cx="8" cy="10.3" r="1.1"/>
+          </g>
+        </svg>
+        <span>Finish Portfolio</span>
+      </li>
+      <li class="grpg-lock-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <g fill="none" style="stroke: var(--locked);" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.75 7.5h6.5a1.25 1.25 0 0 1 1.25 1.25v3.5a1.25 1.25 0 0 1-1.25 1.25h-6.5A1.25 1.25 0 0 1 3.5 12.25v-3.5a1.25 1.25 0 0 1 1.25-1.25z"/>
+            <path d="M5.5 7.5a2.5 2.5 0 0 1 5 0"/>
+            <circle cx="8" cy="10.3" r="1.1"/>
+          </g>
+        </svg>
+        <span>Morning Routine</span>
+      </li>
     </ul>
     <button class="grpg-ghost-btn grpg-add-seed">+ ADD NEW SEED</button>
   </div>
 
   {# ── Ambient atmosphere (H10) — motion-gated in CSS ── #}
-  <span class="grpg-petal" style="top:20%;left:30%;--petal-duration:12s;--petal-delay:0s;--petal-drift:60px;" aria-hidden="true"></span>
-  <span class="grpg-petal" style="top:10%;left:55%;--petal-duration:15s;--petal-delay:2s;--petal-drift:-40px;" aria-hidden="true"></span>
-  <span class="grpg-petal" style="top:25%;left:70%;--petal-duration:14s;--petal-delay:4s;--petal-drift:30px;" aria-hidden="true"></span>
+  <span class="grpg-petal" style="top:20%;left:30%;--petal-duration:12s;--petal-delay:0s;--petal-drift:60px;" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1C8.8 2.6 9.2 6.4 6 11 2.8 6.4 3.2 2.6 6 1Z" style="fill: var(--petal);" fill-opacity="0.45"/></svg></span>
+  <span class="grpg-petal" style="top:10%;left:55%;--petal-duration:15s;--petal-delay:2s;--petal-drift:-40px;" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 12 12"><path d="M6 1C8.8 2.6 9.2 6.4 6 11 2.8 6.4 3.2 2.6 6 1Z" style="fill: var(--petal);" fill-opacity="0.45"/></svg></span>
+  <span class="grpg-petal" style="top:25%;left:70%;--petal-duration:14s;--petal-delay:4s;--petal-drift:30px;" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1C8.8 2.6 9.2 6.4 6 11 2.8 6.4 3.2 2.6 6 1Z" style="fill: var(--petal);" fill-opacity="0.45"/></svg></span>
   <span class="grpg-firefly" style="top:45%;left:76%;" aria-hidden="true"></span>
   <span class="grpg-firefly" style="top:50%;left:74%;animation-delay:1.5s;" aria-hidden="true"></span>
   <span class="grpg-water-shimmer" style="top:52%;left:20%;" aria-hidden="true"></span>

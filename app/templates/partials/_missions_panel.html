@@ -1,4 +1,4 @@
-<div class="grpg-panel grpg-missions-panel" id="grpg-missions-card">
+<div class="grpg-panel grpg-surface--cyan grpg-missions-panel" id="grpg-missions-card">
 
   {# ── Current Objective (highest-priority ACTIVE mission) ── #}
   {% set active_missions = missions|selectattr('status', 'eq', 'ACTIVE')|list %}
@@ -7,7 +7,7 @@
     {% if objective %}
       <div class="grpg-current-objective" style="--obj-color: var(--accent-{{ objective.target_region|replace('academy','int')|replace('river','sta')|replace('moon','fcs')|replace('village','cha') }});">
         <div class="grpg-panel-header">
-          <h3 class="grpg-panel-title" style="color:var(--accent-active);">CURRENT OBJECTIVE</h3>
+          <h3 class="grpg-panel-title" style="color:var(--text-primary);">CURRENT OBJECTIVE</h3>
         </div>
         <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin:4px 0 2px;">{{ objective.title }}</div>
         <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
@@ -48,25 +48,25 @@
                   aria-label="Toggle {{ m.title }}"
                   aria-pressed="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE') else 'false' }}"
                   data-xp="{{ m.xp }}">
-            {% if m.status == 'COMPLETED' %}&#x2713;{% elif m.status == 'COMPLETED_LATE' %}&#x23F0;{% elif m.status == 'MISSED' %}&#x2717;{% endif %}
+            {% if m.status == 'COMPLETED' %}{% elif m.status == 'COMPLETED_LATE' %}{% elif m.status == 'MISSED' %}{% endif %}
           </button>
           <span class="grpg-mission-tag" style="color:var(--accent-{{ m.color }});">[{{ m.tag }}]</span>
-          <span class="grpg-mission-title">{{ m.title }} {% if m.status == 'LOCKED' %}&#x1F512;{% elif m.status == 'ABANDONED' %}&#x2716;{% elif m.status == 'RESCHEDULED' %}&#x23F1;{% endif %}</span>
+          <span class="grpg-mission-title">{{ m.title }}{% if m.status == 'LOCKED' %}{% elif m.status == 'ABANDONED' %}{% elif m.status == 'RESCHEDULED' %}{% endif %}</span>
           <span class="grpg-mission-xp">{% if m.xp > 0 %}+{{ m.xp }} XP{% endif %}</span>
         </div>
         <div class="grpg-mission-meta">
           {% if m.status == 'COMPLETED' %}
-            <span class="grpg-done-label">&#x2713; DONE</span>
+            <span class="grpg-done-label">DONE</span>
           {% elif m.status == 'COMPLETED_LATE' %}
-            <span class="grpg-done-label" style="color:var(--accent-danger);">&#x23F0; LATE</span>
+            <span class="grpg-done-label" style="color:var(--accent-danger);">LATE</span>
           {% elif m.status == 'MISSED' %}
-            <span class="grpg-done-label" style="color:var(--accent-danger);">&#x2717; MISSED</span>
+            <span class="grpg-done-label" style="color:var(--accent-danger);">MISSED</span>
           {% elif m.status == 'LOCKED' %}
-            <span class="grpg-done-label" style="opacity:0.5;">&#x1F512; LOCKED</span>
+            <span class="grpg-done-label" style="opacity:0.5;">LOCKED</span>
           {% elif m.status == 'ABANDONED' %}
-            <span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">&#x2716; ABANDONED</span>
+            <span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">ABANDONED</span>
           {% elif m.status == 'RESCHEDULED' %}
-            <span class="grpg-done-label" style="color:var(--text-muted);">&#x23F1; RESCHEDULED</span>
+            <span class="grpg-done-label" style="color:var(--text-muted);">RESCHEDULED</span>
           {% else %}
             {{ m.deadline }} {% if m.countdown %}&middot; {{ m.countdown }}{% endif %}
           {% endif %}
