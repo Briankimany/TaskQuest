@@ -108,14 +108,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }, true);
 
-  // Toggle expanded mission detail when the row (not a button) is clicked
-  document.addEventListener('click', function (e) {
-    var row = e.target.closest('.grpg-mission-row');
-    if (!row) return;
-    if (e.target.closest('button')) return; // let button handlers deal with their own actions
-    row.classList.toggle('grpg-mission-expanded-open');
-  });
-
   // Resolve the mission row for an action button (objective block has no row → first ACTIVE mission)
   function resolveMissionRow(btn) {
     var row = btn.closest('.grpg-mission-row');
@@ -184,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (meta && !done) {
           meta.innerHTML = start + ' <span class="grpg-done-label" style="color:var(--text-muted);">\u23F1 RESCHEDULED</span>';
         }
-        row.classList.remove('grpg-mission-expanded-open');
         showNotification('info', 'Rescheduled', 'Mission moved to ' + start + '.');
         reconcileCards();
       }).catch(function (err) {
@@ -255,8 +246,6 @@ document.addEventListener('DOMContentLoaded', function () {
         row.setAttribute('data-done', 'false');
         var meta = row.querySelector('.grpg-mission-meta');
         if (meta) meta.innerHTML = '<span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">\u2716 ABANDONED</span>';
-        row.classList.remove('grpg-mission-expanded-open');
-
         var change = typeof result.exp_change === 'number' ? result.exp_change : 0;
         if (change) updateTopbarXP(change);
         showNotification(change >= 0 ? 'success' : 'warning', 'Mission Abandoned',
@@ -547,6 +536,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // ── Missions: collapse/expand the whole card with the left chevron ──
+  var missionsCollapse = document.getElementById('grpg-missions-collapse');
+  if (missionsCollapse) {
+    missionsCollapse.addEventListener('click', function () {
+      var body = document.getElementById('grpg-missions-body');
+      var collapsed = !body || body.getAttribute('data-collapsed') !== 'true';
+      if (body) body.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+      this.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    });
+  }
+
   // ── Client-side reconciliation (fetch JSON feeds, patch DOM in place) ──
   function reconcileActivity() {
     fetch('/api/activity/recent', { headers: { 'Accept': 'application/json' } })
@@ -561,12 +561,13 @@ document.addEventListener('DOMContentLoaded', function () {
           html = '<div id="grpg-activity-empty" style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px;">No activity yet today</div>';
         } else {
           acts.slice(0, 4).forEach(function (a) {
-            var stColor = a.status === 'DONE' ? 'var(--accent-active)' : (a.status === 'LATE' ? 'var(--accent-warning)' : 'var(--accent-danger)');
+            var stColor = a.status === 'DONE' ? 'var(--accent-active)' : (a.status === 'IN_PROGRESS' ? 'var(--text-muted)' : 'var(--accent-danger)');
+            var stLabel = a.status === 'IN_PROGRESS' ? 'IN PROGRESS' : a.status;
             var xpColor = (a.xp || 0) >= 0 ? 'var(--accent-fcs)' : 'var(--accent-danger)';
-            var attrColor = 'var(--accent-' + (a.attr || 'int') + ')';
+            var attrColor = 'var(--accent-' + (a.color || 'amber') + ')';
             var xpText = (a.xp >= 0 ? '+' : '') + a.xp;
             html += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;">' +
-              '<span style="flex-shrink:0;width:44px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:' + stColor + ';">' + a.status + '</span>' +
+              '<span style="flex-shrink:0;width:44px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:' + stColor + ';">' + stLabel + '</span>' +
               '<span style="flex:1;color:var(--text-primary);">' + a.name + '</span>' +
               '<span style="font-size:10px;color:var(--text-secondary);">' + (a.time || '') + '</span>' +
               '<span style="font-family:var(--font-mono);font-weight:600;color:' + xpColor + ';">' + xpText + '</span>' +
@@ -598,11 +599,16 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           if (!m) return;
           row.setAttribute('data-status', m.status);
+          row.setAttribute('data-color', m.color || '');
+          row.setAttribute('data-status-override', m.status_override || '');
           var done = (m.status === 'COMPLETED' || m.status === 'COMPLETED_LATE');
           row.setAttribute('data-done', done ? 'true' : 'false');
           row.setAttribute('data-time-range', m.deadline || '');
+          var rowColor = m.status_override ? 'var(--accent-red)' : 'var(--accent-' + (m.color || 'amber') + ')';
+          row.style.setProperty('--mission-color', rowColor);
           var statusBtn = row.querySelector('.grpg-mission-status');
           if (statusBtn) {
+            statusBtn.style.setProperty('--tag-color', rowColor);
             statusBtn.setAttribute('aria-pressed', done ? 'true' : 'false');
             statusBtn.classList.toggle('grpg-mission-completed', m.status === 'COMPLETED');
             statusBtn.classList.toggle('grpg-mission-late', m.status === 'COMPLETED_LATE');
@@ -613,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (meta) {
             var label = '';
             if (m.status === 'COMPLETED') label = '<span class="grpg-done-label">\u2713 DONE</span>';
-            else if (m.status === 'COMPLETED_LATE') label = '<span class="grpg-done-label" style="color:var(--accent-warning);">\u23F0 LATE</span>';
+            else if (m.status === 'COMPLETED_LATE') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">\u23F0 LATE</span>';
             else if (m.status === 'MISSED') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">\u2717 MISSED</span>';
             else if (m.status === 'LOCKED') label = '<span class="grpg-done-label" style="opacity:0.5;">\u1F512 LOCKED</span>';
             else if (m.status === 'ABANDONED') label = '<span class="grpg-done-label" style="color:var(--accent-danger);opacity:0.6;">\u2716 ABANDONED</span>';

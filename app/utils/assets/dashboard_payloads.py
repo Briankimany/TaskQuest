@@ -16,6 +16,44 @@ REGION_MAP = {
     "DSC": "academy",
 }
 
+# Mission-type accent colors — single source of truth, shared by the
+# Today's Missions card and Recent Activity so the same task always renders
+# with the same color regardless of which card shows it.
+TYPE_COLORS = {
+    "MAIN": "cyan",
+    "DAILY": "green",
+    "SIDE": "amber",
+}
+
+# Per-task overrides on top of the type default. Purple is not a second SIDE
+# color — it's a deliberate opt-out for specific tasks (e.g. Build Project).
+COLOR_OVERRIDES = {
+    "build project": "purple",
+    "finish portfolio": "purple",
+    "side project code": "purple",
+}
+
+# Failed states force a red status ring/label regardless of the task's type
+# color (the reference's red is a status override, not a fifth category).
+STATUS_OVERRIDE_RED = {"MISSED", "ABANDONED", "COMPLETED_LATE"}
+
+
+def mission_color(title, tag):
+    """Resolve the stored/canonical accent color for a task.
+
+    Per-task override wins; otherwise the mission-type default applies. Both
+    build_missions and build_activity call this so cards never drift.
+    """
+    override = COLOR_OVERRIDES.get((title or "").strip().lower())
+    if override:
+        return override
+    return TYPE_COLORS.get(tag, "amber")
+
+
+def _tag_for_index(index):
+    """Missions are tagged by schedule position: 1st=MAIN, 2nd=DAILY, else SIDE."""
+    return "MAIN" if index == 0 else ("DAILY" if index == 1 else "SIDE")
+
 # Urgent/in-progress first, resolved last. "Overdue" is an ACTIVE mission whose
 # window has already passed, so ACTIVE already includes it.
 STATUS_PRIORITY = {
@@ -108,9 +146,11 @@ def build_missions(scheduled_tasks, date_logs, today):
 
         missions.append({
             "id": f"mission-{task.id}",
-            "tag": "MAIN" if index == 0 else ("DAILY" if index == 1 else "SIDE"),
+            "tag": _tag_for_index(index),
             "title": sub.name,
+            "color": mission_color(sub.name, _tag_for_index(index)),
             "status": status,
+            "status_override": "red" if status in STATUS_OVERRIDE_RED else None,
             "difficulty": diff,
             "attr_deltas": attr_deltas,
             "attr_delta_str": " + ".join(f"{k.upper()} {v}" for k, v in attr_deltas.items()),
@@ -128,12 +168,36 @@ def build_missions(scheduled_tasks, date_logs, today):
     return missions
 
 
-def build_activity(date_logs):
+def build_activity(date_logs, scheduled_tasks=None):
     """Build the Recent Activity feed for today.
 
-    Includes every status — completed, late, and skipped/missed — each with
-    its scheduled time and signed XP impact (penalties render negative).
+    Shows resolved items first (completed/late/missed) with signed XP impact,
+    then any still-in-progress missions as a grayed next-up row.
+
+    Colors match the missions card: every item resolves to the same stored
+    per-task color (by schedule position + override, identical logic), so a
+    purple Build Project is purple here too.
     """
+    # Map timetable_entry -> mission tag, mirroring build_missions's ordering
+    # (skip buffer entries whose base_exp == 0). When the schedule is provided
+    # use it directly so in-progress items tag identically to the missions card.
+    entry_index = {}
+    index = 0
+
+    def assign_tags(iterable, key_fn):
+        nonlocal index
+        for item in iterable:
+            sub = item.sub_activity
+            if not sub or sub.base_exp == 0:
+                continue
+            entry_index[key_fn(item)] = _tag_for_index(index)
+            index += 1
+
+    if scheduled_tasks is not None:
+        assign_tags(scheduled_tasks, lambda t: t.id)
+    else:
+        assign_tags(date_logs, lambda lg: lg.timetable_entry_id)
+
     activity = []
     for log in date_logs:
         sub = log.sub_activity
@@ -145,16 +209,41 @@ def build_activity(date_logs):
         else:
             status = "MISSED"
 
+        entry = log.timetable_entry
+        tag = entry_index.get(log.timetable_entry_id, "SIDE") if log.timetable_entry_id else "SIDE"
+
         activity.append({
             "name": sub.name if sub else "Unknown",
-            "time": log.timetable_entry.start_time.strftime("%H:%M")
-                    if log.timetable_entry and log.timetable_entry.start_time else "",
+            "time": entry.start_time.strftime("%H:%M")
+                    if entry and entry.start_time else "",
             "xp": xp,
             "attr": (_top_weight(weights) or "int").lower(),
             "attr_delta": 1,
             "target_region": _target_region(weights),
             "status": status,
+            "color": mission_color(sub.name, tag) if sub else "amber",
+            "status_override": "red" if status in ("LATE", "MISSED") else None,
         })
+
+    if scheduled_tasks is not None:
+        logged_ids = {lg.timetable_entry_id for lg in date_logs if lg.timetable_entry_id}
+        for task in scheduled_tasks:
+            sub = task.sub_activity
+            if not sub or sub.base_exp == 0 or task.id in logged_ids:
+                continue
+            weights = sub.attribute_weights or {}
+            tag = entry_index.get(task.id, "SIDE")
+            activity.append({
+                "name": sub.name,
+                "time": task.start_time.strftime("%H:%M") if task.start_time else "",
+                "xp": int(sub.calculate_potential_exp()) if hasattr(sub, "calculate_potential_exp") else int(sub.base_exp or 0),
+                "attr": (_top_weight(weights) or "int").lower(),
+                "attr_delta": 1,
+                "target_region": _target_region(weights),
+                "status": "IN_PROGRESS",
+                "color": mission_color(sub.name, tag),
+                "status_override": None,
+            })
     return activity
 
 

@@ -62,10 +62,10 @@ def missions_today():
 @api_bp.route("/activity/recent")
 @log_app_errors
 def activity_recent():
-    user, _scheduled, logs, _dcp = _today_ctx()
+    user, scheduled, logs, _dcp = _today_ctx()
     if user is None:
         return jsonify({"msg": "Unauthorized"}), 401
-    return jsonify({"activity": build_activity(logs)}), 200
+    return jsonify({"activity": build_activity(logs, scheduled)}), 200
 
 
 @api_bp.route("/system-judge/latest")

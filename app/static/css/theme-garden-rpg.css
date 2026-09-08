@@ -52,6 +52,14 @@
   --warning: #F0A830;
   --success: #3DDC84;
 
+  /* Mission-type accent names — single canonical names matching the payload's
+     stored `color` field so templates can use var(--accent-{{ color }}). */
+  --accent-cyan: #3AB6F0;
+  --accent-green: #3DDC84;
+  --accent-amber: #F0A830;
+  --accent-purple: #9B7FE0;
+  --accent-red: #E5484D;
+
   /* Alias old token names to garden values */
   --accent-warm: #F0A830;
   --accent-calm: #3AB6F0;

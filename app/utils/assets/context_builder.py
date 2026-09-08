@@ -146,7 +146,7 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
     judge_reviews = build_judge_reviews(date_logs, dcp)
 
     # ── Activity (all of today's completion logs — completed, late, skipped) ──
-    activity = build_activity(date_logs)
+    activity = build_activity(date_logs, scheduled_tasks)
 
     # ── World events (from today's data) ──
     world_events = []

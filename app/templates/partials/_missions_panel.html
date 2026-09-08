@@ -15,41 +15,42 @@
           &middot; Deadline {{ objective.deadline }}
           {% if objective.countdown %}&middot; <span style="color:var(--accent-warning);">{{ objective.countdown }}</span>{% endif %}
         </div>
-        <div style="display:flex;gap:6px;">
-          <button class="grpg-ghost-btn grpg-mission-action" data-action="reschedule" aria-label="Reschedule {{ objective.title }}">RESCHEDULE</button>
-        </div>
       </div>
       <div class="grpg-panel-divider" role="separator"></div>
     {% endif %}
   </div>
 
   <div class="grpg-panel-header">
-    <h3 class="grpg-panel-title">Today's Missions</h3>
+    <h3 class="grpg-panel-title" style="color:var(--text-primary);letter-spacing:0.14em;">Today's Missions</h3>
     <span class="grpg-count-pill" id="grpg-missions-count">{{ missions|length }}</span>
+    <button class="grpg-icon-btn grpg-missions-collapse" id="grpg-missions-collapse"
+            aria-label="Collapse missions panel" aria-expanded="true">&#x2039;</button>
   </div>
 
-  <div id="grpg-missions-list">
+  <div class="grpg-missions-body" id="grpg-missions-body">
+    <div id="grpg-missions-list">
   {% if missions %}
-    {% set mission_tag_colors = {'MAIN': 'var(--accent-info)', 'DAILY': 'var(--accent-dsc)', 'SIDE': 'var(--accent-fcs)'} %}
     {% for m in missions %}
-      {% set attr_code = m.target_region|replace('academy','int')|replace('river','sta')|replace('moon','fcs')|replace('village','cha') %}
-      {% set tag_color = mission_tag_colors.get(m.tag, 'var(--accent-pink)') %}
+      {% set row_color = 'var(--accent-red)' if m.status_override else 'var(--accent-' ~ m.color ~ ')' %}
       <div class="grpg-mission-row{% if loop.index > 3 %} grpg-missions-hidden-row{% endif %}" data-mission-id="{{ m.id }}"
            data-done="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE') else 'false' }}"
            data-target-region="{{ m.target_region }}"
            data-attr-deltas="{{ m.attr_delta_str }}"
            data-time-range="{{ m.deadline }}"
            data-duration="{{ m.duration }}"
-           data-status="{{ m.status }}">
+           data-status="{{ m.status }}"
+           data-color="{{ m.color }}"
+           data-status-override="{{ m.status_override or '' }}"
+           style="--mission-color: {{ row_color }};">
         <div class="grpg-mission-top">
           <button class="grpg-mission-status {% if m.status == 'COMPLETED' %}grpg-mission-completed{% elif m.status == 'COMPLETED_LATE' %}grpg-mission-late{% endif %}"
-                  style="--tag-color: var(--accent-{{ attr_code }});"
+                  style="--tag-color: var(--mission-color);"
                   aria-label="Toggle {{ m.title }}"
                   aria-pressed="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE') else 'false' }}"
                   data-xp="{{ m.xp }}">
             {% if m.status == 'COMPLETED' %}&#x2713;{% elif m.status == 'COMPLETED_LATE' %}&#x23F0;{% elif m.status == 'MISSED' %}&#x2717;{% endif %}
           </button>
-          <span class="grpg-mission-tag" style="color:{{ tag_color }};">[{{ m.tag }}]</span>
+          <span class="grpg-mission-tag" style="color:var(--accent-{{ m.color }});">[{{ m.tag }}]</span>
           <span class="grpg-mission-title">{{ m.title }} {% if m.status == 'LOCKED' %}&#x1F512;{% elif m.status == 'ABANDONED' %}&#x2716;{% elif m.status == 'RESCHEDULED' %}&#x23F1;{% endif %}</span>
           <span class="grpg-mission-xp">{% if m.xp > 0 %}+{{ m.xp }} XP{% endif %}</span>
         </div>
@@ -57,7 +58,7 @@
           {% if m.status == 'COMPLETED' %}
             <span class="grpg-done-label">&#x2713; DONE</span>
           {% elif m.status == 'COMPLETED_LATE' %}
-            <span class="grpg-done-label" style="color:var(--accent-warning);">&#x23F0; LATE</span>
+            <span class="grpg-done-label" style="color:var(--accent-danger);">&#x23F0; LATE</span>
           {% elif m.status == 'MISSED' %}
             <span class="grpg-done-label" style="color:var(--accent-danger);">&#x2717; MISSED</span>
           {% elif m.status == 'LOCKED' %}
@@ -69,55 +70,6 @@
           {% else %}
             {{ m.deadline }} {% if m.countdown %}&middot; {{ m.countdown }}{% endif %}
           {% endif %}
-        </div>
-        {# ── Difficulty dots + attr color dots (collapsed) ── #}
-        <div class="grpg-mission-detail">
-          <span class="grpg-mission-difficulty" aria-label="Difficulty {{ m.difficulty }} out of 5">
-            {% for i in range(5) %}<span class="grpg-dot{% if i < m.difficulty %} grpg-dot-filled{% endif %}"></span>{% endfor %}
-          </span>
-          <span class="grpg-mission-attr-dots">
-            {% for attr_code_i, delta in m.attr_deltas.items() %}
-              <span class="grpg-attr-dot" style="background:var(--accent-{{ attr_code_i }});" title="{{ attr_code_i|upper }} +{{ delta }}"></span>
-            {% endfor %}
-          </span>
-        </div>
-
-        {# ── Expanded detail (revealed on click) ── #}
-        <div class="grpg-mission-expanded">
-          <div class="grpg-mission-expanded-grid">
-            {% if m.attr_deltas %}
-            <div class="grpg-mission-expanded-item">
-              <span class="grpg-mission-expanded-label">ATTRIBUTES</span>
-              <span style="color:var(--text-primary);">{{ m.attr_delta_str }}</span>
-            </div>
-            {% endif %}
-            <div class="grpg-mission-expanded-item">
-              <span class="grpg-mission-expanded-label">DIFFICULTY</span>
-              <span class="grpg-mission-difficulty">
-                {% for i in range(5) %}<span class="grpg-dot{% if i < m.difficulty %} grpg-dot-filled{% endif %}"></span>{% endfor %}
-              </span>
-            </div>
-            <div class="grpg-mission-expanded-item">
-              <span class="grpg-mission-expanded-label">DEADLINE</span>
-              <span style="color:var(--text-primary);">{{ m.deadline }} {% if m.countdown %}({{ m.countdown }}){% endif %}</span>
-            </div>
-            <div class="grpg-mission-expanded-item">
-              <span class="grpg-mission-expanded-label">REWARD</span>
-              <span style="color:var(--accent-fcs);">+{{ m.xp }} XP</span>
-            </div>
-            <div class="grpg-mission-expanded-item">
-              <span class="grpg-mission-expanded-label">STREAK RISK</span>
-              <span style="color:var(--accent-danger);">{{ m.streak_risk }}</span>
-            </div>
-            <div class="grpg-mission-expanded-item">
-              <span class="grpg-mission-expanded-label">TARGET</span>
-              <span style="color:var(--accent-{{ attr_code }});">&rarr; {{ m.target_region|title }}</span>
-            </div>
-          </div>
-          <div style="display:flex;gap:6px;margin-top:10px;">
-            <button class="grpg-ghost-btn grpg-mission-action" style="flex:1;" data-action="reschedule" aria-label="Reschedule {{ m.title }}">RESCHEDULE</button>
-            <button class="grpg-ghost-btn grpg-mission-action grpg-mission-abandon" style="flex:1;" data-action="abandon" aria-label="Abandon {{ m.title }}">ABANDON</button>
-          </div>
         </div>
       </div>
     {% endfor %}
@@ -132,4 +84,24 @@
   <button id="grpg-missions-toggle" class="grpg-ghost-btn"
           style="display:{{ 'block' if missions|length > 3 else 'none' }};text-align:center;margin-top:8px;"
           data-expanded="false">VIEW ALL ({{ missions|length }}) &or;</button>
+
+  {% if missions %}
+    {# ── Decorative pagination dots (static, non-interactive) ── #}
+    <div class="grpg-mission-dots" aria-hidden="true">
+      <span class="grpg-mission-dot grpg-mission-dot-active"></span>
+      <span class="grpg-mission-dot"></span>
+      <span class="grpg-mission-dot"></span>
+      <span class="grpg-mission-dot"></span>
+      <span class="grpg-mission-dot"></span>
+    </div>
+    {# ── Legend — the canonical accent palette, incl. the red status override ── #}
+    <div class="grpg-mission-legend">
+      <span class="grpg-legend-swatch" style="--legend-color:var(--accent-cyan);" title="Main missions"></span>
+      <span class="grpg-legend-swatch" style="--legend-color:var(--accent-green);" title="Daily missions"></span>
+      <span class="grpg-legend-swatch" style="--legend-color:var(--accent-amber);" title="Side missions"></span>
+      <span class="grpg-legend-swatch" style="--legend-color:var(--accent-purple);" title="Special task"></span>
+      <span class="grpg-legend-swatch" style="--legend-color:var(--accent-red);" title="Missed / failed"></span>
+    </div>
+  {% endif %}
+  </div>
 </div>

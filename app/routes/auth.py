@@ -46,7 +46,6 @@ def login():
         session['user_id'] = user.id
         if is_api_request():
             return jsonify({'message': f'Welcome back, {user.username}!'}), 200
-        flash(f'Welcome back, {user.username}!', 'success')
         return redirect(url_for('views.dashboard'))
     
     if is_api_request():
