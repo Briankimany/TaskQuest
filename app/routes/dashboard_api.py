@@ -11,6 +11,7 @@ from app.routes.api import api_bp, log_app_errors
 from app.models import User, CompletionLog
 from app.utils.schedulers import TaskScheduler
 from app.utils.managers import UserManager
+from app.utils.timezones import now_for, today_for_id
 from app.utils.assets.dashboard_payloads import (
     build_missions, build_activity, build_judge_reviews,
 )
@@ -32,7 +33,7 @@ def _today_ctx():
     user = _current_user()
     if user is None:
         return None, None, None, None
-    now = datetime.now()
+    now = now_for(user)
     today = now.date()
     scheduled = TaskScheduler(user_id=user.id, date=now).get_daily_schedule(
         user_id=user.id, date_obj=today,
@@ -51,7 +52,7 @@ def missions_today():
     user, scheduled, logs, dcp = _today_ctx()
     if user is None:
         return jsonify({"msg": "Unauthorized"}), 401
-    missions = build_missions(scheduled, logs, datetime.now().date())
+    missions = build_missions(scheduled, logs, today_for_id(user.id), now=now_for(user))
     return jsonify({
         "missions": missions,
         "total": len(missions),
@@ -75,7 +76,7 @@ def system_judge_latest():
     if user is None:
         return jsonify({"msg": "Unauthorized"}), 401
     reviews = build_judge_reviews(logs, dcp)
-    missed = UserManager.get_missed_count(user.id, datetime.now().date())
+    missed = UserManager.get_missed_count(user.id, today_for_id(user.id))
     return jsonify({
         "review": reviews[0] if reviews else None,
         "missed_count": missed,

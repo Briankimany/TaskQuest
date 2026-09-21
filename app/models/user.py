@@ -28,6 +28,10 @@ class User(db.Model):
     total_exp = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # IANA timezone determining the user's calendar day (default Africa/Nairobi).
+    timezone = db.Column(db.String(64), nullable=False,
+                         server_default='Africa/Nairobi', default='Africa/Nairobi')
+
     _password = db.Column('password',db.String(120), nullable=False)
 
     @property

@@ -3,15 +3,11 @@ Build the garden RPG dashboard context dict from user model data.
 """
 import math
 from datetime import date, timedelta, datetime
-from sqlalchemy import func
-from app.models import User, CompletionLog, Level
-from app.models.base import db
-from app.utils.schedulers import TaskScheduler
-from app.utils.managers import UserManager
 from app.utils.assets import region_art, hero_bg, health_overlay
 from app.utils.assets.dashboard_payloads import (
-    build_missions, build_activity, build_judge_reviews,
+    build_missions, build_activity,
 )
+from app.utils.timezones import now_for
 
 
 def _compute_tier(value):
@@ -76,10 +72,10 @@ MISSION_STATUSES = [
 
 def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
                              next_level, xp_pct, ring_offset, streak,
-                             streak_best, missed_count, xp_week):
+                             streak_best, xp_week):
     """Build the full context dict for the garden RPG dashboard."""
 
-    now = datetime.now()
+    now = date_obj if isinstance(date_obj, datetime) else now_for(user)
     today = date_obj.date() if isinstance(date_obj, datetime) else date_obj
 
     # ── Regions ──
@@ -132,18 +128,7 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
     hero_bg_data = hero_bg()
 
     # ── Missions (from scheduled tasks) ──
-    missions = build_missions(scheduled_tasks, date_logs, today)
-
-    # ── Seeds (placeholder — no seed model yet) ──
-    seeds = [
-        {"id": "seed-1", "label": "Morning Routine", "state": "DORMANT",
-         "potential_xp": 80, "potential_attr": "dsc"},
-        {"id": "seed-2", "label": "Weekly Review", "state": "DORMANT",
-         "potential_xp": 60, "potential_attr": "fcs"},
-    ]
-
-    # ── Judge reviews (persisted, one per penalized log, generated via LLM) ──
-    judge_reviews = build_judge_reviews(date_logs, dcp)
+    missions = build_missions(scheduled_tasks, date_logs, today, now=now)
 
     # ── Activity (all of today's completion logs — completed, late, skipped) ──
     activity = build_activity(date_logs, scheduled_tasks)
@@ -167,9 +152,6 @@ def build_garden_rpg_context(user, scheduled_tasks, date_logs, dcp, date_obj,
         "player": player,
         "hero_bg_data": hero_bg_data,
         "missions": missions,
-        "seeds": seeds,
-        "judge_reviews": judge_reviews,
-        "missed_count": missed_count,
         "activity": activity,
         "world_events": world_events,
         "xp_week": xp_week,

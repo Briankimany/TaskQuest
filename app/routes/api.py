@@ -19,6 +19,7 @@ from app.config import ATTRIBUTES_LIST  ,TIME_PARSING_STRING
 from app.utils.exceptions import *
 from app.utils.logger import api_logger 
 from app.utils.routes_api_utils import general_decorator as log_app_errors
+from app.utils.timezones import today_for_id
 from werkzeug.exceptions import BadRequest ,HTTPException
 
 
@@ -301,6 +302,26 @@ def subactivity_detail(subactivity_id):
         return '', 204
 
 
+@api_bp.route('/prefs/timezone', methods=['GET', 'POST'])
+@login_required
+def prefs_timezone():
+    """Read/update the logged-in user's IANA timezone."""
+    from app.utils.timezones import validate_timezone_name, DEFAULT_TIMEZONE
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+
+    if request.method == 'GET':
+        return jsonify({'timezone': user.timezone or DEFAULT_TIMEZONE}), 200
+
+    data = request.get_json(silent=True) or {}
+    tz_name = (data.get('timezone') or '').strip()
+    if not validate_timezone_name(tz_name):
+        return jsonify({'msg': f"Invalid timezone: {tz_name!r}"}), 400
+    user.timezone = tz_name
+    db.session.commit()
+    return jsonify({'timezone': user.timezone}), 200
+
+
 @api_bp.route('/stats', methods=['GET'])
 @log_app_errors
 def stats():
@@ -349,7 +370,7 @@ def stats():
         }
 
     # Get completion history
-    last_30_days = date.today() - timedelta(days=30)
+    last_30_days = today_for_id(user_id) - timedelta(days=30)
     completion_history = db.session.query(
         func.date(CompletionLog.completed_on).label('date'),
         func.count().label('count')

@@ -152,6 +152,24 @@
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    <script>
+      (function () {
+        try {
+          var accountTz = {{ (g.user.timezone if g.user else '')|tojson }};
+          if (!accountTz || accountTz !== 'Africa/Nairobi') return;
+          if (document.cookie.indexOf('tzCaptured=1') !== -1) return;
+          var browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          if (!browserTz || browserTz === accountTz) return;
+          fetch('/api/prefs/timezone', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timezone: browserTz })
+          }).then(function (r) {
+            if (r.ok) document.cookie = 'tzCaptured=1; path=/; max-age=31536000';
+          }).catch(function () {});
+        } catch (e) {}
+      })();
+    </script>
 
     {% block scripts %}{% endblock %}
 

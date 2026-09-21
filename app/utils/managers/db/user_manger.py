@@ -68,14 +68,19 @@ class UserManager:
         return dcp 
 
     @classmethod
-    def get_streak(cls, user_id: int) -> int:
+    def get_streak(cls, user_id: int, today: date = None) -> int:
         """
         Count consecutive completed days going backward from today.
         A day counts as completed if DCP >= 1.0 (all scheduled tasks done).
         Stops at the first incomplete day or when no tasks were scheduled.
+
+        ``today`` is the user's calendar day (in their timezone); callers that
+        have a user should pass ``today_for_id(user.id)``. Defaults to the
+        server clock date for backwards compatibility.
         """
+        from app.utils.timezones import today_for_id
         streak = 0
-        today = date.today()
+        today = today or today_for_id(user_id)
 
         # Check today first — only count if the day is fully done
         today_dcp = cls.get_dcp(user_id, today)
@@ -100,11 +105,12 @@ class UserManager:
         return streak
 
     @classmethod
-    def get_best_streak(cls, user_id: int) -> int:
+    def get_best_streak(cls, user_id: int, today: date = None) -> int:
         """
         Scan the last 365 days for the longest run of consecutive fully-completed days.
         """
-        today = date.today()
+        from app.utils.timezones import today_for_id
+        today = today or today_for_id(user_id)
         best = 0
         current = 0
 
