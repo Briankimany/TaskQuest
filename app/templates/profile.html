@@ -104,5 +104,72 @@
       </div>
     </section>
   </div>
+
+  <!-- Preferences -->
+  <section aria-labelledby="prefs-heading" class="mt-4">
+    <h3 id="prefs-heading" class="grpg-panel-title">Preferences</h3>
+    <div class="grpg-panel">
+      <p class="text-muted-app" style="font-size:12px;margin:0 0 12px;">
+        Your timezone decides your calendar day. All history is stored in UTC; your day,
+        streaks and schedule never shift when the server moves.
+      </p>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <input type="text" id="profile-timezone" list="timezone-list" value="{{ user.timezone }}"
+               class="form-control form-control-sm" style="width:280px;font-size:0.8rem;"
+               autocomplete="off" spellcheck="false">
+        <datalist id="timezone-list">
+          {% for tz in all_timezones %}<option value="{{ tz }}"></option>{% endfor %}
+        </datalist>
+        <button type="button" id="profile-timezone-save" class="btn-app btn-app-secondary btn-app-sm">Save Timezone</button>
+        <span id="profile-timezone-feedback" class="text-muted-app" style="font-size:11px;"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Backup & Import (MERGE) -->
+  <section aria-labelledby="backup-heading" class="mt-4">
+    <h3 id="backup-heading" class="grpg-panel-title">Backup &amp; Import</h3>
+    <div class="grpg-panel">
+      <p class="text-muted-app" style="font-size:12px;margin:0 0 12px;">
+        Download a single-file JSON backup of all your data, or import a backup from
+        any account. Imports <strong>merge</strong> — your current data is kept, conflicts
+        keep your existing rows, and you review a full preview before anything is written.
+      </p>
+      <div class="d-flex flex-wrap align-items-center gap-3">
+        <a href="{{ url_for('views.export_data') }}" class="btn-app btn-app-primary btn-app-sm">
+          Export Backup (JSON)
+        </a>
+        <form method="post" action="{{ url_for('views.import_preview') }}" enctype="multipart/form-data"
+              class="d-flex align-items-center gap-2">
+          <input type="file" name="backup_file" accept="application/json,.json" required
+                 class="form-control form-control-sm" style="width:260px;font-size:0.8rem;">
+          <button type="submit" class="btn-app btn-app-secondary btn-app-sm">Review Import</button>
+        </form>
+      </div>
+    </div>
+  </section>
 </div>
+
+<script>
+  (function () {
+    var input = document.getElementById('profile-timezone');
+    var saveBtn = document.getElementById('profile-timezone-save');
+    var feedback = document.getElementById('profile-timezone-feedback');
+    if (!input || !saveBtn) return;
+    saveBtn.addEventListener('click', function () {
+      var tz = input.value.trim();
+      if (!tz) { feedback.textContent = 'Enter an IANA timezone.'; return; }
+      fetch('/api/prefs/timezone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timezone: tz })
+      }).then(function (res) { return res.json().then(function (d) { return { ok: res.ok, d: d }; }); })
+        .then(function (r) {
+          if (r.ok) { feedback.textContent = 'Saved: ' + r.d.timezone; feedback.style.color = 'var(--accent-fcs)'; }
+          else { feedback.textContent = r.d.msg || 'Could not save.'; feedback.style.color = 'var(--accent-danger)'; }
+        })
+        .catch(function (e) { feedback.textContent = 'Network error.'; feedback.style.color = 'var(--accent-danger)'; });
+    });
+  })();
+</script>
 {% endblock %}

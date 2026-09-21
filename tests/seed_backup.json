@@ -1,0 +1,266 @@
+{
+  "format": "taskquest-backup",
+  "schema_version": 2,
+  "exported_at": "2026-09-20T10:30:00",
+  "owner": "gatu",
+  "user": {
+    "username": "gatu",
+    "email": "gatu@example.com",
+    "timezone": "America/New_York",
+    "INT": 10,
+    "STA": 20,
+    "FCS": 30,
+    "CHA": 40,
+    "DSC": 50,
+    "level": 1,
+    "total_exp": 60,
+    "created_at": "2026-09-01T00:00:00"
+  },
+  "activities": [
+    {
+      "name": "school",
+      "is_active": true,
+      "sub_activities": [
+        {
+          "name": "math",
+          "difficulty_multiplier": 1.0,
+          "base_exp": 100,
+          "attribute_weights": {"INT": 0.6, "STA": 0.0, "FCS": 0.2, "CHA": 0.0, "DSC": 0.2},
+          "active": true,
+          "scheduled_time": 30
+        },
+        {
+          "name": "physics",
+          "difficulty_multiplier": 1.0,
+          "base_exp": 90,
+          "attribute_weights": {"INT": 0.0, "STA": 0.0, "FCS": 1.0, "CHA": 0.0, "DSC": 0.0},
+          "active": true,
+          "scheduled_time": 45
+        }
+      ]
+    },
+    {
+      "name": "Contextswitch",
+      "is_active": true,
+      "sub_activities": [
+        {
+          "name": "Deep Work",
+          "difficulty_multiplier": 1.0,
+          "base_exp": 80,
+          "attribute_weights": {"INT": 0.0, "STA": 0.0, "FCS": 1.0, "CHA": 0.0, "DSC": 0.0},
+          "active": true,
+          "scheduled_time": 45
+        }
+      ]
+    },
+    {
+      "name": "Workout",
+      "is_active": true,
+      "sub_activities": [
+        {
+          "name": "Squats",
+          "difficulty_multiplier": 1.0,
+          "base_exp": 60,
+          "attribute_weights": {"INT": 0.0, "STA": 1.0, "FCS": 0.0, "CHA": 0.0, "DSC": 0.0},
+          "active": true,
+          "scheduled_time": 20
+        },
+        {
+          "name": "Press",
+          "difficulty_multiplier": 1.0,
+          "base_exp": 55,
+          "attribute_weights": {"INT": 0.0, "STA": 1.0, "FCS": 0.0, "CHA": 0.0, "DSC": 0.0},
+          "active": true,
+          "scheduled_time": 20
+        }
+      ]
+    }
+  ],
+  "timetables": [
+    {
+      "date": "2026-09-21",
+      "goal_text": "merge into the same day",
+      "meta_data": {},
+      "finalized": false,
+      "entries": [
+        {
+          "activity": "school",
+          "sub_activity": "math",
+          "start_time": "08:00",
+          "end_time": "09:00",
+          "cyclic": false,
+          "weekday": null,
+          "description": null
+        },
+        {
+          "activity": "school",
+          "sub_activity": "physics",
+          "start_time": "14:00",
+          "end_time": "15:00",
+          "cyclic": false,
+          "weekday": null,
+          "description": null
+        },
+        {
+          "activity": "Workout",
+          "sub_activity": "Squats",
+          "start_time": "06:30",
+          "end_time": "07:00",
+          "cyclic": false,
+          "weekday": null,
+          "description": null
+        }
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "goal_text": "a fresh day",
+      "meta_data": {},
+      "finalized": true,
+      "entries": [
+        {
+          "activity": "Contextswitch",
+          "sub_activity": "Deep Work",
+          "start_time": "10:00",
+          "end_time": "11:00",
+          "cyclic": false,
+          "weekday": null,
+          "description": null
+        }
+      ]
+    }
+  ],
+  "completion_logs": [
+    {
+      "activity": "school",
+      "sub_activity": "math",
+      "timetable_date": "2026-09-21",
+      "completed_on": "2026-09-21",
+      "actual_time_taken": null,
+      "status": "completed",
+      "reason": "done",
+      "exp_impact": 100,
+      "comment": null
+    },
+    {
+      "activity": "school",
+      "sub_activity": "physics",
+      "timetable_date": "2026-09-21",
+      "completed_on": "2026-09-21",
+      "actual_time_taken": null,
+      "status": "missed",
+      "reason": "no time",
+      "exp_impact": -80,
+      "comment": null
+    },
+    {
+      "activity": "Contextswitch",
+      "sub_activity": "Deep Work",
+      "timetable_date": "2026-09-22",
+      "completed_on": "2026-09-22",
+      "actual_time_taken": null,
+      "status": "completed",
+      "reason": "focus",
+      "exp_impact": 80,
+      "comment": null
+    },
+    {
+      "activity": "Workout",
+      "sub_activity": "Squats",
+      "timetable_date": "2026-09-21",
+      "completed_on": "2026-09-21",
+      "actual_time_taken": null,
+      "status": "completed",
+      "reason": "sweaty",
+      "exp_impact": 60,
+      "comment": null
+    },
+    {
+      "activity": "Workout",
+      "sub_activity": "Press",
+      "timetable_date": "2026-09-22",
+      "completed_on": "2026-09-22",
+      "actual_time_taken": null,
+      "status": "completed",
+      "reason": "push day",
+      "exp_impact": null,
+      "comment": "no difficulty recorded"
+    }
+  ],
+  "judge_reviews": [
+    {
+      "activity": "school",
+      "sub_activity": "physics",
+      "completed_on": "2026-09-21",
+      "task_name": "physics",
+      "task_status": "MISSED",
+      "user_reason": "no time",
+      "penalty": -80,
+      "discipline": 10,
+      "validity": 5,
+      "responsibility": 3,
+      "consistency": 4,
+      "explanation": "Missed with a plausible reason.",
+      "review_status": "PENDING",
+      "dispute_reason": null,
+      "created_at": "2026-09-21T11:00:00",
+      "updated_at": "2026-09-21T11:00:00"
+    },
+    {
+      "activity": "school",
+      "sub_activity": "math",
+      "completed_on": "2026-09-21",
+      "task_name": "math",
+      "task_status": "COMPLETED",
+      "user_reason": "done",
+      "penalty": 100,
+      "discipline": 0,
+      "validity": 0,
+      "responsibility": 0,
+      "consistency": 0,
+      "explanation": "Full completion.",
+      "review_status": "PENDING",
+      "dispute_reason": null,
+      "created_at": "2026-09-21T12:00:00",
+      "updated_at": "2026-09-21T12:00:00"
+    },
+    {
+      "activity": "Workout",
+      "sub_activity": "Press",
+      "completed_on": "2026-09-22",
+      "task_name": "Press",
+      "task_status": "COMPLETED",
+      "user_reason": "push day",
+      "penalty": 0,
+      "discipline": 0,
+      "validity": 0,
+      "responsibility": 0,
+      "consistency": 0,
+      "explanation": "The oracles were unavailable; a provisional verdict was recorded.",
+      "review_status": "PENDING",
+      "dispute_reason": null,
+      "created_at": "2026-09-22T10:00:00",
+      "updated_at": "2026-09-22T10:00:00"
+    }
+  ],
+  "_test_notes": {
+    "description": "Imported into a target that already has School>Math on 2026-09-21 08:00 (exp 100) and a Context Switch activity.",
+    "expected_for_kim": {
+      "activities_added": 2,
+      "activities_conflicts": 1,
+      "sub_activities_added": 4,
+      "sub_activities_conflicts": 1,
+      "timetables_added": 1,
+      "timetables_conflicts": 1,
+      "entries_added": 3,
+      "entries_conflicts": 1,
+      "logs_added": 4,
+      "logs_conflicts": 1,
+      "reviews_added": 2,
+      "reviews_skipped": 1,
+      "near_duplicate": "Context Switch",
+      "total_exp_from": 100,
+      "total_exp_to": 160
+    }
+  }
+}

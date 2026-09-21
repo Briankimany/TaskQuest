@@ -1,0 +1,136 @@
+{% extends "base2.html" %}
+
+{% block title %}Import Preview — {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="grpg-profile" role="main">
+  <div class="grpg-profile-header">
+    <div>
+      <h1 style="margin:0;font-size:24px;color:var(--text-primary);">Import Preview</h1>
+      <p style="margin:2px 0 0;color:var(--text-secondary);font-size:12px;">
+        {{ filename }} &middot; from
+        {{ report.imported_user.username or 'unknown' }}
+        {% if report.imported_user.timezone %} &middot; {{ report.imported_user.timezone }}{% endif %}
+      </p>
+    </div>
+  </div>
+
+  <div class="grpg-panel" style="margin-top:12px;">
+    <p style="margin:0;color:var(--text-muted);font-size:12px;">
+      This import <strong>merges</strong> — your current data is never replaced or deleted.
+      On a conflict, your existing row is kept and the imported copy is skipped.
+      Everything imported or skipped is listed below.
+    </p>
+  </div>
+
+  <section class="mt-4" aria-labelledby="summary-heading">
+    <h3 id="summary-heading" class="grpg-panel-title">Summary</h3>
+    <div class="grpg-panel">
+      <div class="grpg-metric-row">
+        <span>Activities</span>
+        <span>{{ report.summary.activities_added }} added &middot; {{ report.summary.activities_conflicts }} conflicts</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Sub-activities</span>
+        <span>{{ report.summary.sub_activities_added }} added &middot; {{ report.summary.sub_activities_conflicts }} conflicts</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Timetables</span>
+        <span>{{ report.summary.timetables_added }} added &middot; {{ report.summary.timetables_conflicts }} conflicts</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Timetable entries</span>
+        <span>{{ report.summary.entries_added }} added &middot; {{ report.summary.entries_conflicts }} conflicts</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Completion logs</span>
+        <span>{{ report.summary.logs_added }} added &middot; {{ report.summary.logs_conflicts }} conflicts</span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Judge reviews</span>
+        <span>{{ report.summary.reviews_added }} added &middot; {{ report.summary.reviews_skipped }} skipped</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-4" aria-labelledby="recompute-heading">
+    <h3 id="recompute-heading" class="grpg-panel-title">Stats after merge</h3>
+    <div class="grpg-panel">
+      <div class="grpg-metric-row">
+        <span>Total XP</span>
+        <span>{{ report.recompute.total_exp_from }} &rarr; <strong>{{ report.recompute.total_exp_to }}</strong></span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Level</span>
+        <span>{{ report.recompute.level_from }} &rarr; <strong>{{ report.recompute.level_to }}</strong></span>
+      </div>
+      <div class="grpg-metric-row">
+        <span>Attributes (INT/STA/FCS/CHA/DSC)</span>
+        <span>kept unchanged</span>
+      </div>
+      <p style="margin:8px 0 0;color:var(--text-muted);font-size:11px;">
+        XP is recomputed as the sum of every completion log's exp impact (logs with no
+        impact count as 0); level comes from the Level curve. Logs that were skipped as
+        conflicts are not counted twice.
+      </p>
+    </div>
+  </section>
+
+  {% if report.conflicts %}
+  <section class="mt-4" aria-labelledby="conflicts-heading">
+    <h3 id="conflicts-heading" class="grpg-panel-title">Kept your data on conflicts ({{ report.conflicts|length }})</h3>
+    <div class="grpg-panel">
+      <table class="table table-sm table-striped" style="font-size:12px;margin:0;">
+        <thead><tr><th>Entity</th><th>Imported</th><th>Kept (yours)</th></tr></thead>
+        <tbody>
+          {% for c in report.conflicts %}
+          <tr>
+            <td>{{ c.entity }}</td>
+            <td>{{ c.imported }}</td>
+            <td>{{ c.kept }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if report.near_duplicates %}
+  <section class="mt-4" aria-labelledby="near-heading">
+    <h3 id="near-heading" class="grpg-panel-title">Possible near-duplicates (advisory only)</h3>
+    <div class="grpg-panel">
+      <p style="margin:0 0 8px;color:var(--text-muted);font-size:11px;">
+        These names look similar to something you already have but don't match exactly, so
+        they would be added as new. Nothing is merged based on similarity.
+      </p>
+      <table class="table table-sm table-striped" style="font-size:12px;margin:0;">
+        <thead><tr><th>Entity</th><th>Imported</th><th>Similar to</th><th>Similarity</th></tr></thead>
+        <tbody>
+          {% for d in report.near_duplicates %}
+          <tr>
+            <td>{{ d.entity }}</td>
+            <td>{{ d.imported }}</td>
+            <td>{{ d.similar_to }}</td>
+            <td>{{ (d.ratio * 100)|round|int }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="grpg-panel" style="margin-top:16px;">
+    <form method="post" action="{{ url_for('views.import_data') }}" class="d-flex align-items-center gap-3">
+      <input type="hidden" name="plan_json" value="{{ plan_json }}">
+      <button type="submit" class="btn-app btn-app-primary btn-app-sm"
+              {% if report.summary.activities_added == 0 and report.summary.sub_activities_added == 0 and report.summary.timetables_added == 0 and report.summary.entries_added == 0 and report.summary.logs_added == 0 and report.summary.reviews_added == 0 %}
+              disabled title="Nothing new to import" {% endif %}>
+        Confirm &amp; Import (merge)
+      </button>
+      <a href="{{ url_for('views.profile') }}" class="btn-app btn-app-secondary btn-app-sm">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
