@@ -10,6 +10,7 @@ from app.routes.api import api_bp, log_app_errors
 from app.utils.exceptions.custom_errors import RecordNotFoundError, InvalidRequestData
 from app.models.judge import JudgeReview
 from app.utils.managers.judge_manager import JudgeManager
+from app.utils.judge_status import get_judge_status
 
 
 def _get_open_review(review_id):
@@ -18,6 +19,19 @@ def _get_open_review(review_id):
     if not review:
         raise RecordNotFoundError(f"No review with id {review_id}", 404)
     return review
+
+
+@api_bp.route('/judge/health', methods=['GET'])
+@log_app_errors
+def judge_health():
+    """Report System Judge availability for the logged-in user."""
+    user_id = session['user_id']
+    from app.models.user import User
+    user = User.query.get(user_id)
+    import time
+    status = get_judge_status(user)
+    status["checked_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    return jsonify(status), 200
 
 
 @api_bp.route('/judge/reviews', methods=['GET'])

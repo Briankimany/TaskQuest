@@ -6,14 +6,17 @@ This module renders HTML templates for the dashboard, activities,
 stats, and timetable pages.
 """
 
-from flask import Blueprint, render_template, redirect, url_for, flash, session,request
+from flask import Blueprint, render_template, redirect, url_for, flash, session,request, Response
 from datetime import date,time
+import json
+import pytz
 from app.models import User, Activity, CompletionLog, Level
 from app.models.judge import JudgeReview
-from app.utils.managers.judge_manager import JudgeManager
 from app.models.base import db
 from app.utils.schedulers import TaskScheduler
 from app.utils.managers import UserManager
+from app.utils.backup_service import export_user_data, preview_merge, apply_merge, BackupError
+from app.utils.timezones import today_for_id, now_for
 from app.utils.logger import ui_logger
 
 from datetime import datetime
@@ -71,10 +74,10 @@ def dashboard():
 
     user_id = user.id
     
-    # Parse date parameter or use current date
+    # Parse date parameter or use the user's calendar day
     date_str = request.args.get('date')
     if not date_str:
-        date_obj = datetime.now()
+        date_obj = now_for(user)
     else:
         date_obj = datetime.strptime(date_str, DATE_PARSING_STRING)
     
@@ -131,14 +134,14 @@ def dashboard():
             xp_week.append(int(day_exp))
             xp_week_labels.append(day.strftime('%a'))
 
-        current_time_str = datetime.now().strftime('%H:%M')
+        current_time_str = now_for(user).strftime('%H:%M')
 
-        streak = UserManager.get_streak(user_id)
-        streak_best = UserManager.get_best_streak(user_id)
-        missed_count = UserManager.get_missed_count(user_id, date_obj.date())
+        streak = UserManager.get_streak(user_id, today=today_for_id(user_id))
+        streak_best = UserManager.get_best_streak(user_id, today=today_for_id(user_id))
 
         # Build extended garden RPG context
         from app.utils.assets.context_builder import build_garden_rpg_context
+        from app.utils.judge_status import get_judge_status
         garden_ctx = build_garden_rpg_context(
             user=user,
             scheduled_tasks=scheduled_tasks,
@@ -150,7 +153,6 @@ def dashboard():
             ring_offset=ring_offset,
             streak=streak,
             streak_best=streak_best,
-            missed_count=missed_count,
             xp_week=xp_week,
         )
 
@@ -170,6 +172,7 @@ def dashboard():
             streak=streak,
             streak_best=streak_best,
             xp_week_labels=xp_week_labels,
+            judge_status=get_judge_status(user),
             **garden_ctx,
         )
 
@@ -205,11 +208,11 @@ def stats():
     # Get completion history for charts
     completion_history = CompletionLog.query.filter_by(user_id=user.id).order_by(CompletionLog.completed_on).all()
 
-    today = datetime.now().date()
+    today = today_for_id(user.id)
 
     # Per-day completion percentages for the last 30 days (habit/streak analysis)
-    streak = UserManager.get_streak(user.id)
-    streak_best = UserManager.get_best_streak(user.id)
+    streak = UserManager.get_streak(user.id, today=today)
+    streak_best = UserManager.get_best_streak(user.id, today=today)
 
     # Mission completion breakdown (last 30 days)
     recent_logs = [l for l in completion_history if l.completed_on and l.completed_on >= today - timedelta(days=30)]
@@ -296,14 +299,100 @@ def help():
 
 @views_bp.route('/judge-log')
 def judge_log():
-    """Render the full System Judge log for the logged-in user."""
+    """Render the System Judge log — every completion with full metadata.
+
+    Shows ALL completion logs for the user (not just AI-reviewed ones) so a
+    missing verdict is visible instead of silent. Filters: date (default: the
+    account's calendar day) and task. Page render performs no LLM calls; the
+    verdict itself is created at completion time in the completion flow.
+    """
     user = _get_current_user()
     if user is None:
         return redirect(url_for('auth.login'))
 
-    reviews = JudgeReview.query.filter_by(user_id=user.id)\
-        .order_by(JudgeReview.created_at.desc()).all()
-    return render_template('judge_log.html', user=user, reviews=reviews)
+    from sqlalchemy import func
+    from app.utils.judge_status import get_judge_status, PROVISIONAL_MARKER
+    from app.models import SubActivity, Timetable, TimetableEntry
+
+    today = today_for_id(user.id)
+    date_raw = (request.args.get('date') or '').strip()
+    filter_date = None if date_raw.lower() == 'all' else (date_raw or today.isoformat())
+
+    task_raw = (request.args.get('task') or '').strip()
+    filter_task = None
+    if task_raw and '::' in task_raw:
+        act_name, _, sub_name = task_raw.partition('::')
+        filter_task = (act_name, sub_name)
+
+    task_options = db.session.query(
+        Activity.name, SubActivity.name, func.count(CompletionLog.id)
+    ).join(SubActivity, SubActivity.id == CompletionLog.sub_activity_id) \
+     .join(Activity, Activity.id == SubActivity.activity_id) \
+     .filter(CompletionLog.user_id == user.id) \
+     .group_by(Activity.name, SubActivity.name) \
+     .order_by(Activity.name, SubActivity.name).all()
+
+    q = (db.session.query(CompletionLog, Activity.name, SubActivity.name,
+                          TimetableEntry.start_time, Timetable.date)
+         .join(SubActivity, SubActivity.id == CompletionLog.sub_activity_id)
+         .join(Activity, Activity.id == SubActivity.activity_id)
+         .outerjoin(TimetableEntry, TimetableEntry.id == CompletionLog.timetable_entry_id)
+         .outerjoin(Timetable, Timetable.id == TimetableEntry.timetable_id)
+         .filter(CompletionLog.user_id == user.id))
+    if filter_date:
+        q = q.filter(CompletionLog.completed_on == filter_date)
+    if filter_task:
+        q = q.filter(Activity.name == filter_task[0], SubActivity.name == filter_task[1])
+    rows = q.order_by(CompletionLog.completed_on.desc(), CompletionLog.id.desc()).limit(250).all()
+
+    reviews_by_log = {
+        r.completion_log_id: r
+        for r in JudgeReview.query.filter_by(user_id=user.id).all()
+    }
+    provisional_ids = {
+        r.id for r in reviews_by_log.values()
+        if r.explanation and PROVISIONAL_MARKER in r.explanation
+    }
+
+    entries = []
+    for log, act_name, sub_name, start_time, tt_date in rows:
+        if log.exp_impact is not None and log.exp_impact < 0 and log.status == 'completed':
+            status_label = 'LATE'
+        elif log.status == 'skipped':
+            status_label = 'MISSED'
+        else:
+            status_label = log.status.upper()
+        review = reviews_by_log.get(log.id)
+        entries.append({
+            'id': log.id,
+            'activity': act_name,
+            'sub': sub_name,
+            'date': log.completed_on.isoformat() if log.completed_on else None,
+            'scheduled_date': tt_date.isoformat() if tt_date else None,
+            'start_time': str(start_time)[:5] if start_time else None,
+            'status': status_label,
+            'status_raw': log.status,
+            'exp_impact': log.exp_impact,
+            'reason': log.reason or '',
+            'comment': log.comment or '',
+            'actual_time': log.actual_time_taken,
+            'review': review,
+            'provisional': bool(review and review.id in provisional_ids),
+        })
+
+    return render_template(
+        'judge_log.html',
+        user=user,
+        entries=entries,
+        task_options=[
+            {'value': f'{a}::{s}', 'label': f'{a} — {s}', 'count': c}
+            for a, s, c in task_options
+        ],
+        filter_date=filter_date or 'all',
+        filter_task=task_raw,
+        judge_status=get_judge_status(user),
+        provisional_ids=provisional_ids,
+    )
 @views_bp.route("/docs")
 def docs():
     return render_template('docs.html',API_URL='https://funcwithme.com',TESTING_USED='test token')
@@ -317,7 +406,7 @@ def profile():
         return redirect(url_for('auth.login'))
 
     user_id = user.id
-    today = datetime.now().date()
+    today = today_for_id(user_id)
 
     # Achievements / recent growth
     recent_logs = CompletionLog.query.filter(
@@ -327,8 +416,8 @@ def profile():
     ).all()
 
     dcp = UserManager.get_dcp(user_id=user_id, date_obj=today)
-    streak = UserManager.get_streak(user_id)
-    streak_best = UserManager.get_best_streak(user_id)
+    streak = UserManager.get_streak(user_id, today=today)
+    streak_best = UserManager.get_best_streak(user_id, today=today)
 
     # Compute garden RPG context for read-only garden state view
     from app.utils.assets.context_builder import build_garden_rpg_context
@@ -342,13 +431,12 @@ def profile():
         scheduled_tasks=scheduled_tasks,
         date_logs=recent_logs,
         dcp=dcp,
-        date_obj=datetime.now(),
+        date_obj=now_for(user),
         next_level=None,
         xp_pct=0,
         ring_offset=0,
         streak=streak,
         streak_best=streak_best,
-        missed_count=0,
         xp_week=[0]*7,
     )
 
@@ -358,5 +446,93 @@ def profile():
         streak=streak,
         streak_best=streak_best,
         recent_growth=recent_logs,
+        all_timezones=pytz.all_timezones,
         **garden_ctx,
     )
+
+
+@views_bp.route('/export')
+def export_data():
+    """Download a full JSON backup of the logged-in user's data."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+
+    payload = export_user_data(user)
+    filename = f"taskquest-backup-{user.username}-{today_for_id(user.id).strftime('%Y%m%d')}.json"
+    return Response(
+        json.dumps(payload, indent=2),
+        mimetype='application/json',
+        headers={
+            'Content-Disposition': f'attachment; filename="{filename}"',
+            'X-Content-Type-Options': 'nosniff',
+        },
+    )
+
+
+@views_bp.route('/import/preview', methods=['POST'])
+def import_preview():
+    """Review a merge preview before writing anything."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+
+    uploaded = request.files.get('backup_file')
+    if uploaded is None or uploaded.filename == '':
+        flash('Please choose a backup file to import.', 'danger')
+        return redirect(url_for('views.profile'))
+
+    try:
+        raw = uploaded.read()
+        if not raw:
+            raise BackupError('The backup file is empty.')
+        payload = json.loads(raw.decode('utf-8'))
+        report, plan = preview_merge(user, payload)
+        return render_template(
+            'import_preview.html',
+            report=report,
+            plan_json=json.dumps(plan),
+            filename=uploaded.filename,
+        )
+    except json.JSONDecodeError:
+        flash('Import failed: the file is not valid JSON.', 'danger')
+    except BackupError as exc:
+        flash(f'Import failed: {exc}', 'danger')
+    except Exception as exc:  # pragma: no cover - defensive
+        ui_logger.exception('Import preview failed unexpectedly')
+        flash(f'Import failed unexpectedly: {exc}', 'danger')
+
+    return redirect(url_for('views.profile'))
+
+
+@views_bp.route('/import', methods=['POST'])
+def import_data():
+    """Apply a reviewed merge plan (nothing is replaced or deleted)."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+
+    plan_raw = request.form.get('plan_json', '')
+    if not plan_raw:
+        flash('Import cancelled: no merge plan was submitted.', 'warning')
+        return redirect(url_for('views.profile'))
+
+    try:
+        plan = json.loads(plan_raw)
+        applied = apply_merge(user, plan)
+        flash(
+            f"Merged into '{user.username}': {applied['activities']} activities, "
+            f"{applied['sub_activities']} sub-activities, {applied['timetables']} "
+            f"timetables, {applied['entries']} entries, {applied['logs']} logs, "
+            f"{applied['reviews']} reviews added. Existing data was kept.",
+            'success',
+        )
+    except json.JSONDecodeError:
+        flash('Import failed: the merge plan is not valid JSON.', 'danger')
+    except BackupError as exc:
+        flash(f'Import failed: {exc}', 'danger')
+    except Exception as exc:  # pragma: no cover - defensive
+        ui_logger.exception('Import failed unexpectedly')
+        flash(f'Import failed unexpectedly: {exc}', 'danger')
+
+    return redirect(url_for('views.profile'))

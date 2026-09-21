@@ -9,11 +9,17 @@ concept — prompt templates and result interpretation live in
 Transport config comes from ``provider_config.yaml`` (base_url, default_model,
 timeout, retries, api-key env var name). Provider exceptions are abstracted
 into ``AssistantError`` so callers never touch SDK exception classes.
+
+No per-request auth is attached beyond an optional ``OMNIROUTE_API_KEY``
+Bearer token: OmniRoute combos carry their own provider connection auth
+server-side, so a session id header is neither required nor sent.
 """
 from pathlib import Path
 import os
 import json
+import socket
 import time
+from urllib.parse import urlparse
 from typing import Optional
 
 import yaml
@@ -53,7 +59,17 @@ class AIAssistant:
     def __init__(self, config_path: str = "provider_config.yaml"):
         self.logger = external_apis_logger
         self.config = self._load_config(Path(assistant_config_folder) / config_path)
+        self.timeout = self._resolve_timeout()
         self.client = self._build_client()
+
+    def _resolve_timeout(self) -> float:
+        env_timeout = os.getenv("OMNIROUTE_TIMEOUT")
+        if env_timeout is not None:
+            try:
+                return float(env_timeout)
+            except (TypeError, ValueError):
+                self.logger.warning("Invalid OMNIROUTE_TIMEOUT=%r; ignoring", env_timeout)
+        return float(self.config.get("timeout", 90.0))
 
     def _load_config(self, config_path: Path) -> dict:
         try:
@@ -67,21 +83,42 @@ class AIAssistant:
     def _build_client(self):
         api_key = os.getenv(self.config.get("api_key_env", ""), None) or "not-needed"
         base_url = os.getenv("OMNIROUTE_URL") or self.config.get("base_url", "http://127.0.0.1:20128/v1")
-        default_headers = {}
-        session_id = os.getenv(self.config.get("session_id_env", ""), None)
-        if session_id:
-            default_headers["x-opencode-session"] = session_id
         try:
             return OpenAI(
                 base_url=base_url,
                 api_key=api_key,
-                timeout=float(self.config.get("timeout", 60.0)),
+                timeout=self.timeout,
                 max_retries=0,
-                default_headers=default_headers or None,
             )
         except Exception as e:
             self.logger.error("Failed to build AI client: %s", str(e))
             raise AssistantError("Failed to configure AI provider") from e
+
+    def health_check(self) -> tuple:
+        """Check provider reachability without issuing a chat request.
+
+        Opens a bounded TCP connection to the configured base_url host:port.
+        Returns (ok: bool, latency_ms: int, detail: str). Connection-refused
+        fails in milliseconds; black-holed hosts hit the configured timeout.
+        """
+        base_url = os.getenv("OMNIROUTE_URL") or self.config.get("base_url", "http://127.0.0.1:20128/v1")
+        try:
+            parsed = urlparse(base_url)
+            host = parsed.hostname or "127.0.0.1"
+            port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        except Exception as e:
+            self.logger.warning("Health check could not parse base_url: %s", e)
+            return False, 0, f"Bad base_url: {e}"
+
+        started = time.monotonic()
+        try:
+            with socket.create_connection((host, port), timeout=self.timeout):
+                latency_ms = int((time.monotonic() - started) * 1000)
+                return True, latency_ms, f"{host}:{port} reachable"
+        except OSError as e:
+            latency_ms = int((time.monotonic() - started) * 1000)
+            self.logger.warning("Health check failed (%s:%s): %s", host, port, e)
+            return False, latency_ms, f"{host}:{port} unreachable: {e}"
 
     def complete(
         self,

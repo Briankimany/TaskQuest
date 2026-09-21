@@ -59,6 +59,15 @@ You can try it live at: [https://cynic1.pythonanywhere.com](https://cynic1.pytho
    [http://localhost:5000](http://localhost:5000)
 
 
+## 🤖 LLM Judge / OmniRoute
+
+The System Judge and late/skip-penalty evaluation run through [OmniRoute](https://omniroute.local) combos rather than a direct model API key. Key points:
+
+- **Combos carry their own auth.** A combo like `taskquest-judge-google` resolves to a provider (*e.g.* Google Gemini) whose connection is authenticated server-side inside OmniRoute. TaskQuest sends **no** per-request session id (`x-opencode-session`) and only an optional `OMNIROUTE_API_KEY` Bearer token.
+- **Config**: `OMNIROUTE_URL` (proxy base URL) and `OMNIROUTE_MODEL` (combo id) as environment variables; defaults live in `app/seed/data/assistant/provider_config.yaml`.
+- **Graceful fallback**: if the proxy is unreachable the app never hangs — evaluation falls back instantly to deterministic multipliers and marks reviews `PROVISIONAL`, with a LIVE / PROVISIONAL / OFF status pill on the dashboard and judge log.
+
+
 ## Coming Soon: Portable Version 🚀
 
 - I'm tinkering with a MicroPython-powered server version for Windows! The goal is to make setup super simple - just double-click a .bat file and you're ready to play with the system.

@@ -9,6 +9,11 @@ from datetime import datetime
 from .base import db
 
 
+def _utc_now():
+    from app.utils.timezones import utc_now_naive
+    return utc_now_naive()
+
+
 class JudgeReview(db.Model):
     """System Judge verdict for one penalized completion log."""
     __tablename__ = 'judge_review'
@@ -32,8 +37,8 @@ class JudgeReview(db.Model):
     review_status = db.Column(db.String(20), nullable=False, default='PENDING')
     dispute_reason = db.Column(db.Text, nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = db.Column(db.DateTime, default=_utc_now)
+    updated_at = db.Column(db.DateTime, default=_utc_now, onupdate=_utc_now)
 
     user = db.relationship('User', backref=db.backref('judge_reviews', lazy=True))
     completion_log = db.relationship('CompletionLog',

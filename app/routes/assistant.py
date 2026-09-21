@@ -17,10 +17,16 @@ def penalty_results():
         return f"Error loading results: {str(e)}", 500
 
     model_names = list(data.keys())
-    page = int(request.args.get('page', 1))
-    per_page = 1  # show one model at a time
+    if not model_names:
+        return "No penalty analysis results found.", 404
 
+    try:
+        page = int(request.args.get('page', 1))
+    except (TypeError, ValueError):
+        page = 1
     total_pages = len(model_names)
+    page = max(1, min(page, total_pages))
+
     current_model = model_names[page - 1]
     model_data = data[current_model]
 

@@ -1,9 +1,35 @@
 from flask import request, jsonify
 from app.routes.timetable_api import api_bp ,session ,log_app_errors,parse_time_date
 from app.utils.managers.completion_manager import CompletionLogManager
+from app.utils.managers import UserManager
+from app.utils.managers.judge_manager import JudgeManager
+from app.utils.logger import api_logger
 from app.utils.exceptions.custom_errors import InvalidRequestData
 from app.config import TIME_PARSING_STRING ,TIME_DATE_SEPARATOR,DATE_PARSING_STRING
 from app.utils.routes_api_utils import full_string as parsing_string
+
+
+def _ensure_judge_review(log):
+    """Create the judge verdict for any log that needs one.
+
+    Partial, skipped and late (negative exp) completions get exactly one
+    JudgeReview, created right here in the completion flow — no frontend round
+    trip. The LLM call is bounded by ``OMNIROUTE_TIMEOUT`` and falls back to
+    discipline-derived metrics (provisional marker) when the provider is
+    unreachable, so the response is never blocked and failures stay visible on
+    the judge log.
+    """
+    needs_verdict = (
+        (log.exp_impact is not None and log.exp_impact < 0) or
+        log.status in ('partial', 'skipped')
+    )
+    if not needs_verdict:
+        return
+    try:
+        dcp = UserManager.get_dcp(user_id=log.user_id, date_obj=log.completed_on)
+        JudgeManager.get_or_create_for_log(log, dcp)
+    except Exception as e:
+        api_logger.warning("Judge review creation failed for log %s: %s", log.id, e)
 
 
 @api_bp.route('/complete/complete_activity', methods=['POST'])
@@ -53,6 +79,7 @@ def complete_activity():
         
         user_response = CompletionLogManager.exp_manager.distribute_user_exp(
             user_id, log.exp_impact,log.sub_activity_id)
+        _ensure_judge_review(log)
     except ValueError as e:
         raise InvalidRequestData(e)    
     
