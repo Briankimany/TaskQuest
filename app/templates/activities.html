@@ -2,6 +2,10 @@
 
 {% block title %}Activities — {{ APP_NAME }}{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/activities.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="app-card">
     <div class="app-card-header">
@@ -14,70 +18,53 @@
         <div id="activities-container">
             {% if activities %}
                 {% for activity in activities %}
-                    <div class="app-card mb-3 activity-card" data-id="{{ activity.id }}">
-                        <div class="app-card-header">
-                            <h6 class="mb-0 activity-name">{{ activity.name }}</h6>
-                            <div class="d-flex gap-1">
-                                <button class="btn-app btn-app-primary btn-app-sm add-subactivity-btn" data-activity-id="{{ activity.id }}">
-                                    <i class="lucide-plus" style="font-size:0.85em"></i> Sub
+                    <div class="act-group mb-3" data-id="{{ activity.id }}" data-group-name="{{ activity.name }}">
+                        <div class="act-group-header" role="button" tabindex="0" aria-expanded="false">
+                            <i class="lucide-chevron-right chevron"></i>
+                            <span class="activity-name name">{{ activity.name }}</span>
+                            <span class="count">({{ activity.sub_activities|length }})</span>
+                            <div class="actions">
+                                <button class="btn-app btn-app-primary btn-app-sm add-subactivity-btn" title="Add a sub-activity to this activity" data-activity-id="{{ activity.id }}">
+                                    <i class="lucide-plus" style="font-size:0.85em"></i> Add Sub-Activity
                                 </button>
-                                <button class="btn-app btn-app-secondary btn-app-sm edit-activity-btn" data-activity-id="{{ activity.id }}" data-activity-name="{{ activity.name }}">
-                                    <i class="lucide-pencil" style="font-size:0.85em"></i>
+                                <button class="btn-app btn-app-secondary btn-app-sm edit-activity-btn" title="Edit activity name" data-activity-id="{{ activity.id }}" data-activity-name="{{ activity.name }}">
+                                    <i class="lucide-pencil" style="font-size:0.85em"></i> Edit
                                 </button>
-                                <button class="btn-app btn-app-danger btn-app-sm delete-activity-btn" data-activity-id="{{ activity.id }}">
+                                <button class="btn-app btn-app-danger btn-app-sm delete-activity-btn" title="Delete activity" data-activity-id="{{ activity.id }}">
                                     <i class="lucide-trash-2" style="font-size:0.85em"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="app-card-body">
+                        <div class="act-group-body">
                             {% if activity.sub_activities %}
-                                <div class="table-responsive">
-                                    <table class="table-app">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Time</th>
-                                                <th>Difficulty</th>
-                                                <th>EXP</th>
-                                                <th>Attributes</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for sub in activity.sub_activities %}
-                                                <tr data-id="{{ sub.id }}">
-                                                    <td style="font-weight:500">{{ sub.name }}</td>
-                                                    <td class="font-mono" style="font-size:0.85rem">{{ sub.scheduled_time }}m</td>
-                                                    <td class="font-mono" style="font-size:0.85rem">x{{ sub.difficulty_multiplier }}</td>
-                                                    <td class="font-mono" style="font-size:0.85rem">{{ sub.base_exp }}</td>
-                                                    <td>
-                                                        <div class="d-flex flex-wrap gap-1">
-                                                            {% for attr, weight in sub.attribute_weights.items() %}
-                                                                {% if weight > 0 %}
-                                                                    <span class="attr-badge attr-badge-{{ attr }}" style="width:28px;height:28px;font-size:0.55rem" data-bs-toggle="tooltip" title="{{ attr }}: {{ weight }}">{{ attr }}</span>
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </div>
-                                                    </td>
-                                                    <td class="text-nowrap">
-                                                        <button class="btn-app btn-app-secondary btn-app-sm edit-subactivity-btn mb-1"
-                                                                data-id="{{ sub.id }}"
-                                                                data-name="{{ sub.name }}"
-                                                                data-time="{{ sub.scheduled_time }}"
-                                                                data-difficulty="{{ sub.difficulty_multiplier }}"
-                                                                data-exp="{{ sub.base_exp }}"
-                                                                data-attributes="{{ sub.attribute_weights }}">
-                                                            <i class="lucide-pencil" style="font-size:0.85em"></i>
-                                                        </button>
-                                                        <button class="btn-app btn-app-danger btn-app-sm delete-subactivity-btn mb-1" data-id="{{ sub.id }}">
-                                                            <i class="lucide-trash-2" style="font-size:0.85em"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
+                                {% for sub in activity.sub_activities %}
+                                    <div class="act-row" data-id="{{ sub.id }}">
+                                        <span class="activity-name name">{{ sub.name }}</span>
+                                        <span class="meta font-mono">{{ sub.scheduled_time }}m · x{{ sub.difficulty_multiplier }} · {{ sub.base_exp }} XP</span>
+                                        <div class="attributes">
+                                            {% for attr, weight in sub.attribute_weights.items() %}
+                                                {% if weight > 0 %}
+                                                    <span class="attr-badge attr-badge-{{ attr }}" data-bs-toggle="tooltip" title="{{ attr }}: {{ weight }}">{{ attr }}</span>
+                                                {% endif %}
                                             {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </div>
+                                        <div class="actions">
+                                            <button class="btn-app btn-app-secondary btn-app-sm edit-subactivity-btn"
+                                                    title="Edit sub-activity"
+                                                    data-id="{{ sub.id }}"
+                                                    data-name="{{ sub.name }}"
+                                                    data-time="{{ sub.scheduled_time }}"
+                                                    data-difficulty="{{ sub.difficulty_multiplier }}"
+                                                    data-exp="{{ sub.base_exp }}"
+                                                    data-attributes='{{ sub.attribute_weights|tojson }}'>
+                                                <i class="lucide-pencil" style="font-size:0.85em"></i> Edit
+                                            </button>
+                                            <button class="btn-app btn-app-danger btn-app-sm delete-subactivity-btn" title="Delete sub-activity" data-id="{{ sub.id }}">
+                                                <i class="lucide-trash-2" style="font-size:0.85em"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             {% else %}
                                 <p class="text-muted-app text-center py-3">No sub-activities yet. Add your first one.</p>
                             {% endif %}

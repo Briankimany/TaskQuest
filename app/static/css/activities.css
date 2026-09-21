@@ -1,0 +1,107 @@
+/* ── Activities: collapsible card list ── */
+
+.act-group {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.act-group:hover { box-shadow: var(--shadow-md); }
+
+.act-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.act-group-header:hover { background: var(--bg-hover); }
+
+.act-group-header .chevron {
+  transition: transform 200ms ease;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.act-group.is-expanded .chevron { transform: rotate(90deg); }
+
+.act-group-header .name {
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.act-group-header .count {
+  color: var(--text-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.act-group-header .actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.act-group-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 220ms ease;
+}
+
+.act-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.act-row .name {
+  flex: 1 1 auto;
+  min-width: 160px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.act-row .meta {
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.act-row .attributes {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.act-row .attr-badge {
+  width: 26px;
+  height: 26px;
+  font-size: 0.55rem;
+}
+
+.act-row .actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .act-group-header { flex-wrap: wrap; }
+  .act-row { flex-wrap: wrap; gap: 8px 12px; }
+  .act-row .name { min-width: 120px; }
+}
