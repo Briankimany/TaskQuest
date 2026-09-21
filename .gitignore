@@ -1,14 +1,47 @@
-
-*.db
-__pycache__/
-.venv/
-*.log
-md-files/
-.python-version
-live-venv/
-app/note-books/
-.vscode/
-app/migrations/
+# ── Environment / secrets ──
 .env
+.env.*
+*.key
+*.pem
+
+# ── Virtualenvs / Python ──
+venv/
+.venv/
+live-venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.python-version
+
+# ── Databases & runtime data ──
+instance/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backup_static_img/
+
+# ── Logs ──
+*.log
 logs/
+
+# ── Test / tooling artifacts ──
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.python/
+
+# ── Editors / OS ──
+.vscode/
+.idea/
+.vim/
+.Trash-*
+.DS_Store
+Thumbs.db
+
+# ── Project scratch ──
+md-files/
+app/note-books/
+app/migrations/
 cleaners/
