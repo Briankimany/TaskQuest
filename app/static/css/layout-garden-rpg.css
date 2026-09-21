@@ -6,24 +6,34 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Global overrides ── */
-/* Hide the standard fixed Bootstrap navbar — the Garden RPG skin renders its
-   own topbar (grpg-topbar) and should present as a full-viewport app. */
-[data-theme="garden-rpg"] .app-navbar,
-[data-theme="garden-rpg"] nav.app-navbar {
-  display: none !important;
-}
+/* The garden theme applies app-wide, but the FULL-viewport dashboard shell
+   must stay scoped to body:has(.grpg-dashboard). Non-dashboard pages keep a
+   normal scrollable Bootstrap layout (visible navbar, container, overflow),
+   so they remain fully operable under the theme. */
 
-/* Break out of the Bootstrap .container so the dashboard spans full width. */
 [data-theme="garden-rpg"] body {
   background: var(--bg-page);
   color: var(--text-primary);
   font-family: var(--font-body);
+}
+
+/* Hide the standard fixed Bootstrap navbar on the dashboard — the Garden RPG
+   skin renders its own topbar (grpg-topbar) and presents as a full-viewport
+   app. Sub-pages keep their navbar for navigation. */
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) .app-navbar,
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) nav.app-navbar {
+  display: none !important;
+}
+
+/* Dashboard kills base.css's body padding-top (72px) + container padding so
+   the 100vh grid fills edge-to-edge with no scrollbar. */
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) {
   padding-top: 0;
 }
 
 /* Remove container padding/margins that would inset the full-bleed layout */
-[data-theme="garden-rpg"] main.container,
-[data-theme="garden-rpg"] .container {
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) main.container,
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) .container {
   max-width: none;
   padding-left: 0;
   padding-right: 0;
@@ -39,34 +49,26 @@
    Main row is 1fr so it absorbs remaining height; its columns scroll
    internally when their content is taller than the viewport. */
 
-/* Override base2's <main class="container py-4"> so the dashboard fills
-   edge-to-edge with no padding — the scrollbar culprit. Also kill
-   body { padding-top: 72px } which pushes the 100vh grid below the
-   viewport and creates an unwanted vertical scrollbar. */
-[data-theme="garden-rpg"] html,
-[data-theme="garden-rpg"] body {
-  padding-top: 0;
+/* Lock the dashboard to the viewport: no page scroll. The vertical budget
+   is 100dvh (topbar 72 + main 1fr + bottom row auto + nav 64). Scoped to
+   the dashboard so non-dashboard pages keep normal page scrolling. */
+[data-theme="garden-rpg"] html:has(.grpg-dashboard),
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) {
+  height: 100dvh;
+  height: 100vh;
   overflow: hidden;
-  height: 100%;
 }
-[data-theme="garden-rpg"] .container {
+
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) .container {
   max-width: none;
   padding-left: 0;
   padding-right: 0;
   padding-inline: 0;
 }
-[data-theme="garden-rpg"] main.container {
+[data-theme="garden-rpg"] body:has(.grpg-dashboard) main.container {
   padding-top: 0;
   padding-bottom: 0;
   min-height: 0;
-  overflow: hidden;
-}
-
-/* Lock the dashboard to the viewport: no page scroll. The vertical budget
-   must sum to exactly 100dvh (topbar 72 + main 1fr + bottom row 156 + nav 64). */
-[data-theme="garden-rpg"] body:has(.grpg-dashboard) {
-  height: 100dvh;
-  height: 100vh;
   overflow: hidden;
 }
 
@@ -81,7 +83,7 @@
 
 [data-theme="garden-rpg"] .grpg-dashboard {
   display: grid;
-  grid-template-rows: 72px minmax(0, 1fr) 156px 64px;
+  grid-template-rows: 72px minmax(0, 1fr) auto 64px;
   height: 100dvh;
   min-height: 100dvh;
   height: 100vh;
@@ -90,20 +92,24 @@
   position: relative;
 }
 
-/* Bottom stat row: fixed 156px; cards hold their own content (safety
-   scroll within the row if prices ever exceed their slice). */
+/* Bottom stat row: fixed compact height (190px) so the cards never balloon
+   on large screens; overflow scrolls inside the card (reward chips / feeds)
+   so nothing is ever clipped. The main row above absorbs the extra space. */
 [data-theme="garden-rpg"] .grpg-bottom-row {
-  height: 156px;
-  max-height: 156px;
-  min-height: 0;
+  height: 190px;
+  max-height: 190px;
   overflow: hidden;
 }
 
 [data-theme="garden-rpg"] .grpg-main-row {
   display: grid;
-  grid-template-columns: 280px 1fr 320px;
-  gap: 12px;
-  padding: 4px 12px 12px;
+  --col-l: 330px;
+  --col-gap: 14px;
+  --col-r: 380px;
+  --row-pad: 14px;
+  grid-template-columns: var(--col-l) 1fr var(--col-r);
+  gap: var(--col-gap);
+  padding: 4px var(--row-pad) 16px;
   min-height: 0;
   position: relative;
 }
@@ -214,8 +220,7 @@
 }
 
 /* Hover: border brightens + wash intensifies — never a hue shift */
-[data-theme="garden-rpg"] .grpg-panel:hover,
-[data-theme="garden-rpg"] .grpg-overlay-card:hover {
+[data-theme="garden-rpg"] .grpg-panel:hover {
   border-color: var(--border-hover);
 }
 
@@ -227,15 +232,6 @@
 [data-theme="garden-rpg"] .grpg-surface--pink:hover { --surface-wash: rgba(227,108,131,0.10); }
 [data-theme="garden-rpg"] .grpg-surface--gold { --surface-wash: var(--gold-wash); }
 [data-theme="garden-rpg"] .grpg-surface--gold:hover { --surface-wash: rgba(233,168,61,0.065); }
-[data-theme="garden-rpg"] .grpg-surface--seed {
-  --seed-wash: rgba(120, 180, 85, 0.10);
-  background:
-    radial-gradient(circle at 12% 8%, rgba(255,255,255,0.025), transparent 34%),
-    radial-gradient(circle at var(--wash-x, 20%) var(--wash-y, 15%), var(--seed-wash), transparent 46%),
-    radial-gradient(circle at var(--gold-x, 85%) var(--gold-y, 12%), var(--gold-wash), transparent 40%),
-    linear-gradient(135deg, rgba(7,19,28,0.90), rgba(2,8,16,0.86));
-}
-[data-theme="garden-rpg"] .grpg-surface--seed:hover { --seed-wash: rgba(120,180,85,0.14); }
 
 [data-theme="garden-rpg"] .grpg-panel-header {
   display: flex;
@@ -361,6 +357,57 @@
   width: 1px;
   height: 32px;
   background: #2A3040;
+}
+
+[data-theme="garden-rpg"] .grpg-judge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+[data-theme="garden-rpg"] .grpg-judge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+[data-theme="garden-rpg"] .grpg-judge-live {
+  color: #5DD49A;
+  border-color: rgba(93, 212, 154, 0.4);
+  background: rgba(93, 212, 154, 0.08);
+}
+[data-theme="garden-rpg"] .grpg-judge-live .grpg-judge-dot {
+  background: #5DD49A;
+  box-shadow: 0 0 0 3px rgba(93, 212, 154, 0.18);
+}
+
+[data-theme="garden-rpg"] .grpg-judge-provisional {
+  color: #F5B942;
+  border-color: rgba(245, 185, 66, 0.4);
+  background: rgba(245, 185, 66, 0.08);
+}
+[data-theme="garden-rpg"] .grpg-judge-provisional .grpg-judge-dot {
+  background: #F5B942;
+  box-shadow: 0 0 0 3px rgba(245, 185, 66, 0.18);
+}
+
+[data-theme="garden-rpg"] .grpg-judge-off {
+  color: #F0555C;
+  border-color: rgba(240, 85, 92, 0.4);
+  background: rgba(240, 85, 92, 0.08);
+}
+[data-theme="garden-rpg"] .grpg-judge-off .grpg-judge-dot {
+  background: #F0555C;
+  box-shadow: 0 0 0 3px rgba(240, 85, 92, 0.18);
 }
 
 [data-theme="garden-rpg"] .grpg-stat-block {
@@ -680,8 +727,8 @@
 
 [data-theme="garden-rpg"] .grpg-garden-ring {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 76px;
+  height: 76px;
 }
 
 [data-theme="garden-rpg"] .grpg-garden-tree {
@@ -755,33 +802,21 @@
   transition: width 0.5s ease;
 }
 
-/* ── Garden Scene Overlay (transparent center cell + full-bleed card layer) ── */
-/* The grid middle cell is an empty spacer that keeps the 280px 1fr 320px layout. */
-[data-theme="garden-rpg"] .grpg-hero {
-  position: relative;
-  z-index: 1;
-  min-height: 0;
-  height: 100%;
-  grid-column: 2;
-  pointer-events: none;
-}
-
-/* Full-bleed layer spanning the whole art area: pins, loc-cards, petals, seeds, quote */
-/* Sits above the side-column panels (z3) so petals/pins render on top of the glass
-   columns when positioned near them. Internal order: pin glow/lines 4, badges 5,
-   petals/seeds 6, quote 7 (all relative to this layer). */
+/* ── Garden Scene Overlay — full-bleed layer over the whole art area ── */
+/* Pins, quote and ambient stay anchored to the full scene (the art spans
+   edge-to-edge). Only the petals/seeds row is tied to the CENTER cell, via
+   the --col-* / --row-pad variables declared on the main-row grid, so it
+   tracks the real sidebar geometry instead of hardcoded pixels. */
 [data-theme="garden-rpg"] .grpg-hero-overlay {
   position: absolute;
   inset: 0;
   z-index: 4;
   overflow: hidden;
   pointer-events: none;
+  box-shadow: 0 0 40px rgba(35, 40, 58, 0.4), 0 0 0 1px rgba(255,255,255,0.04);
 }
 
-[data-theme="garden-rpg"] .grpg-hero-overlay .grpg-loc-card,
-[data-theme="garden-rpg"] .grpg-hero-overlay .grpg-overlay-card,
-[data-theme="garden-rpg"] .grpg-hero-overlay .grpg-add-seed,
-[data-theme="garden-rpg"] .grpg-hero-overlay .grpg-check-toggle {
+[data-theme="garden-rpg"] .grpg-hero-overlay .grpg-loc-card {
   pointer-events: auto;
 }
 
@@ -833,8 +868,7 @@
   background: linear-gradient(135deg, rgba(16, 23, 32, 0.82), rgba(7, 12, 19, 0.88));
   border: 1px solid var(--border);
   border-left: 2px solid var(--loc-color, var(--accent));
-  border-radius: 4px;
-  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 12px);
+  border-radius: var(--radius-sm);
   box-shadow: 0 2px 10px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.03);
   backdrop-filter: blur(6px);
 }
@@ -968,113 +1002,39 @@
   background: linear-gradient(180deg, #5B2A6E 0%, #C4416B 40%, #E86A3B 75%, #F4A93C 100%);
 }
 
-/* ── Overlay Cards (Petals, Seeds) — same smoked-glass depth model ── */
-[data-theme="garden-rpg"] .grpg-overlay-card {
-  position: absolute;
-  width: 200px;
-  z-index: 6;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(255,255,255,0.025), transparent 34%),
-    radial-gradient(circle at var(--wash-x, 18%) var(--wash-y, 12%), var(--surface-wash, transparent), transparent 46%),
-    linear-gradient(135deg, rgba(7,19,28,0.90), rgba(2,8,16,0.86));
-  border: 1px solid var(--border-neutral);
-  border-radius: var(--radius-md);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.03),
-    inset 0 0 22px rgba(30,150,180,0.02),
-    0 8px 24px rgba(0,0,0,0.32);
-  padding: 12px;
-  transition: border-color var(--transition);
+/* Max-height scrolling list (recent activity): show ~4 rows by default; the
+   rest scroll into view on hover only, with the scrollbar hidden so the panel
+   still reads as a clean surface. */
+[data-theme="garden-rpg"] .grpg-scroll-list {
+  max-height: 124px;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
 }
-
-[data-theme="garden-rpg"] .grpg-overlay-sub {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
+[data-theme="garden-rpg"] .grpg-scroll-list:hover {
+  overflow-y: auto;
 }
-
-[data-theme="garden-rpg"] .grpg-checklist {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-[data-theme="garden-rpg"] .grpg-check-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* Status circles — precision spec: true 50% circles only, two states.
-   Incomplete: 2px mission-color (petals: pink) border, transparent fill.
-   Complete: no border, success fill, SVG check via CSS data-URI (stroke = ui-bg-1). */
-[data-theme="garden-rpg"] .grpg-check-toggle {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid var(--petal);
-  background: transparent;
-  cursor: pointer;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: all var(--transition);
-}
-
-[data-theme="garden-rpg"] .grpg-check-row[data-done="true"] .grpg-check-toggle {
-  background: var(--success);
-  border: none;
-}
-
-[data-theme="garden-rpg"] .grpg-check-row[data-done="true"] .grpg-check-toggle::after {
-  content: "";
-  width: 9px;
-  height: 7px;
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8'><path d='M1 4L3.5 6.5L9 1' fill='none' stroke='%23050D16' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat center / contain;
-}
-
-[data-theme="garden-rpg"] .grpg-check-row[data-done="true"] span {
-  text-decoration: line-through;
-  color: var(--text-muted);
-}
-
-[data-theme="garden-rpg"] .grpg-lock-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-[data-theme="garden-rpg"] .grpg-ghost-btn {
-  background: none;
-  border: 1px dashed var(--border-strong);
-  color: var(--text-muted);
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  margin-top: 8px;
-  transition: all var(--transition);
-}
-
-[data-theme="garden-rpg"] .grpg-ghost-btn:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+[data-theme="garden-rpg"] .grpg-scroll-list::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Missions Panel ── */
 [data-theme="garden-rpg"] .grpg-mission-row {
   padding: 6px 0;
   border-bottom: 1px solid var(--border-hairline);
+  cursor: pointer;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-row:hover {
+  background: rgba(150,180,200,0.06);
+  border-radius: 6px;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 [data-theme="garden-rpg"] .grpg-mission-row:last-child {
@@ -1093,7 +1053,6 @@
   border-radius: 50%;
   border: 2px solid var(--tag-color, var(--accent));
   background: transparent;
-  cursor: pointer;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1104,6 +1063,11 @@
 
 [data-theme="garden-rpg"] .grpg-mission-row[data-done="true"] .grpg-mission-status {
   background: var(--success);
+  border: none;
+}
+
+[data-theme="garden-rpg"] .grpg-mission-row[data-done="true"].grpg-mission-partial .grpg-mission-status {
+  background: var(--accent-amber);
   border: none;
 }
 
@@ -1147,6 +1111,44 @@
 [data-theme="garden-rpg"] .grpg-done-label {
   color: var(--accent-active);
   font-weight: 600;
+}
+
+/* ── Completion popup: status segmented control ── */
+[data-theme="garden-rpg"] .grpg-complete-status {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+}
+
+[data-theme="garden-rpg"] .grpg-status-option {
+  flex: 1;
+  padding: 7px 4px;
+  border: none;
+  border-radius: calc(var(--radius-md) - 2px);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+[data-theme="garden-rpg"] .grpg-status-option:hover {
+  color: var(--text-primary);
+}
+
+[data-theme="garden-rpg"] .grpg-status-option-active {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+[data-theme="garden-rpg"] .grpg-status-option-active:hover {
+  color: var(--accent-text);
 }
 
 [data-theme="garden-rpg"] .grpg-mission-detail {
@@ -1277,19 +1279,6 @@
 }
 
 /* ── System Judge ── */
-[data-theme="garden-rpg"] .grpg-judge-review-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 2px;
-}
-
-[data-theme="garden-rpg"] .grpg-judge-review-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-}
-
 [data-theme="garden-rpg"] .grpg-danger-pill {
   background: rgba(232,84,75,0.15);
   color: var(--accent-danger);
@@ -1401,10 +1390,10 @@
     inset 0 1px 0 rgba(255,255,255,0.03),
     inset 0 0 22px rgba(30,150,180,0.02),
     0 8px 24px rgba(0,0,0,0.32);
-  padding: 10px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   min-height: 0;
   height: 100%;
   overflow: hidden;
@@ -1419,6 +1408,43 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  flex: 0 0 auto;
+  max-height: 38px;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+}
+[data-theme="garden-rpg"] .grpg-stat-card:hover .grpg-reward-chips {
+  overflow-y: auto;
+}
+[data-theme="garden-rpg"] .grpg-reward-chips::-webkit-scrollbar {
+  display: none;
+}
+
+/* Compact 190px stat row: tighten Wayfarer so nothing clips by default; the
+   whole card scrolls on hover as a last-resort safety net. */
+[data-theme="garden-rpg"] .grpg-stat-card-title {
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+[data-theme="garden-rpg"] .grpg-stat-card > div {
+  line-height: 1.3;
+}
+[data-theme="garden-rpg"] .grpg-stat-card .grpg-xp-bar {
+  height: 7px;
+  margin: 2px 0;
+}
+[data-theme="garden-rpg"] .grpg-stat-card,
+[data-theme="garden-rpg"] .grpg-stat-card * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+[data-theme="garden-rpg"] .grpg-stat-card::-webkit-scrollbar {
+  display: none;
+}
+[data-theme="garden-rpg"] .grpg-stat-card:hover {
+  overflow-y: auto;
 }
 
 [data-theme="garden-rpg"] .grpg-reward-chip {
@@ -1429,7 +1455,7 @@
   color: var(--text-secondary);
   font-size: 10px;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
 }
 
@@ -1558,23 +1584,36 @@
 
 /* ── Responsive ── */
 
-/* 1100–900px: left + center HUD only (right column hidden) */
+/* 1100–900px: left + center HUD only (right column hidden). The overlay row
+   re-tracks the new column widths via the shared vars — no px guessing. */
 @media (max-width: 1100px) {
   [data-theme="garden-rpg"] .grpg-col-right {
     display: none;
   }
 
   [data-theme="garden-rpg"] .grpg-main-row {
-    grid-template-columns: 280px minmax(0, 1fr);
+    --col-l: 280px;
+    --col-r: 0px;
+    --col-gap: 0px;
+    grid-template-columns: var(--col-l) 1fr var(--col-r);
   }
 }
 
 /* <900px: single column, page scrolls; nav becomes icons-only */
 @media (max-width: 900px) {
-  [data-theme="garden-rpg"] body { overflow: auto; }
+  /* Lift the dashboard viewport lock so the single-column layout scrolls
+     like a normal page (specificity must beat the :has() dashboard lock). */
+  [data-theme="garden-rpg"] html:has(.grpg-dashboard),
+  [data-theme="garden-rpg"] body:has(.grpg-dashboard) {
+    height: auto;
+    overflow: visible;
+  }
   [data-theme="garden-rpg"] .grpg-dashboard { height: auto; overflow: visible; }
 
   [data-theme="garden-rpg"] .grpg-main-row {
+    --col-l: 0px;
+    --col-r: 0px;
+    --col-gap: 0px;
     grid-template-columns: 1fr;
     grid-template-rows: auto;
     overflow: visible;
@@ -1587,14 +1626,10 @@
     overflow: visible;
   }
 
-  [data-theme="garden-rpg"] .grpg-hero {
-    display: none;
-  }
-
   [data-theme="garden-rpg"] .grpg-hero-overlay {
     position: relative;
     inset: auto;
-    height: 340px;
+    height: 400px;
     grid-column: 1;
     order: 1;
     overflow: hidden;
@@ -1633,13 +1668,6 @@
 
   [data-theme="garden-rpg"] .grpg-divider {
     display: none;
-  }
-
-  [data-theme="garden-rpg"] .grpg-overlay-card {
-    position: relative;
-    bottom: auto;
-    left: auto;
-    margin: 8px;
   }
 
   [data-theme="garden-rpg"] .grpg-region-badge {
@@ -1688,7 +1716,7 @@
 }
 
 /* ── Night Mode overlay (H7 — driven by player.time_of_day) ── */
-[data-theme="garden-rpg"] .grpg-dashboard.grpg-night-mode .grpg-hero::after {
+[data-theme="garden-rpg"] .grpg-dashboard.grpg-night-mode .grpg-hero-overlay::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -1698,10 +1726,8 @@
 }
 
 /* ── Visual hierarchy tiering (H5) ── */
-/* Tier 1 (hero) — already the largest presence; soften edge */
-[data-theme="garden-rpg"] .grpg-hero {
-  box-shadow: 0 0 40px rgba(35, 40, 58, 0.4), 0 0 0 1px rgba(255,255,255,0.04);
-}
+/* Tier 1 (hero) — already the largest presence; soften edge (moved onto the
+   center-cell overlay above). */
 
 /* Tier 2 panels (attributes) — standard treatment */
 /* Tier 4 panels (analytics) — muted, thinner */
@@ -1845,9 +1871,16 @@
   }
 }
 
-/* ── Missions collapse: rows beyond the first three are hidden until toggled ── */
-[data-theme="garden-rpg"] .grpg-mission-row.grpg-missions-hidden-row {
-  display: none !important;
+/* ── Missions list: scrolls vertically, scrollbars hidden ── */
+[data-theme="garden-rpg"] #grpg-missions-list.grpg-missions-scroll {
+  overflow-y: auto;
+  max-height: 340px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-theme="garden-rpg"] #grpg-missions-list.grpg-missions-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Toggle / inline-log buttons that inherit .grpg-link look but are <button> ── */
@@ -1864,9 +1897,4 @@
 [data-theme="garden-rpg"] .grpg-missions-panel {
   flex: 1 1 auto;
   min-height: 0;
-}
-
-/* Judge metrics: hidden by default, revealed via View Log toggle */
-[data-theme="garden-rpg"] .grpg-judge-metrics[hidden] {
-  display: none;
 }

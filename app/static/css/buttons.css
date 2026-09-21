@@ -25,6 +25,18 @@
 .btn-app-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-app-ghost:hover { color: var(--accent); border-color: var(--accent); }
 
+/* Dark scheme: secondary buttons need a clearly lighter surface + visible border
+   (default --bg-muted sits almost on top of the card surface and disappears) */
+[data-theme="default"][data-scheme="dark"] .btn-app-secondary {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+[data-theme="default"][data-scheme="dark"] .btn-app-secondary:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-strong);
+}
+
 .btn-app-sm { padding: 0.3rem 0.65rem; font-size: 0.8rem; }
 .btn-app-lg { padding: 0.65rem 1.4rem; font-size: 1rem; }
 

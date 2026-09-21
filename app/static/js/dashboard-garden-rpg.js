@@ -1,6 +1,6 @@
 /**
- * Dashboard Garden RPG — region interactions, mission toggles with
- * feedback loop, petal toggles, XP chart, day/night, judge actions.
+ * Dashboard Garden RPG — region interactions, mission completion,
+ * reschedule/abandon modals, XP chart, day/night, activity feed.
  */
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -66,47 +66,140 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ── Complete mission (check toggle) → backend ──
+  // ── Record completion (click the mission row → popup → backend) ──
   document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.grpg-mission-status');
-    if (!btn) return;
-    if (btn.getAttribute('aria-pressed') === 'true') return; // one-way commit
-    var row = btn.closest('.grpg-mission-row');
-    var taskId = missionTaskId(row);
-    if (!taskId) return;
-    var meta = row.querySelector('.grpg-mission-meta');
-    var xp = parseInt(btn.getAttribute('data-xp')) || 0;
-    var region = row.getAttribute('data-target-region');
-    var attrs = row.getAttribute('data-attr-deltas') || '';
-
-    btn.disabled = true;
-    fetch('/api/complete/complete_activity', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        timetable_entry_id: taskId,
-        status: 'completed',
-        completed_on: nowFormatted(),
-        comment: ''
-      })
-    }).then(function (res) {
-      if (res.status !== 201) {
-        return res.json().catch(function () { return {}; }).then(function (j) {
-          throw new Error((j && j.msg) || 'Status ' + res.status);
-        });
-      }
-      return res.json();
-    }).then(function (result) {
-      var change = typeof result.exp_change === 'number' ? result.exp_change : xp;
-      updateTopbarXP(change);
-      showNotification(change >= 0 ? 'success' : 'warning', 'Mission Complete',
-        change >= 0 ? 'Gained <strong>' + change + '</strong> XP!' : 'Lost <strong>' + Math.abs(change) + '</strong> XP!');
-      reconcileCards();
-    }).catch(function (err) {
-      btn.disabled = false;
-      showNotification('danger', 'Error', 'Could not complete mission: ' + err.message);
-    });
+    var row = e.target.closest('.grpg-mission-row');
+    if (!row) return;
+    if (e.target.closest('a, button, input, textarea, select')) return;
+    if (row.getAttribute('data-done') === 'true') return;
+    openCompletionModal(row);
   }, true);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var row = e.target;
+    if (!row || !row.classList || !row.classList.contains('grpg-mission-row')) return;
+    e.preventDefault();
+    if (row.getAttribute('data-done') === 'true') return;
+    openCompletionModal(row);
+  });
+
+  function openCompletionModal(row) {
+    var taskId = missionTaskId(row);
+    if (!taskId) { showNotification('warning', 'No Mission', 'No mission entry to record.'); return; }
+    var titleEl = row.querySelector('.grpg-mission-title');
+    var title = titleEl ? titleEl.textContent.trim() : 'Mission';
+    var statusEl = row.querySelector('.grpg-mission-status');
+    var xp = parseInt(statusEl ? statusEl.getAttribute('data-xp') : '') || 0;
+    var duration = parseInt(row.getAttribute('data-duration')) || 0;
+    var region = row.getAttribute('data-target-region');
+
+    var existing = document.getElementById('grpgCompleteModal');
+    if (existing) existing.remove();
+
+    var html = '<div class="modal fade" id="grpgCompleteModal" tabindex="-1" aria-hidden="true">' +
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content grpg-modal">' +
+      '<div class="modal-header"><h5 class="modal-title">RECORD COMPLETION</h5>' +
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>' +
+      '<div class="modal-body">' +
+      '<div style="font-size:13px;color:var(--text-primary);margin-bottom:2px;">' + title + '</div>' +
+      '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">' +
+        (xp > 0 ? '<span style="color:var(--accent-fcs);">+' + xp + ' XP</span>&nbsp;&middot;&nbsp;' : '') +
+        '<span style="color:var(--accent-amber);">' + regionLabel(region) + '</span></div>' +
+      '<label class="form-label" style="font-size:12px;">STATUS</label>' +
+      '<div class="grpg-complete-status" id="grpg-complete-status">' +
+        '<button type="button" class="grpg-status-option grpg-status-option-active" data-value="completed">Completed</button>' +
+        '<button type="button" class="grpg-status-option" data-value="partial">Partial</button>' +
+        '<button type="button" class="grpg-status-option" data-value="skipped">Skipped</button>' +
+      '</div>' +
+      '<label class="form-label" style="font-size:12px;margin-top:10px;">COMPLETION TIME</label>' +
+      '<input type="datetime-local" class="form-control" id="grpg-complete-at" value="' + nowFormatted() + '" style="background:var(--panel-solid);color:var(--text-primary);">' +
+      '<label class="form-label" style="font-size:12px;margin-top:10px;">TIME SPENT (MINUTES)</label>' +
+      '<input type="number" class="form-control" id="grpg-complete-time" min="0" step="5" placeholder="Estimate in minutes"' +
+        (duration > 0 ? ' value="' + duration + '"' : '') + ' style="background:var(--panel-solid);color:var(--text-primary);">' +
+      '<label class="form-label" style="font-size:12px;margin-top:10px;">REASON <span id="grpg-complete-reason-hint" style="color:var(--accent-danger);">(optional)</span></label>' +
+      '<textarea class="form-control" id="grpg-complete-reason" rows="2" placeholder="Spilled your coffee on the keyboard, got caught in traffic\u2026"></textarea>' +
+      '<div id="grpg-complete-aid" style="margin-top:10px;padding:8px 10px;border:1px solid var(--border-hairline);border-radius:6px;' +
+        'font-size:11px;color:var(--text-muted);line-height:1.4;">' +
+        'The <strong style="color:var(--text-primary);">AI Judge</strong> will evaluate this entry against your reason and time spent, ' +
+        'ruling on validity, responsibility and consistency. Penalties apply for skipped or unproven work.</div>' +
+      '</div><div class="modal-footer">' +
+      '<button type="button" class="btn-app btn-app-secondary" data-bs-dismiss="modal">Cancel</button>' +
+      '<button type="button" class="btn-app btn-app-primary" id="grpg-complete-confirm">Submit</button>' +
+      '</div></div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    var modal = new bootstrap.Modal(document.getElementById('grpgCompleteModal'));
+    modal.show();
+    var status = 'completed';
+    var statusWrap = document.getElementById('grpg-complete-status');
+    var reasonHint = document.getElementById('grpg-complete-reason-hint');
+    var completionAt = document.getElementById('grpg-complete-at');
+
+    document.getElementById('grpgCompleteModal').addEventListener('hidden.bs.modal', function () { this.remove(); });
+    statusWrap.addEventListener('click', function (e) {
+      var opt = e.target.closest('.grpg-status-option');
+      if (!opt) return;
+      status = opt.getAttribute('data-value');
+      statusWrap.querySelectorAll('.grpg-status-option').forEach(function (b) {
+        b.classList.toggle('grpg-status-option-active', b === opt);
+      });
+      var skipped = status === 'skipped';
+      reasonHint.textContent = skipped || status === 'partial' ? '(required)' : '(optional)';
+      reasonHint.style.color = skipped || status === 'partial' ? 'var(--accent-danger)' : 'var(--text-muted)';
+      completionAt.disabled = skipped;
+      completionAt.style.opacity = skipped ? '0.5' : '';
+    });
+
+    document.getElementById('grpg-complete-confirm').addEventListener('click', function () {
+      var confirmBtn = this;
+      var reason = document.getElementById('grpg-complete-reason').value.trim();
+      if (status !== 'completed' && !reason) {
+        showNotification('warning', 'Incomplete', 'A reason is required for ' + status + ' entries.');
+        return;
+      }
+      var timeInput = document.getElementById('grpg-complete-time').value;
+      var minutes = timeInput ? parseInt(timeInput, 10) : null;
+      var payload = {
+        timetable_entry_id: taskId,
+        status: status,
+        reason: reason,
+        comment: ''
+      };
+      if (status !== 'skipped') {
+        payload.completed_on = document.getElementById('grpg-complete-at').value;
+      }
+      if (minutes && minutes > 0) payload.actual_time_taken = minutes;
+
+      confirmBtn.disabled = true;
+      fetch('/api/complete/complete_activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        if (res.status !== 201) {
+          return res.json().catch(function () { return {}; }).then(function (j) {
+            throw new Error((j && j.msg) || 'Status ' + res.status);
+          });
+        }
+        return res.json();
+      }).then(function (result) {
+        modal.hide();
+        var change = typeof result.exp_change === 'number' ? result.exp_change : (status === 'completed' ? xp : 0);
+        if (change) updateTopbarXP(change);
+        var heading = 'Mission Recorded';
+        var body = change ? (change >= 0 ? 'Gained <strong>' + change + '</strong> XP!' : 'Lost <strong>' + Math.abs(change) + '</strong> XP') : 'Recorded.';
+        if (status === 'completed') heading = 'Mission Complete';
+        else if (status === 'partial') heading = 'Partial Completion';
+        else if (status === 'skipped') heading = 'Mission Skipped';
+        showNotification(change >= 0 ? 'success' : 'warning', heading, body);
+        reconcileCards();
+      }).catch(function (err) {
+        confirmBtn.disabled = false;
+        showNotification('danger', 'Error', 'Could not record completion: ' + err.message);
+      });
+    });
+  }
 
   // Resolve the mission row for an action button (objective block has no row → first ACTIVE mission)
   function resolveMissionRow(btn) {
@@ -269,16 +362,6 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (action === 'abandon') {
       openAbandonModal(btn);
     }
-  });
-
-  // ── Petal Toggles ──
-  document.querySelectorAll('.grpg-check-toggle').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var row = this.closest('.grpg-check-row');
-      var isDone = row.getAttribute('data-done') === 'true';
-      row.setAttribute('data-done', isDone ? 'false' : 'true');
-      this.setAttribute('aria-pressed', isDone ? 'false' : 'true');
-    });
   });
 
   // ── XP Chart (Canvas 2D) — fixed axis 0/800/1.6k/2.4k, Mon–Sun, animate-in ──
@@ -464,87 +547,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── Judge Review Actions (accept / dispute) — delegated ──
-  document.addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-review-id]');
-    if (!btn) return;
-    var id = btn.getAttribute('data-review-id');
-    var action = btn.getAttribute('data-action');
-    var container = btn.closest('.grpg-panel');
-
-    if (action === 'accept') {
-      btn.disabled = true;
-      fetch('/api/judge/' + id + '/accept', { method: 'POST' })
-        .then(function (res) { if (!res.ok) throw new Error('Status ' + res.status); return res.json(); })
-        .then(function () {
-          showNotification('success', 'System Judge', 'Verdict accepted.');
-          reconcileJudge();
-        })
-        .catch(function (e2) {
-          btn.disabled = false;
-          showNotification('danger', 'Error', 'Could not accept: ' + e2.message);
-        });
-      return;
-    }
-
-    if (action === 'dispute') {
-      var reason = prompt('Why do you dispute this review?');
-      if (!reason) return;
-      btn.disabled = true;
-      fetch('/api/judge/' + id + '/dispute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: reason })
-      })
-        .then(function (res) { if (!res.ok) throw new Error('Status ' + res.status); return res.json(); })
-        .then(function () {
-          showNotification('warning', 'System Judge', 'Verdict re-judged. Status: DISPUTED.');
-          reconcileJudge();
-        })
-        .catch(function (e2) {
-          btn.disabled = false;
-          showNotification('danger', 'Error', 'Could not dispute: ' + e2.message);
-        });
-      return;
-    }
-  });
-
-  // ── Judge inline "View Log" metrics toggle ──
-  var judgeToggle = document.getElementById('grpg-judge-toggle');
-  if (judgeToggle) {
-    judgeToggle.addEventListener('click', function () {
-      var metrics = document.getElementById('grpg-judge-metrics');
-      if (!metrics) return;
-      var isOpen = !metrics.hasAttribute('hidden');
-      metrics.hidden = isOpen;
-      this.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-      this.textContent = isOpen ? 'View Log' : 'Hide Log';
-    });
-  }
-
-  // ── Missions: "View All (N)" in-place toggle ──
-  function applyMissionsCollapse(card) {
-    var rows = card.querySelectorAll('.grpg-mission-row');
-    var toggle = document.getElementById('grpg-missions-toggle');
-    if (!toggle) return;
-    var expanded = toggle.getAttribute('data-expanded') === 'true';
-    rows.forEach(function (r, idx) {
-      r.classList.toggle('grpg-missions-hidden-row', idx >= 3 && !expanded);
-    });
-    var total = rows.length;
-    toggle.style.display = total > 3 ? 'block' : 'none';
-    toggle.textContent = expanded ? 'SHOW TOP 3 \u2227' : ('VIEW ALL (' + total + ') \u2228');
-  }
-
-  var missionsToggle = document.getElementById('grpg-missions-toggle');
-  if (missionsToggle) {
-    missionsToggle.addEventListener('click', function () {
-      var expanded = this.getAttribute('data-expanded') === 'true';
-      this.setAttribute('data-expanded', expanded ? 'false' : 'true');
-      applyMissionsCollapse(document.getElementById('grpg-missions-card'));
-    });
-  }
-
   // ── Missions: collapse/expand the whole card with the left chevron ──
   var missionsCollapse = document.getElementById('grpg-missions-collapse');
   if (missionsCollapse) {
@@ -570,13 +572,10 @@ document.addEventListener('DOMContentLoaded', function () {
           html = '<div id="grpg-activity-empty" style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px;">No activity yet today</div>';
         } else {
           acts.slice(0, 4).forEach(function (a) {
-            var stColor = a.status === 'DONE' ? 'var(--accent-active)' : (a.status === 'IN_PROGRESS' ? 'var(--text-muted)' : 'var(--accent-danger)');
-            var stLabel = a.status === 'IN_PROGRESS' ? 'IN PROGRESS' : a.status;
             var xpColor = (a.xp || 0) >= 0 ? 'var(--accent-fcs)' : 'var(--accent-danger)';
             var attrColor = 'var(--accent-' + (a.color || 'amber') + ')';
             var xpText = (a.xp >= 0 ? '+' : '') + a.xp;
             html += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;">' +
-              '<span style="flex-shrink:0;width:44px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:' + stColor + ';">' + stLabel + '</span>' +
               '<span style="flex:1;color:var(--text-primary);">' + a.name + '</span>' +
               '<span style="font-size:10px;color:var(--text-secondary);">' + (a.time || '') + '</span>' +
               '<span style="font-family:var(--font-mono);font-weight:600;color:' + xpColor + ';">' + xpText + '</span>' +
@@ -610,15 +609,16 @@ document.addEventListener('DOMContentLoaded', function () {
           row.setAttribute('data-status', m.status);
           row.setAttribute('data-color', m.color || '');
           row.setAttribute('data-status-override', m.status_override || '');
-          var done = (m.status === 'COMPLETED' || m.status === 'COMPLETED_LATE');
+          var done = (m.status === 'COMPLETED' || m.status === 'COMPLETED_LATE' || m.status === 'PARTIAL');
           row.setAttribute('data-done', done ? 'true' : 'false');
+          row.classList.toggle('grpg-mission-partial', m.status === 'PARTIAL');
           row.setAttribute('data-time-range', m.deadline || '');
           var rowColor = m.status_override ? 'var(--accent-red)' : 'var(--accent-' + (m.color || 'amber') + ')';
           row.style.setProperty('--mission-color', rowColor);
           var statusBtn = row.querySelector('.grpg-mission-status');
           if (statusBtn) {
             statusBtn.style.setProperty('--tag-color', rowColor);
-            statusBtn.setAttribute('aria-pressed', done ? 'true' : 'false');
+            statusBtn.setAttribute('data-done', done ? 'true' : 'false');
             statusBtn.classList.toggle('grpg-mission-completed', m.status === 'COMPLETED');
             statusBtn.classList.toggle('grpg-mission-late', m.status === 'COMPLETED_LATE');
             statusBtn.textContent = '';
@@ -627,6 +627,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (meta) {
             var label = '';
             if (m.status === 'COMPLETED') label = '<span class="grpg-done-label">DONE</span>';
+            else if (m.status === 'PARTIAL') label = '<span class="grpg-done-label" style="color:var(--accent-amber);">PARTIAL</span>';
             else if (m.status === 'COMPLETED_LATE') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">LATE</span>';
             else if (m.status === 'MISSED') label = '<span class="grpg-done-label" style="color:var(--accent-danger);">MISSED</span>';
             else if (m.status === 'LOCKED') label = '<span class="grpg-done-label" style="opacity:0.5;">LOCKED</span>';
@@ -636,106 +637,19 @@ document.addEventListener('DOMContentLoaded', function () {
             meta.innerHTML = label;
           }
         });
-        applyMissionsCollapse(card);
-      }).catch(function () {});
-  }
-
-  function reconcileJudge() {
-    fetch('/api/system-judge/latest', { headers: { 'Accept': 'application/json' } })
-      .then(function (res) { return res.ok ? res.json() : null; })
-      .then(function (data) {
-        if (!data) return;
-        var card = document.getElementById('grpg-judge-card');
-        if (!card) return;
-        var missedPill = card.querySelector('.grpg-danger-pill');
-        if (data.missed_count) {
-          if (missedPill) missedPill.textContent = data.missed_count + ' missed';
-          else {
-            var hdr = card.querySelector('.grpg-panel-header');
-            var span = document.createElement('span');
-            span.className = 'grpg-danger-pill';
-            span.title = 'Missed tasks';
-            span.textContent = data.missed_count + ' missed';
-            if (hdr) hdr.insertBefore(span, hdr.querySelector('#grpg-judge-toggle'));
-          }
-        } else if (missedPill) {
-          missedPill.remove();
-        }
-        var review = data.review;
-        var titleEl = card.querySelector('.grpg-judge-review-title');
-        var reasonEl = card.querySelector('#grpg-judge-reason');
-        var metricsEl = document.getElementById('grpg-judge-metrics');
-        var toggleBtn = document.getElementById('grpg-judge-toggle');
-        if (!review || !review.id) {
-          if (titleEl) titleEl.innerHTML = 'No reviews yet \u00B7 you\'re clear.';
-          var existingReason = card.querySelector('#grpg-judge-reason');
-          if (existingReason) existingReason.remove();
-          if (metricsEl) metricsEl.hidden = true;
-          if (toggleBtn) toggleBtn.hidden = true;
-          var actionBar = card.querySelector('#grpg-judge-actions');
-          if (actionBar) actionBar.remove();
-          return;
-        }
-        if (toggleBtn && toggleBtn.hidden) toggleBtn.hidden = false;
-
-        var badge = '';
-        if (review.status === 'COMPLETED_LATE') badge = ' <span class="grpg-danger-pill" style="color:var(--accent-warning);">LATE</span>';
-        else if (review.status === 'MISSED') badge = ' <span class="grpg-danger-pill">MISSED</span>';
-        if (titleEl) titleEl.innerHTML = (review.task || '') + badge;
-
-        // Update reason text
-        var reason = review.user_reason || '';
-        if (reason) {
-          if (!reasonEl) {
-            reasonEl = document.createElement('p');
-            reasonEl.id = 'grpg-judge-reason';
-            reasonEl.style.cssText = 'font-size:10px;color:var(--text-muted);margin:4px 0 8px;font-style:italic;';
-            if (titleEl) titleEl.parentNode.insertBefore(reasonEl, titleEl.nextSibling);
-          }
-          reasonEl.textContent = '\u201C' + reason + '\u201D';
-        } else if (reasonEl) {
-          reasonEl.remove();
-        }
-
-        // Update metrics if visible
-        if (metricsEl && review.metrics) {
-          var order = ['validity', 'responsibility', 'consistency'];
-          var titles = { 'validity': 'Validity', 'responsibility': 'Responsibility', 'consistency': 'Consistency' };
-          order.forEach(function (key) {
-            var val = (review.metrics && review.metrics[key]) ? review.metrics[key] : 0;
-            var rows = metricsEl.querySelectorAll('.grpg-metric-row');
-            rows.forEach(function (rw) {
-              var label = rw.querySelector('span').textContent;
-              if (label === titles[key]) {
-                rw.querySelector('.grpg-bar-fill').style.width = val + '%';
-                var last = rw.querySelector('span:last-child');
-                if (last) last.textContent = val + '%';
-              }
-            });
+        // Re-sort rows to match the server's time-of-day order: next mission
+        // first, earliest-started last (tasks drift downward as time passes).
+        var listEl = document.getElementById('grpg-missions-list');
+        if (listEl) {
+          var ordered = [];
+          missions.forEach(function (m) {
+            var el = listEl.querySelector('[data-mission-id="' + m.id + '"]');
+            if (el && ordered.indexOf(el) === -1) ordered.push(el);
           });
-          var penaltyRow = metricsEl.querySelector('.grpg-penalty-row .grpg-penalty-value');
-          if (penaltyRow) penaltyRow.textContent = (review.penalty || 0) + ' XP';
-        }
-
-        // Action bar (accept/dispute) — only for PENDING
-        var actionBar = card.querySelector('#grpg-judge-actions');
-        if (actionBar) actionBar.remove();
-        if (review.review_status === 'PENDING') {
-          actionBar = document.createElement('div');
-          actionBar.id = 'grpg-judge-actions';
-          actionBar.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
-          actionBar.innerHTML = '<button class="grpg-solid-btn" style="flex:1;" data-review-id="' + review.id + '" data-action="accept">ACCEPT</button>' +
-            '<button class="grpg-ghost-btn" style="flex:1;" data-review-id="' + review.id + '" data-action="dispute">DISPUTE</button>';
-          var openLogBtn = card.querySelector('a.grpg-ghost-btn');
-          if (openLogBtn) card.insertBefore(actionBar, openLogBtn);
-          else card.appendChild(actionBar);
-        } else {
-          var statusLine = document.createElement('p');
-          statusLine.style.cssText = 'font-size:10px;color:var(--text-muted);margin-top:8px;text-align:center;';
-          statusLine.textContent = review.review_status;
-          var openLogBtn2 = card.querySelector('a.grpg-ghost-btn');
-          if (openLogBtn2) card.insertBefore(statusLine, openLogBtn2);
-          else card.appendChild(statusLine);
+          card.querySelectorAll('.grpg-mission-row').forEach(function (r) {
+            if (ordered.indexOf(r) === -1) ordered.push(r);
+          });
+          ordered.forEach(function (el) { listEl.appendChild(el); });
         }
       }).catch(function () {});
   }
@@ -747,7 +661,6 @@ document.addEventListener('DOMContentLoaded', function () {
   function reconcileCards() {
     reconcileActivity();
     reconcileMissions();
-    reconcileJudge();
   }
 
   reconcileCards();

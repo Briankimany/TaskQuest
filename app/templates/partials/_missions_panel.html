@@ -28,12 +28,12 @@
   </div>
 
   <div class="grpg-missions-body" id="grpg-missions-body">
-    <div id="grpg-missions-list">
+    <div id="grpg-missions-list" class="grpg-missions-scroll">
   {% if missions %}
     {% for m in missions %}
       {% set row_color = 'var(--accent-red)' if m.status_override else 'var(--accent-' ~ m.color ~ ')' %}
-      <div class="grpg-mission-row{% if loop.index > 3 %} grpg-missions-hidden-row{% endif %}" data-mission-id="{{ m.id }}"
-           data-done="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE') else 'false' }}"
+      <div class="grpg-mission-row{% if m.status == 'PARTIAL' %} grpg-mission-partial{% endif %}" data-mission-id="{{ m.id }}"
+           data-done="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE', 'PARTIAL') else 'false' }}"
            data-target-region="{{ m.target_region }}"
            data-attr-deltas="{{ m.attr_delta_str }}"
            data-time-range="{{ m.deadline }}"
@@ -41,15 +41,14 @@
            data-status="{{ m.status }}"
            data-color="{{ m.color }}"
            data-status-override="{{ m.status_override or '' }}"
+           role="button" tabindex="0"
+           title="Click to record completion"
            style="--mission-color: {{ row_color }};">
         <div class="grpg-mission-top">
-          <button class="grpg-mission-status {% if m.status == 'COMPLETED' %}grpg-mission-completed{% elif m.status == 'COMPLETED_LATE' %}grpg-mission-late{% endif %}"
-                  style="--tag-color: var(--mission-color);"
-                  aria-label="Toggle {{ m.title }}"
-                  aria-pressed="{{ 'true' if m.status in ('COMPLETED', 'COMPLETED_LATE') else 'false' }}"
-                  data-xp="{{ m.xp }}">
-            {% if m.status == 'COMPLETED' %}{% elif m.status == 'COMPLETED_LATE' %}{% elif m.status == 'MISSED' %}{% endif %}
-          </button>
+          <span class="grpg-mission-status {% if m.status == 'COMPLETED' %}grpg-mission-completed{% elif m.status == 'COMPLETED_LATE' %}grpg-mission-late{% endif %}"
+                style="--tag-color: var(--mission-color);"
+                aria-hidden="true"
+                data-xp="{{ m.xp }}"></span>
           <span class="grpg-mission-tag" style="color:var(--accent-{{ m.color }});">[{{ m.tag }}]</span>
           <span class="grpg-mission-title">{{ m.title }}{% if m.status == 'LOCKED' %}{% elif m.status == 'ABANDONED' %}{% elif m.status == 'RESCHEDULED' %}{% endif %}</span>
           <span class="grpg-mission-xp">{% if m.xp > 0 %}+{{ m.xp }} XP{% endif %}</span>
@@ -57,6 +56,8 @@
         <div class="grpg-mission-meta">
           {% if m.status == 'COMPLETED' %}
             <span class="grpg-done-label">DONE</span>
+          {% elif m.status == 'PARTIAL' %}
+            <span class="grpg-done-label" style="color:var(--accent-amber);">PARTIAL</span>
           {% elif m.status == 'COMPLETED_LATE' %}
             <span class="grpg-done-label" style="color:var(--accent-danger);">LATE</span>
           {% elif m.status == 'MISSED' %}
@@ -80,10 +81,6 @@
     </div>
   {% endif %}
   </div>
-
-  <button id="grpg-missions-toggle" class="grpg-ghost-btn"
-          style="display:{{ 'block' if missions|length > 3 else 'none' }};text-align:center;margin-top:8px;"
-          data-expanded="false">VIEW ALL ({{ missions|length }}) &or;</button>
 
   {% if missions %}
     {# ── Decorative pagination dots (static, non-interactive) ── #}

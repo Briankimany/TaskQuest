@@ -88,12 +88,40 @@ def _task_status(log):
     return log.status.upper()
 
 
-def build_missions(scheduled_tasks, date_logs, today):
+def _day_minute(hhmm):
+    """'HH:MM' -> minutes since midnight, or None when unparseable."""
+    try:
+        h, m = hhmm.split(":")
+        return int(h) * 60 + int(m)
+    except Exception:
+        return None
+
+
+def _mission_order_key(start_str, now_minute):
+    """Time-of-day ordering: next upcoming first, earliest-started last.
+
+    Missions that already started sink below the ones still ahead, and within
+    the started group the longest-started sits at the very bottom, so scrolling
+    down walks backwards through the day. Items without a start time go last.
+    """
+    start_minute = _day_minute(start_str or "")
+    if start_minute is None:
+        return 3 * 24 * 60
+    if start_minute >= now_minute:
+        return start_minute - now_minute
+    return 24 * 60 + (now_minute - start_minute)
+
+
+def build_missions(scheduled_tasks, date_logs, today, now=None):
     """Build the Today's Missions payload.
 
     Context-switch buffer entries (sub-activity base_exp == 0) are excluded —
-    they carry no XP and are not real missions. Ordering keeps ACTIVE/AVAILABLE
-    first (stable by scheduled start time) and resolved missions at the bottom.
+    they carry no XP and are not real missions. Ordering is time-of-day based
+    (see _mission_order_key): the next unstarted mission leads the list and the
+    earliest-started one of the day is the last row.
+
+    ``now`` is the user's current local time (defaults to server time for
+    backwards compatibility); pass ``now_for(user)`` from request handlers.
     """
     missions = []
     index = 0
@@ -123,11 +151,15 @@ def build_missions(scheduled_tasks, date_logs, today):
         diff = min(5, max(1, int(sub.difficulty_multiplier)))
 
         # Countdown
-        now = datetime.now()
+        now = now or datetime.now()
+        if now.tzinfo is not None:
+            naive_now = datetime.combine(today, now.time())
+        else:
+            naive_now = now
         remaining = ""
         if status == "ACTIVE" and task.end_time:
             end_dt = datetime.combine(today, task.end_time)
-            delta = end_dt - now
+            delta = end_dt - naive_now
             if delta.total_seconds() > 0:
                 hours = int(delta.total_seconds() // 3600)
                 mins = int((delta.total_seconds() % 3600) // 60)
@@ -164,7 +196,8 @@ def build_missions(scheduled_tasks, date_logs, today):
         })
         index += 1
 
-    missions.sort(key=lambda m: (STATUS_PRIORITY.get(m["status"], 9), m.get("start") or ""))
+    now_minute = (now or datetime.now()).hour * 60 + (now or datetime.now()).minute
+    missions.sort(key=lambda m: _mission_order_key(m.get("start") or "", now_minute))
     return missions
 
 
@@ -206,6 +239,8 @@ def build_activity(date_logs, scheduled_tasks=None):
 
         if log.status == "completed":
             status = "LATE" if xp < 0 else "DONE"
+        elif log.status == "partial":
+            status = "PARTIAL"
         else:
             status = "MISSED"
 
