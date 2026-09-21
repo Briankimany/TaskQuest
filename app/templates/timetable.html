@@ -3,86 +3,102 @@
 {% block title %}Timetable — {{ APP_NAME }}{% endblock %}
 
 {% block content %}
-<header class="tt-header">
-    <h1>Task Scheduler</h1>
-    <div class="tt-controls">
-        <input type="date" id="date-picker" class="tt-date-input">
-        <button id="new-day-btn" class="btn-app btn-app-primary">+ New Day</button>
+<main class="tt-shell" id="tt-shell">
+    <div class="tt-main">
+        <header class="tt-header">
+            <h1>Task Scheduler</h1>
+            <div class="tt-controls">
+                <input type="date" id="date-picker" class="tt-date-input">
+                <button id="new-day-btn" class="btn-app btn-app-primary">+ New Day</button>
+            </div>
+        </header>
+        <div class="task-grid" id="task-grid"></div>
     </div>
-</header>
 
-<main>
-    <div class="task-grid" id="task-grid"></div>
-
-    <button id="add-task-btn" class="btn-app btn-app-primary position-fixed" style="bottom:1.5rem;left:1.5rem;z-index:100">
-        <i class="lucide-plus" style="font-size:1em"></i> Add Task
-    </button>
-
-    <!-- Task Modal -->
-    <div class="modal" id="task-modal">
-        <div class="modal-content">
+    <!-- Add Task side panel -->
+    <aside class="tt-panel" id="task-panel" aria-label="Add new task" aria-hidden="true" data-open="false">
+        <div class="tt-panel-inner">
             <form id="task-form">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modal-title">Schedule New Task</h5>
+                <div class="tt-panel-header">
+                    <h5 class="tt-panel-title" id="panel-title">Schedule New Task</h5>
+                    <button type="button" class="tt-panel-close" id="panel-close-btn" aria-label="Close">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="activity-select" class="form-label">Activity</label>
-                        <select id="activity-select" class="form-select" required>
-                            <option value="">Loading activities...</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="sub-activity" class="form-label">Sub-Activity</label>
-                        <select id="sub-activity" class="form-select" required>
-                            <option value="">Loading sub-activities...</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="start-time" class="form-label">Start Time</label>
-                            <input type="time" id="start-time" class="form-control" required>
+                <div class="tt-panel-body">
+                    <div class="tt-split">
+                        <div class="tt-split-form tt-form-compact">
+                            <div class="mb-2">
+                                <label for="activity-select" class="form-label">Activity</label>
+                                <select id="activity-select" class="form-select" required>
+                                    <option value="">Loading activities...</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label for="sub-activity" class="form-label">Sub-Activity</label>
+                                <select id="sub-activity" class="form-select" required>
+                                    <option value="">Loading sub-activities...</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label for="start-time" class="form-label">Start Time</label>
+                                    <input type="time" id="start-time" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="duration" class="form-label">Duration (mins)</label>
+                                    <input type="number" id="duration" class="form-control" min="1">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label d-flex align-items-center gap-2" style="cursor:pointer">
+                                    <input type="checkbox" id="is-cyclic"> Repeats weekly
+                                </label>
+                            </div>
+                            <div class="mb-2" id="weekday-group" style="display:none">
+                                <label for="weekday" class="form-label">Weekday</label>
+                                <select id="weekday" class="form-select">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="7">Sunday</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label d-flex align-items-center gap-2" style="cursor:pointer">
+                                    <input type="checkbox" id="add-buffer" checked> Add buffer activity
+                                </label>
+                            </div>
+                            <div class="mb-2">
+                                <label for="task-description" class="form-label">Description</label>
+                                <textarea id="task-description" class="form-control" rows="2"></textarea>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="duration" class="form-label">Duration (mins)</label>
-                            <input type="number" id="duration" class="form-control" min="1">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label d-flex align-items-center gap-2" style="cursor:pointer">
-                            <input type="checkbox" id="is-cyclic"> Repeats weekly
-                        </label>
-                    </div>
-                    <div class="mb-3" id="weekday-group" style="display:none">
-                        <label for="weekday" class="form-label">Weekday</label>
-                        <select id="weekday" class="form-select">
-                            <option value="1">Monday</option>
-                            <option value="2">Tuesday</option>
-                            <option value="3">Wednesday</option>
-                            <option value="4">Thursday</option>
-                            <option value="5">Friday</option>
-                            <option value="6">Saturday</option>
-                            <option value="7">Sunday</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label d-flex align-items-center gap-2" style="cursor:pointer">
-                            <input type="checkbox" id="add-buffer" checked> Add buffer activity
-                        </label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="task-description" class="form-label">Description</label>
-                        <textarea id="task-description" class="form-control" rows="3"></textarea>
+                        <aside class="tt-split-suggest" aria-label="Recurring task suggestions">
+                            <div class="tt-suggest-block">
+                                <h6 class="tt-suggest-heading" id="scheduled-today-heading">Scheduled Today</h6>
+                                <div id="scheduled-today-list" class="tt-suggest-list" aria-labelledby="scheduled-today-heading"></div>
+                            </div>
+                            <div class="tt-suggest-block">
+                                <h6 class="tt-suggest-heading" id="suggested-heading">Suggested</h6>
+                                <div id="suggested-list" class="tt-suggest-list" aria-labelledby="suggested-heading"></div>
+                            </div>
+                        </aside>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="tt-panel-footer">
                     <button type="button" class="btn-app btn-app-secondary" id="cancel-btn">Cancel</button>
                     <button type="submit" class="btn-app btn-app-primary">Save Task</button>
                 </div>
             </form>
         </div>
-    </div>
+    </aside>
 </main>
+
+<button id="add-task-btn" class="btn-app btn-app-primary position-fixed tt-add-toggle" aria-expanded="false" aria-controls="task-panel" style="bottom:1.5rem;left:1.5rem;z-index:100">
+    <i class="lucide-plus" style="font-size:1em"></i> Add Task
+</button>
 {% endblock %}
 
 {% block scripts %}

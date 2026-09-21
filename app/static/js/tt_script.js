@@ -8,6 +8,7 @@ class TaskScheduler {
         this.initEventListeners();
         this.loadTimetable();
         this.loadSuggestedTasks();
+        this.loadRecurringSuggestions();
     }
 
     initElements() {
@@ -16,9 +17,11 @@ class TaskScheduler {
             taskGrid: document.getElementById('task-grid'),
             addTaskBtn: document.getElementById('add-task-btn'),
             newDayBtn: document.getElementById('new-day-btn'),
-            taskModal: document.getElementById('task-modal'),
+            taskShell: document.getElementById('tt-shell'),
+            taskPanel: document.getElementById('task-panel'),
+            panelTitle: document.getElementById('panel-title'),
+            panelCloseBtn: document.getElementById('panel-close-btn'),
             taskForm: document.getElementById('task-form'),
-            modalTitle: document.getElementById('modal-title'),
             cancelBtn: document.getElementById('cancel-btn'),
             description: document.getElementById('task-description'),
             activitySelect: document.getElementById('activity-select'),
@@ -28,7 +31,9 @@ class TaskScheduler {
             isCyclic: document.getElementById('is-cyclic'),
             weekdayGroup: document.getElementById('weekday-group'),
             weekday: document.getElementById('weekday'),
-            addBuffer: document.getElementById('add-buffer')
+            addBuffer: document.getElementById('add-buffer'),
+            scheduledTodayList: document.getElementById('scheduled-today-list'),
+            suggestedList: document.getElementById('suggested-list')
         };
     }
 
@@ -36,9 +41,17 @@ class TaskScheduler {
         this.elements.datePicker.addEventListener('change', (e) => {
             this.currentDate = new Date(e.target.value);
             this.loadTimetable();
+            this.loadRecurringSuggestions();
         });
         this.elements.newDayBtn.addEventListener('click', () => this.createTimetable());
-        this.elements.addTaskBtn.addEventListener('click', () => this.openTaskModal());
+        this.elements.addTaskBtn.addEventListener('click', () => {
+            if (this.elements.taskShell.classList.contains('tt-panel-open')) {
+                this.closeModal();
+            } else {
+                this.openTaskModal();
+            }
+        });
+        this.elements.panelCloseBtn.addEventListener('click', () => this.closeModal());
         this.elements.cancelBtn.addEventListener('click', () => this.closeModal());
         this.elements.taskForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
         this.elements.isCyclic.addEventListener('change', () => {
@@ -132,8 +145,98 @@ class TaskScheduler {
         }
     }
 
+    async loadRecurringSuggestions() {
+        try {
+            var dateStr = this.formatDate(this.currentDate);
+            var response = await fetch('/api/timetable/suggestions?date=' + dateStr);
+            if (!response.ok) throw new Error('Failed to load suggestions');
+            var data = await response.json();
+            this.renderSuggestionList(this.elements.scheduledTodayList, data.scheduled_today || [], true);
+            this.renderSuggestionList(this.elements.suggestedList, data.suggested || [], false);
+        } catch (error) {
+            showNotification('danger', 'Error', error.message);
+        }
+    }
+
+    renderSuggestionList(container, items, readOnly) {
+        if (!container) return;
+        if (!items.length) {
+            container.innerHTML = '<div class="tt-suggest-empty">' +
+                (readOnly
+                    ? 'No recurring tasks scheduled yet today.'
+                    : 'All recurring tasks are already scheduled for today.') +
+                '</div>';
+            return;
+        }
+        container.innerHTML = '';
+        items.forEach((item) => {
+            var el = document.createElement('div');
+            el.className = 'tt-suggest-item ' + (readOnly ? 'tt-suggest-readonly' : 'tt-suggest-clickable');
+            el.innerHTML = '<span class="tt-suggest-name">' + item.activity_name + '</span>' +
+                '<span class="tt-suggest-time">' + item.start + ' - ' + item.end + '</span>';
+            if (!readOnly) {
+                el.setAttribute('role', 'button');
+                el.setAttribute('tabindex', '0');
+                el.addEventListener('click', () => this.applySuggestion(item));
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.applySuggestion(item);
+                    }
+                });
+            }
+            container.appendChild(el);
+        });
+    }
+
+    async applySuggestion(item) {
+        this.elements.panelTitle.textContent = 'Add New Task';
+        this.elements.taskForm.dataset.taskId = '';
+
+        // Resolve the parent activity option, appending it if missing.
+        var activityOpt = this.elements.activitySelect.querySelector('option[value="' + item.activity_id + '"]');
+        if (!activityOpt) {
+            var opt = document.createElement('option');
+            opt.value = item.activity_id;
+            opt.textContent = item.activity_name;
+            this.elements.activitySelect.appendChild(opt);
+        }
+        this.elements.activitySelect.value = String(item.activity_id);
+
+        // Populate sub-activities for the parent, then pin the stored one.
+        await this.loadSubActivities(item.activity_id);
+        var subOpt = this.elements.subActivitySelect.querySelector('option[value="' + item.sub_activity_id + '"]');
+        if (!subOpt) {
+            var opt2 = document.createElement('option');
+            opt2.value = item.sub_activity_id;
+            opt2.textContent = item.sub_activity_name || item.activity_name;
+            this.elements.subActivitySelect.appendChild(opt2);
+        }
+        this.elements.subActivitySelect.value = String(item.sub_activity_id);
+
+        this.elements.startTime.value = item.start;
+        this.elements.duration.value = item.duration_min || '';
+        this.elements.isCyclic.checked = true;
+        this.elements.weekdayGroup.style.display = 'block';
+        this.elements.weekday.value = item.weekday || this.getWeekdayFromDate(this.currentDate);
+        this.elements.description.value = item.description || '';
+        // Add-buffer stays at its default (checked): buffer state isn't stored per task.
+
+        this.setPanelOpen(true);
+    }
+
+    setPanelOpen(open) {
+        this.elements.taskShell.classList.toggle('tt-panel-open', open);
+        this.elements.taskPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
+        this.elements.taskPanel.dataset.open = open ? 'true' : 'false';
+        this.elements.addTaskBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+            this.loadRecurringSuggestions();
+        }
+    }
+
     openTaskModal(task) {
-        this.elements.modalTitle.textContent = task ? 'Edit Task' : 'Add New Task';
+        this.elements.panelTitle.textContent = task ? 'Edit Task' : 'Add New Task';
         this.elements.taskForm.dataset.taskId = task ? task.id : '';
         if (task) {
             this.elements.subActivitySelect.value = task.sub_activity_id || '';
@@ -151,11 +254,11 @@ class TaskScheduler {
             this.elements.taskForm.reset();
             this.elements.weekdayGroup.style.display = 'none';
         }
-        this.elements.taskModal.style.display = 'flex';
+        this.setPanelOpen(true);
     }
 
     openEditModal(task) {
-        this.elements.modalTitle.textContent = 'Edit Task';
+        this.elements.panelTitle.textContent = 'Edit Task';
         this.elements.taskForm.dataset.taskId = task.id;
         this.elements.subActivitySelect.value = task.sub_activity_id || '';
         this.elements.startTime.value = task.start_time.substring(0, 5);
@@ -174,20 +277,28 @@ class TaskScheduler {
             this.elements.isCyclic.checked = false;
             this.elements.weekdayGroup.style.display = 'none';
         }
-        this.elements.taskModal.style.display = 'flex';
+        this.setPanelOpen(true);
     }
 
     closeModal() {
-        this.elements.taskModal.style.display = 'none';
+        this.setPanelOpen(false);
     }
 
     async handleFormSubmit(e) {
         e.preventDefault();
+        if (!this.elements.subActivitySelect.value) {
+            showNotification('danger', 'Error', 'No sub-activity available — create one for the selected activity first');
+            return;
+        }
+        if (!this.elements.startTime.value) {
+            showNotification('danger', 'Error', 'Start time is required');
+            return;
+        }
         var taskData = {
             sub_activity_id: parseInt(this.elements.subActivitySelect.value),
             date: this.formatDate(this.currentDate),
             start_time: this.elements.startTime.value,
-            time_zone: 'Africa/Nairobi',
+            time_zone: (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'),
             task_duration: this.elements.duration.value ? parseInt(this.elements.duration.value) : null,
             cyclic: this.elements.isCyclic.checked,
             weekday: this.elements.isCyclic.checked ? parseInt(this.elements.weekday.value) : null,
@@ -202,6 +313,7 @@ class TaskScheduler {
             }
             this.closeModal();
             this.loadTimetable();
+            this.loadRecurringSuggestions();
             showNotification('success', 'Saved', 'Task saved successfully');
         } catch (error) {
             showNotification('danger', 'Error', error.message);

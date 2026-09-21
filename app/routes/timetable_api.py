@@ -10,11 +10,12 @@ from app.models.timetable import WeekDay
 from app.utils.routes_api_utils import is_valid_timezone ,to_utc_from_user_input 
 from app.config import TIME_PARSING_STRING ,DATE_PARSING_STRING ,TIME_DATE_SEPARATOR
 
-from app.models.timetable import WeekDay
+from app.models.timetable import Timetable ,TimetableEntry
 from app.utils.exceptions.custom_errors import (InvalidRequestData, 
                                      RecordNotFoundError
                                          )
 
+from app.utils.timezones import today_for_id, now_for
 from app.utils.schedulers import TaskScheduler
 
 
@@ -210,7 +211,7 @@ def schedule_task():
 @log_app_errors
 def manage_task(entry_id):
 
-    scheduler = TaskScheduler(session['user_id'], datetime.now())
+    scheduler = TaskScheduler(session['user_id'], now_for(session['user_id']))
     if request.method =='GET':
     
         entry = scheduler.update_task(
@@ -261,7 +262,7 @@ def manage_task(entry_id):
                 
                 duration = timedelta(minutes=duration)
                 end_time = (datetime.combine(
-                    datetime.now(),start_time) +duration).time()
+                    today_for_id(session['user_id']),start_time) +duration).time()
             else:
                 end_time = None 
 
@@ -351,7 +352,7 @@ def get_timetable_stats():
     date = request.args.get('date')
     
     if not date:
-        date = datetime.now()
+        date = datetime.combine(today_for_id(session['user_id']), time.min)
     else:
         try:
             date = datetime.strptime(date ,DATE_PARSING_STRING)
@@ -371,7 +372,7 @@ def get_timetable_stats():
 @log_app_errors
 def get_tasks_by_activity(activity_id):
     """Get all scheduled tasks for a specific activity."""
-    scheduler = TaskScheduler(session['user_id'], datetime.now())
+    scheduler = TaskScheduler(session['user_id'], now_for(session['user_id']))
     
     try:
         start_date =datetime.strptime(request.args['start_date'] ,DATE_PARSING_STRING) if 'start_date' in request.args else None
@@ -405,7 +406,7 @@ def get_tasks_to_schedule():
             raise InvalidRequestData(
                 f"Date string must mactch {DATE_PARSING_STRING}")
     else:
-        current_date = datetime.now()
+        current_date = datetime.combine(today_for_id(session['user_id']), time.min)
 
     tasks =  TaskScheduler(
         session['user_id'],current_date).get_tasks_to_schedule(
@@ -413,5 +414,99 @@ def get_tasks_to_schedule():
         )
     
     return jsonify(tasks)
+
+
+@api_bp.route("/timetable/suggestions")
+@log_app_errors
+def recurring_suggestions():
+    """Recurring-task suggestions for the Add New Task view.
+
+    Returns two complementary, mutually exclusive lists for the requested date:
+
+      scheduled_today — recurring (cyclic) tasks that already have an instance
+                        scheduled for that date (matching by sub_activity_id).
+      suggested       — recurring tasks due on that date's weekday that do not
+                        yet have an instance scheduled for it.
+
+    READ-ONLY: this endpoint never creates or modifies rows. Recurring tasks
+    whose stored weekday differs from the requested date belong to neither
+    list. Items are deduped by (sub_activity_id, start_time).
+    """
+    date_str = request.args.get('date', None)
+    if date_str:
+        try:
+            date_obj = datetime.strptime(date_str, DATE_PARSING_STRING).date()
+        except ValueError as e:
+            raise InvalidRequestData(f"Date string must match {DATE_PARSING_STRING}")
+    else:
+        date_obj = today_for_id(session['user_id'])
+
+    weekday = WeekDay(date_obj.isocalendar().weekday)
+
+    cyclic_rows = (
+        TimetableEntry.query
+        .join(Timetable)
+        .filter(
+            Timetable.user_id == session['user_id'],
+            TimetableEntry.cyclic == True,
+            TimetableEntry.weekday == weekday,
+        )
+        .all()
+    )
+
+    # Dedupe by (sub_activity_id, start_time): the same recurring task may exist
+    # as multiple cyclic rows if it was re-added on a later week.
+    seen = {}
+    for entry in cyclic_rows:
+        key = (entry.sub_activity_id, entry.start_time)
+        if key not in seen:
+            seen[key] = entry
+
+    today_tt = Timetable.query.filter_by(
+        user_id=session['user_id'], date=date_obj).first()
+    today_entries = today_tt.entries if today_tt else []
+    today_by_sub = {}
+    for entry in today_entries:
+        today_by_sub.setdefault(entry.sub_activity_id, []).append(entry)
+
+    def to_item(entry):
+        sub = entry.sub_activity
+        return {
+            "id": entry.id,
+            "activity_id": sub.activity_id,
+            "activity_name": sub.activity.name,
+            "sub_activity_id": sub.id,
+            "sub_activity_name": sub.name,
+            "start": entry.start_time.strftime("%H:%M"),
+            "end": entry.end_time.strftime("%H:%M"),
+            "duration_min": (
+                entry.end_time.hour * 60 + entry.end_time.minute
+                - entry.start_time.hour * 60 - entry.start_time.minute
+            ),
+            "weekday": int(entry.weekday) if entry.weekday is not None else None,
+            "description": entry.description or "",
+        }
+
+    scheduled_today = []
+    suggested = []
+
+    for entry in seen.values():
+        item = to_item(entry)
+        matches = today_by_sub.get(entry.sub_activity_id)
+        if matches:
+            instance = matches[0]
+            item["start"] = instance.start_time.strftime("%H:%M")
+            item["end"] = instance.end_time.strftime("%H:%M")
+            scheduled_today.append(item)
+        else:
+            suggested.append(item)
+
+    scheduled_today.sort(key=lambda x: x["start"])
+    suggested.sort(key=lambda x: x["start"])
+
+    return jsonify({
+        "scheduled_today": scheduled_today,
+        "suggested": suggested,
+    })
 
 
