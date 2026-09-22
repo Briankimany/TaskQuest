@@ -19,7 +19,7 @@ FLASK_DEBUG=1
 SECRET_KEY=change-me
 TASKQUEST_DATABASE_URL=sqlite:///C:/absolute/path/taskquest.db
 OMNIROUTE_URL=http://127.0.0.1:20128/v1
-OMNIROUTE_MODEL=taskquest-judge-google
+OMNIROUTE_MODEL=free-coders
 ```
 
 Run:
@@ -39,8 +39,9 @@ Point your browser at `http://127.0.0.1:5055`.
 | `SECRET_KEY` | Flask sessions. Set a long random value in production. | `dev` |
 | `FLASK_DEBUG` | `1` shows Werkzeug tracebacks, `0` renders friendly 500 pages | `0` |
 | `OMNIROUTE_URL` | Base URL of the LLM/OpenAI-compatible proxy used for penalty & late-task evaluation | from `app/seed/data/assistant/provider_config.yaml` |
-| `OMNIROUTE_MODEL` | Model (or OmniRoute combo id) sent to the proxy | `taskquest-judge-google` (see `provider_config.yaml`) |
-| `OMNIROUTE_API_KEY` | Optional API key (Bearer token) sent to the proxy | — |
+| `OMNIROUTE_MODEL` | Model (or OmniRoute combo id) sent to the proxy | `free-coders` (see `provider_config.yaml`) |
+| `OMNIROUTE_API_KEY` | Bearer key for the proxy on Windows/dev boxes | — |
+| `OMNIROUTE_TASKQUEST_API_KEY` | Bearer key for the proxy on Linux/homelab | — |
 | `APP_NAME` | Brand name shown in templates | `TaskQuest` |
 | `APP_TAGLINE` | Tagline shown on the landing page | `A framework for intentional living` |
 | `TESTING_KEY` | Auto-generated on first boot if absent | random UUID |
@@ -50,11 +51,12 @@ Point your browser at `http://127.0.0.1:5055`.
 > If `OMNIROUTE_URL` is unreachable, the app never hangs: penalty/late-task
 > evaluation falls back instantly to deterministic multipliers.
 
-`OMNIROUTE_MODEL` is an OmniRoute **combo** id (e.g. `taskquest-judge-google`,
-which routes to a Google Gemini model). The combo's provider connection is
+`OMNIROUTE_MODEL` is an OmniRoute **combo** id (e.g. `free-coders`, which routes
+to a freelancer-tier model combo). The combo's provider connection is
 authenticated server-side inside OmniRoute, so TaskQuest sends no per-request
-session id — only an optional `OMNIROUTE_API_KEY` Bearer token (see
-`app/seed/data/assistant/provider_config.yaml`).
+session id. The gateway does however require a Bearer key, read from a
+platform-aware env var (Windows/`OMNIROUTE_API_KEY`, Linux/`OMNIROUTE_TASKQUEST_API_KEY`);
+see `app/utils/managers/ai_assistant.py` and `provider_config.yaml`.
 
 ## 3. PythonAnywhere (free tier)
 
