@@ -73,10 +73,6 @@ if [ "${1:-}" = "--pull" ]; then
 fi
 
 # ── 3. Migrations ──────────────────────────────────────────────────────────
-log "running flask db upgrade"
-"$VENV_FLASK" db upgrade || { log "migration failed"; restore_and_restart; }
-
-# ── 4. Restart + verify with rollback ──────────────────────────────────────
 restore_and_restart() {
     log "ROLLING BACK to $BEFORE"
     if [ "$(git rev-parse --short HEAD 2>/dev/null || echo untracked)" != "$BEFORE" ]; then
@@ -89,6 +85,22 @@ restore_and_restart() {
     exit 1
 }
 trap 'restore_and_restart' ERR
+
+# Adopt an existing (create_all-created) DB: stamp the baseline the schema
+# matches, then upgrade only what the repo added since.
+DB_PATH="$APP_DIR/instance/rpg_system.db"
+if [ -f "$DB_PATH" ] && ! sqlite3 "$DB_PATH" "SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version';" | grep -q alembic_version; then
+    if sqlite3 "$DB_PATH" "PRAGMA table_info('user');" | grep -qiw timezone; then
+        log "adopting existing DB at head (a1c2e3f4b5d6)"
+        "$VENV_FLASK" db stamp head
+    else
+        log "adopting existing DB at initial baseline (1fb96593ce2d)"
+        "$VENV_FLASK" db stamp 1fb96593ce2d
+    fi
+fi
+
+log "running flask db upgrade"
+"$VENV_FLASK" db upgrade || { log "migration failed"; restore_and_restart; }
 
 log "restarting $SERVICE"
 svc restart "$SERVICE"
