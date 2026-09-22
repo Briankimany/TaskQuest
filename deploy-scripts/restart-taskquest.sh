@@ -87,9 +87,11 @@ restore_and_restart() {
 trap 'restore_and_restart' ERR
 
 # Adopt an existing (create_all-created) DB: stamp the baseline the schema
-# matches, then upgrade only what the repo added since.
+# matches, then upgrade only what the repo added since. A present-but-empty
+# alembic_version table (left by a failed first run) counts as unadopted.
 DB_PATH="$APP_DIR/instance/rpg_system.db"
-if [ -f "$DB_PATH" ] && ! sqlite3 "$DB_PATH" "SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version';" | grep -q alembic_version; then
+CUR_STAMP="$(sqlite3 "$DB_PATH" "SELECT version_num FROM alembic_version;" 2>/dev/null | head -n 1)"
+if [ -z "$CUR_STAMP" ]; then
     if sqlite3 "$DB_PATH" "PRAGMA table_info('user');" | grep -qiw timezone; then
         log "adopting existing DB at head (a1c2e3f4b5d6)"
         "$VENV_FLASK" db stamp head
@@ -97,6 +99,8 @@ if [ -f "$DB_PATH" ] && ! sqlite3 "$DB_PATH" "SELECT name FROM sqlite_master WHE
         log "adopting existing DB at initial baseline (1fb96593ce2d)"
         "$VENV_FLASK" db stamp 1fb96593ce2d
     fi
+else
+    log "DB already stamped at $CUR_STAMP"
 fi
 
 log "running flask db upgrade"
