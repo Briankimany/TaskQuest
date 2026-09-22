@@ -10,13 +10,14 @@
 #   5. Health-check the app; on failure roll back DB + code and restart again.
 #
 # Designed for /home/ajay/apps/taskquest (git-linked repo, branch `dev`).
-# systemctl needs sudo: run this script WITH sudo, or as a user authorized
-# for the unit.
+# systemctl needs root: run the script as root, OR set TASKQUEST_SUDO_PW to a
+# password and the script elevates only the systemctl calls (DB ops stay the
+# calling user, so DB/.env ownership is untouched).
 #
 # Usage:
-#   sudo bash deploy-scripts/restart-taskquest.sh            # keep current HEAD
-#   sudo bash deploy-scripts/restart-taskquest.sh --pull      # git pull --ff-only first
-#   sudo env DEPLOY_BRANCH=dev bash deploy-scripts/restart-taskquest.sh --pull
+#   sudo bash deploy-scripts/restart-taskquest.sh                  # keep HEAD
+#   sudo bash deploy-scripts/restart-taskquest.sh --pull           # git pull first
+#   TASKQUEST_SUDO_PW=... bash deploy-scripts/restart-taskquest.sh --pull
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/home/ajay/apps/taskquest}"
@@ -25,6 +26,23 @@ SERVICE="${SERVICE:-taskquest.service}"
 BRANCH="${DEPLOY_BRANCH:-dev}"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:5055/}"
 VENV_FLASK="${VENV_FLASK:-$APP_DIR/venv/bin/flask}"
+
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+elif [ -n "${TASKQUEST_SUDO_PW:-}" ]; then
+    SUDO="sudo -S"
+else
+    echo "needs root to restart $SERVICE: run with sudo, or export TASKQUEST_SUDO_PW" >&2
+    exit 2
+fi
+
+svc() {  # run a systemctl command (elevated only when needed)
+    if [ -n "$SUDO" ]; then
+        echo "$TASKQUEST_SUDO_PW" | $SUDO systemctl "$@"
+    else
+        systemctl "$@"
+    fi
+}
 
 cd "$APP_DIR"
 TS="$(date +%Y%m%d-%H%M%S)"
@@ -67,13 +85,13 @@ restore_and_restart() {
     [ -f "$BACKUP_DIR/rpg_system.db" ] && cp -p "$BACKUP_DIR/rpg_system.db" instance/rpg_system.db
     [ -f "$BACKUP_DIR/env.backup" ] && cp -p "$BACKUP_DIR/env.backup" .env
     log "restarting service after rollback"
-    systemctl restart "$SERVICE" || true
+    svc restart "$SERVICE" || true
     exit 1
 }
 trap 'restore_and_restart' ERR
 
 log "restarting $SERVICE"
-systemctl restart "$SERVICE"
+svc restart "$SERVICE"
 
 log "waiting for $HEALTH_URL"
 for i in $(seq 1 30); do
