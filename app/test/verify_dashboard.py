@@ -198,17 +198,24 @@ def main():
     checks["client re-sorts rows to server order"] = (
         "grpg-missions-list" in js and "data-mission-id=\"" in js and "appendChild" in js)
 
-    # ── Scrollable missions list, no VIEW ALL toggle ──
+    # ── Scrollable missions list, no VIEW ALL toggle, VISIBLE thin scrollbar ──
     checks["view-all toggle removed"] = (
         "grpg-missions-toggle" not in missions_tpl and "grpg-missions-toggle" not in js and
         "applyMissionsCollapse" not in js and "VIEW ALL" not in missions_tpl)
     checks["hidden-row gating gone"] = (
         "grpg-missions-hidden-row" not in missions_tpl and
         "grpg-missions-hidden-row" not in layout and "grpg-missions-hidden-row" not in js)
-    checks["mission list scrolls with hidden bars"] = (
+    checks["mission list fills card with visible thin scrollbar"] = (
         "grpg-missions-scroll" in missions_tpl and
-        "scrollbar-width: none" in layout and "-webkit-scrollbar" in layout and
-        "display: none" in fragment(layout, "grpg-missions-scroll::-webkit-scrollbar", 200))
+        "display: flex" in fragment(layout, "[data-theme=\"garden-rpg\"] .grpg-missions-panel {", 240) and
+        "flex-direction: column" in fragment(layout, "[data-theme=\"garden-rpg\"] .grpg-missions-panel {", 240) and
+        "max-height: none" in fragment(layout, "#grpg-missions-list.grpg-missions-scroll {", 260) and
+        "overflow-y: auto" in fragment(layout, "#grpg-missions-list.grpg-missions-scroll {", 260) and
+        "overscroll-behavior: contain" in layout and
+        "scrollbar-width: thin" in layout)
+    checks["no hidden scrollbar rules remain for missions list"] = (
+        "scrollbar-width: none" not in fragment(layout, "#grpg-missions-list.grpg-missions-scroll {", 260) and
+        "display: none" not in fragment(layout, "grpg-missions-scroll::-webkit-scrollbar", 200))
 
     # ── Dashboard JS ──
     checks["JS chart cyan fallback"] = "#1CAED5" in js
