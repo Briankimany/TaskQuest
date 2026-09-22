@@ -257,11 +257,34 @@ class TaskScheduler {
         this.setPanelOpen(true);
     }
 
-    openEditModal(task) {
+    async openEditModal(task) {
         this.elements.panelTitle.textContent = 'Edit Task';
         this.elements.taskForm.dataset.taskId = task.id;
-        this.elements.subActivitySelect.value = task.sub_activity_id || '';
+
+        // Pin the parent activity (append its option if not already loaded),
+        // then rebuild the sub-activity dropdown for that parent, so the
+        // stored sub-activity — and its description — are pre-populated.
+        var activityOpt = this.elements.activitySelect.querySelector('option[value="' + task.activity_id + '"]');
+        if (!activityOpt) {
+            var opt = document.createElement('option');
+            opt.value = task.activity_id;
+            opt.textContent = task.parent_activity_name || 'Activity';
+            this.elements.activitySelect.appendChild(opt);
+        }
+        this.elements.activitySelect.value = String(task.activity_id);
+        await this.loadSubActivities(task.activity_id);
+        var subOpt = this.elements.subActivitySelect.querySelector('option[value="' + task.sub_activity_id + '"]');
+        if (!subOpt) {
+            var opt2 = document.createElement('option');
+            opt2.value = task.sub_activity_id;
+            opt2.textContent = task.activity_name || 'Sub-activity';
+            this.elements.subActivitySelect.appendChild(opt2);
+        }
+        this.elements.subActivitySelect.value = String(task.sub_activity_id);
+
         this.elements.startTime.value = task.start_time.substring(0, 5);
+        this.elements.duration.value = task.task_duration != null ? task.task_duration : '';
+        this.elements.description.value = task.description || '';
         if (!task.task_duration && task.start_time && task.end_time) {
             var start = new Date('2000-01-01T' + task.start_time);
             var end = new Date('2000-01-01T' + task.end_time);

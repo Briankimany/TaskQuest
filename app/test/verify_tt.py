@@ -172,6 +172,23 @@ def main():
         "panel-close-btn" in js and "closeModal" in js and
         "addTaskBtn.addEventListener" in js)
 
+    # ── Edit prefill: to_dict must expose the data the panel needs, and
+    #    openEditModal must pin the parent activity + reload sub-activities ──
+    tt_model = read(os.path.join(REPO, "app", "models", "timetable.py"))
+    checks["to_dict exposes sub_activity_id"] = '"sub_activity_id": self.sub_activity_id' in tt_model
+    checks["to_dict exposes activity_id"] = '"activity_id": self.sub_activity.activity_id' in tt_model
+    checks["to_dict exposes parent_activity_name"] = '"parent_activity_name"' in tt_model and ".activity.name" in tt_model
+    checks["to_dict exposes task_duration minutes"] = '"task_duration"' in tt_model and "start_time.hour * 60" in tt_model
+    checks["to_dict exposes description"] = '"description": self.description or ""' in tt_model
+    checks["openEditModal pins parent activity"] = (
+        "this.elements.activitySelect.value = String(task.activity_id)" in js)
+    checks["openEditModal reloads sub-activities"] = (
+        "await this.loadSubActivities(task.activity_id)" in js and
+        "this.elements.subActivitySelect.value = String(task.sub_activity_id)" in js)
+    checks["openEditModal prefills description"] = (
+        "this.elements.description.value = task.description || ''" in js and
+        "this.elements.activitySelect.querySelector('option[value=\"' + task.activity_id" in js)
+
     failed = [name for name, ok in checks.items() if not ok]
     for name in checks:
         tag = "PASS" if checks[name] else "FAIL"

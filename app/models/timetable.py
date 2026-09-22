@@ -59,12 +59,22 @@ class TimetableEntry(db.Model):
     def __repr__(self):
         return f'<TTEntry {self.sub_activity.name} at {self.start_time} exp {self.exp_gain}>'
     def to_dict(self):
+        start_min = self.start_time.hour * 60 + self.start_time.minute
+        end_min = self.end_time.hour * 60 + self.end_time.minute
+        # A span that ends at/before it starts crosses midnight (cyclic tasks).
+        if end_min <= start_min:
+            end_min += 24 * 60
         return {
-            "id":self.id,
-            "timetable_id":self.timetable_id,
-            "start_time":str(self.start_time),
-            "end_time":str(self.end_time), 
-            "activity_name":self.sub_activity.name,
-            'cyclic':self.cyclic,
-            'weekday':self.weekday
+            "id": self.id,
+            "timetable_id": self.timetable_id,
+            "sub_activity_id": self.sub_activity_id,
+            "activity_id": self.sub_activity.activity_id,
+            "start_time": str(self.start_time),
+            "end_time": str(self.end_time),
+            "activity_name": self.sub_activity.name,
+            "parent_activity_name": self.sub_activity.activity.name,
+            "task_duration": end_min - start_min,
+            "description": self.description or "",
+            'cyclic': self.cyclic,
+            'weekday': int(self.weekday) if self.weekday is not None else None
         }
