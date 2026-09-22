@@ -1,18 +1,21 @@
 """
-OmniRoute authentication probe — does the gateway need x-opencode-session?
+OmniRoute authentication probe — is a Bearer key required (and is a session)?
 
-Goal: decide, with evidence, whether requests to the OmniRoute gateway must
-carry the ``x-opencode-session`` header (and/or an ``Authorization: Bearer``
-token). Every case below issues the SAME minimal judge-style chat completion
-against the SAME single combo id, changing only the HTTP headers, so the only
-variable under test is authentication. No retries, no fallbacks, no silent
-dedup — each row is one raw request and its exact outcome.
+Goal: decide, with evidence, what the OmniRoute gateway requires for a chat
+completion. The gateway now enforces ``Authorization: Bearer`` (no key -> 401
+"Authentication required"); a key is read platform-aware exactly like the
+runtime (Windows -> OMNIROUTE_API_KEY, Linux -> OMNIROUTE_TASKQUEST_API_KEY).
+Every case below issues the SAME minimal judge-style chat completion against
+the SAME single combo id, changing only the HTTP headers, so the only variable
+under test is authentication. No retries, no fallbacks, no silent dedup — each
+row is one raw request and its exact outcome.
 
-Combo under test: ``ultra-free`` ONLY (as requested). No other model/combo is
-ever sent. The effective combo can be overridden via OMNIROUTE_MODEL, and a
-loud warning is printed if you do.
+Combo under test: ``free-coders`` ONLY. No other model/combo is ever sent.
+The effective combo can be overridden via OMNIROUTE_MODEL, and a loud warning
+is printed if you do.
 
-Run it with the OmniRoute gateway up (default http://127.0.0.1:20128/v1):
+Run it with the OmniRoute gateway up (default http://127.0.0.1:20128/v1;
+point it at a live gateway with OMNIROUTE_URL, e.g. http://ajay-hp.local:20128/v1):
 
     venv\\Scripts\\python.exe app\\test\\probe_omniroute_auth.py
     venv\\Scripts\\python.exe app\\test\\probe_omniroute_auth.py --cases 1,5,7
@@ -43,8 +46,11 @@ except Exception:
 REPO = Path(__file__).resolve().parents[2]
 
 # ── Combo under test (the ONLY model ever sent) ─────────────────────────────
-MODEL = os.getenv("OMNIROUTE_MODEL", "ultra-free")
+MODEL = os.getenv("OMNIROUTE_MODEL", "free-coders")
 BASE_URL = (os.getenv("OMNIROUTE_URL") or "http://127.0.0.1:20128/v1").rstrip("/")
+
+# Platform-aware key var, mirroring ai_assistant._resolve_api_key_env().
+BEARER_ENV = "OMNIROUTE_API_KEY" if os.name == "nt" else "OMNIROUTE_TASKQUEST_API_KEY"
 
 PROMPT_SYSTEM = "You are a strict but fair system judge. Reply with JSON only."
 PROMPT_USER = ('Classify this skip reason quality. Return JSON only: '
@@ -235,17 +241,17 @@ def main() -> int:
     else:
         wanted = None
 
-    if MODEL != "ultra-free":
-        print(f"!! WARNING: OMNIROUTE_MODEL is set to '{MODEL}', not 'ultra-free'.\n"
+    if MODEL != "free-coders":
+        print(f"!! WARNING: OMNIROUTE_MODEL is set to '{MODEL}', not 'free-coders'.\n"
               "   The probe will send THIS combo only (never any other).")
 
     real = args.session or discover_real_session_id()
     fake = str(uuid.uuid4())
-    bearer_env = os.getenv("OMNIROUTE_API_KEY")
+    bearer_env = os.getenv(BEARER_ENV)
     if bearer_env:
-        print(f"OMNIROUTE_API_KEY found: {_mask_token(bearer_env)}")
+        print(f"{BEARER_ENV} found: {_mask_token(bearer_env)}")
     else:
-        print("OMNIROUTE_API_KEY not set -> probes use 'not-needed' or no Bearer at all")
+        print(f"{BEARER_ENV} not set -> probes use 'not-needed' or no Bearer at all")
 
     print(f"gateway        : {BASE_URL}/chat/completions")
     print(f"combo (only)   : {MODEL}")
@@ -359,7 +365,7 @@ def main() -> int:
         print("    or pick a combo whose backing provider is authenticated.")
     else:
         print("  -> No case yielded a valid response. The gateway is either down (all show ---/")
-        print("    TIMEOUT), or the combo 'ultra-free' does not exist / is not routable there.")
+        print("    TIMEOUT), or the combo 'free-coders' does not exist / is not routable there.")
         print("    Check OmniRoute is running on", BASE_URL, "and that the combo is enabled.")
     print()
     print("In the app, when every request fails this probe the runtime does NOT surface raw")

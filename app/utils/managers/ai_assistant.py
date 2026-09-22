@@ -10,9 +10,13 @@ Transport config comes from ``provider_config.yaml`` (base_url, default_model,
 timeout, retries, api-key env var name). Provider exceptions are abstracted
 into ``AssistantError`` so callers never touch SDK exception classes.
 
-No per-request auth is attached beyond an optional ``OMNIROUTE_API_KEY``
-Bearer token: OmniRoute combos carry their own provider connection auth
-server-side, so a session id header is neither required nor sent.
+No per-request auth is attached beyond a Bearer token: OmniRoute combos carry
+their own provider connection auth server-side, but the gateway now REQUIRES a
+valid ``Authorization: Bearer`` key. The key is read platform-aware so the same
+config works on both machines:
+  - Windows/dev box   -> ``OMNIROUTE_API_KEY``            (local ``.env``)
+  - Linux/homelab     -> ``OMNIROUTE_TASKQUEST_API_KEY``  (server ``.env``)
+A session id header is neither required nor sent.
 """
 from pathlib import Path
 import os
@@ -80,8 +84,23 @@ class AIAssistant:
             self.logger.error("Provider config load failed: %s", str(e))
             raise AssistantError("Provider configuration loading failed") from e
 
+    def _resolve_api_key_env(self) -> str:
+        """Env var holding the OmniRoute Bearer key, platform-aware.
+
+        Windows (dev) uses ``OMNIROUTE_API_KEY``; Linux (homelab) uses
+        ``OMNIROUTE_TASKQUEST_API_KEY``. The provider config's ``api_key_env``
+        is a fallback when the platform var is unset in the environment.
+        """
+        preferred = "OMNIROUTE_API_KEY" if os.name == "nt" else "OMNIROUTE_TASKQUEST_API_KEY"
+        if os.getenv(preferred):
+            return preferred
+        configured = self.config.get("api_key_env")
+        if configured and os.getenv(configured):
+            return configured
+        return preferred
+
     def _build_client(self):
-        api_key = os.getenv(self.config.get("api_key_env", ""), None) or "not-needed"
+        api_key = os.getenv(self._resolve_api_key_env()) or "not-needed"
         base_url = os.getenv("OMNIROUTE_URL") or self.config.get("base_url", "http://127.0.0.1:20128/v1")
         try:
             return OpenAI(

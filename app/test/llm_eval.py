@@ -13,7 +13,7 @@ Usage:
     python app\\test\\llm_eval.py --judge 57 --uid 1
     python app\\test\\llm_eval.py --dispute 3 --uid 1 --reason "That penalty was too harsh."
 
-Set OMNIROUTE_MODEL (e.g. taskquest-judge-google) or pass --model to target a model.
+Set OMNIROUTE_MODEL (e.g. free-coders) or pass --model to target a model.
 """
 from pathlib import Path
 import sys
