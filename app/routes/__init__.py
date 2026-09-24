@@ -10,4 +10,6 @@ from .views import views_bp
 from .completion_api import api_bp
 from .judge_api import api_bp
 from . import dashboard_api  # noqa: F401
+from . import journal_api  # noqa: F401
+from . import chat_api  # noqa: F401
 from .assistant import assistant

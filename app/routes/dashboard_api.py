@@ -14,6 +14,7 @@ from app.utils.managers import UserManager
 from app.utils.timezones import now_for, today_for_id
 from app.utils.assets.dashboard_payloads import (
     build_missions, build_activity, build_judge_reviews,
+    build_level_progress,
 )
 
 
@@ -57,6 +58,7 @@ def missions_today():
         "missions": missions,
         "total": len(missions),
         "user_xp": user.total_exp,
+        "profile": build_level_progress(user, today_for_id(user.id)),
     }), 200
 
 

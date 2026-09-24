@@ -105,6 +105,11 @@
                             <i class="lucide-bar-chart-3"></i> Stats
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'views.chat' %}active{% endif %}" href="{{ url_for('views.chat') }}">
+                            <i class="lucide-message-square"></i> Chat
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
                 <div class="d-flex align-items-center gap-2">

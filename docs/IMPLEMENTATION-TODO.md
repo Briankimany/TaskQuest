@@ -71,3 +71,5 @@ Guide: `docs/coding-agent-guide.md` | Image brief: `docs/garden-image-generation
 ## Not yet scoped
 - Journal feature (needed for `linked_attr`)
 - Focus Mode (post-H1–H9 hardening)
+- MCP server between the app and the AI assistant — expose scheduled tasks, completions, and stats as tools instead of a static `<context>` block (enables assistant-driven scheduling/lookups)
+- Multi-day recurrence in timetable entry scheduling — when adding a tt entry on the timetable page, select multiple days the task repeats on (e.g. Morning Routine on Mon/Wed/Fri), and have it suggested on each of those days; extends the single-weekday `cyclic` mechanism

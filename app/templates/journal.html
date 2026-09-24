@@ -2,6 +2,51 @@
 
 {% block title %}Journal — {{ APP_NAME }}{% endblock %}
 
+{% block styles %}
+<style>
+  .journal-wrap { max-width: 860px; margin: 0 auto; }
+  .journal-editor { display: flex; flex-direction: column; gap: 10px; }
+  .journal-editor input[type="text"],
+  .journal-editor textarea {
+    width: 100%; background: var(--input-bg, rgba(255,255,255,0.04));
+    color: var(--text-primary); border: 1px solid var(--border, rgba(255,255,255,0.12));
+    border-radius: var(--radius-sm, 8px); padding: 8px 12px; font-size: 14px;
+  }
+  .journal-editor textarea { min-height: 160px; resize: vertical; font-family: inherit; line-height: 1.5; }
+  .journal-date-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .journal-date-row input[type="date"] {
+    background: var(--input-bg, rgba(255,255,255,0.04)); color: var(--text-primary);
+    border: 1px solid var(--border, rgba(255,255,255,0.12)); border-radius: var(--radius-sm, 8px);
+    padding: 6px 10px; font-size: 13px;
+  }
+  .journal-entry {
+    display: flex; flex-direction: column; gap: 4px; padding: 14px 16px;
+    border: 1px solid var(--border, rgba(255,255,255,0.12)); border-radius: var(--radius-sm, 8px);
+    background: var(--bg-surface, rgba(255,255,255,0.03));
+  }
+  .journal-entry-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .journal-entry-date { font-size: 12px; color: var(--text-muted, #8a94a6); font-variant-numeric: tabular-nums; }
+  .journal-entry-title { font-weight: 600; font-size: 15px; color: var(--text-primary); }
+  .journal-entry-body { white-space: pre-wrap; font-size: 13px; line-height: 1.55; color: var(--text-secondary, #c6cdd8); }
+  .journal-entry-actions { display: flex; gap: 8px; margin-top: 6px; }
+  .journal-entry-actions button {
+    background: none; border: none; color: var(--text-muted, #8a94a6); cursor: pointer;
+    font-size: 12px; padding: 2px 6px; border-radius: 6px;
+  }
+  .journal-entry-actions button:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+  .journal-empty { padding: 24px; text-align: center; color: var(--text-muted, #8a94a6); font-size: 13px; }
+  .journal-month-nav { display: flex; align-items: center; gap: 12px; justify-content: center; margin: 14px 0 4px; }
+  .journal-month-nav button {
+    background: none; border: 1px solid var(--border, rgba(255,255,255,0.12)); color: var(--text-primary);
+    border-radius: var(--radius-sm, 8px); padding: 4px 12px; cursor: pointer; font-size: 13px;
+  }
+  .journal-month-label { font-size: 14px; font-weight: 600; color: var(--text-primary); min-width: 110px; text-align: center; }
+  .journal-saved-hint { font-size: 12px; color: var(--text-muted, #8a94a6); min-height: 16px; }
+  .journal-edit-cancel { display: none; }
+  .grpg-solid-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="grpg-profile" role="main">
   <div class="grpg-profile-header">
@@ -11,16 +56,202 @@
     <div>
       <h1 style="margin:0;font-size:24px;color:var(--text-primary);">Journal</h1>
       <p style="margin:2px 0 0;color:var(--text-secondary);font-size:12px;">Records, reflections, and history, {{ user.username }}.</p>
-      <p style="margin:2px 0 0;color:var(--text-muted);font-size:11px;">Your day-by-day log and reflections will live here.</p>
+      <p style="margin:2px 0 0;color:var(--text-muted);font-size:11px;">One entry per day — a title and your reflections.</p>
     </div>
   </div>
 
-  <div class="grpg-panel" style="margin-top:16px;">
-    <h2 class="grpg-panel-title">Under construction</h2>
-    <p style="font-size:12px;color:var(--text-muted);">
-      The Journal page is coming soon. For now, head back to the dashboard.
-    </p>
-    <a href="{{ url_for('views.dashboard') }}" class="grpg-solid-btn" style="margin-top:8px;">&larr; Back to Dashboard</a>
+  <div class="journal-wrap">
+    <!-- Editor -->
+    <div class="grpg-panel" style="margin-top:16px;">
+      <div class="journal-editor" id="journal-editor">
+        <input type="text" id="je-title" placeholder="Title (optional)" maxlength="200">
+        <textarea id="je-content" placeholder="Write today's entry…" maxlength="20000"></textarea>
+        <div class="journal-date-row">
+          <input type="date" id="je-date">
+          <button type="button" id="je-save" class="grpg-solid-btn">Save Entry</button>
+          <button type="button" id="je-cancel" class="journal-edit-cancel grpg-solid-btn" style="display:none;">Cancel Edit</button>
+          <span class="journal-saved-hint" id="je-hint"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month navigation -->
+    <div class="journal-month-nav">
+      <button type="button" id="jm-prev" aria-label="Previous month">&larr;</button>
+      <span class="journal-month-label" id="jm-label"></span>
+      <button type="button" id="jm-next" aria-label="Next month">&rarr;</button>
+    </div>
+
+    <!-- Entries -->
+    <div id="journal-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <div id="journal-loading" class="journal-empty" style="display:none;">Loading entries…</div>
   </div>
 </div>
+
+<script>
+(function () {
+  var state = { year: null, month: null, editingId: null };
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function nowLocal() {
+    var d = new Date();
+    return { year: d.getFullYear(), month: d.getMonth() + 1 };
+  }
+  function monthKey() { return state.year + '-' + pad(state.month); }
+
+  function hint(msg, isError) {
+    var el = document.getElementById('je-hint');
+    el.textContent = msg;
+    el.style.color = isError ? 'var(--accent-danger, #f0555c)' : 'var(--text-muted, #8a94a6)';
+    if (msg) setTimeout(function () { if (el.textContent === msg) el.textContent = ''; }, 4000);
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function fetchJson(url, options) {
+    return fetch(url, options).then(function (res) {
+      if (res.status === 204) return null;
+      return res.json().then(function (d) { return { ok: res.ok, data: d }; });
+    }).catch(function () { return { ok: false, data: { msg: 'Network error' } }; });
+  }
+
+  function renderList(entries) {
+    var list = document.getElementById('journal-list');
+    list.innerHTML = '';
+    if (!entries.length) {
+      var empty = document.createElement('div');
+      empty.className = 'journal-empty';
+      empty.textContent = 'No entries for ' + monthKey() + '. Write one above.';
+      list.appendChild(empty);
+      return;
+    }
+    entries.forEach(function (e) {
+      var wrap = document.createElement('div');
+      wrap.className = 'journal-entry';
+
+      var head = document.createElement('div');
+      head.className = 'journal-entry-head';
+
+      var left = document.createElement('div');
+      var title = document.createElement('div');
+      title.className = 'journal-entry-title';
+      title.textContent = e.title || 'Untitled';
+      left.appendChild(title);
+      var meta = document.createElement('div');
+      meta.className = 'journal-entry-date';
+      meta.textContent = e.entry_date;
+      left.appendChild(meta);
+      head.appendChild(left);
+
+      var actions = document.createElement('div');
+      actions.className = 'journal-entry-actions';
+      var editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', function () { startEdit(e); });
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', function () { deleteEntry(e); });
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      head.appendChild(actions);
+
+      var body = document.createElement('div');
+      body.className = 'journal-entry-body';
+      body.textContent = e.content;
+
+      wrap.appendChild(head);
+      wrap.appendChild(body);
+      list.appendChild(wrap);
+    });
+  }
+
+  function loadMonth(offset) {
+    var y = state.year, m = state.month;
+    if (offset) {
+      m += offset;
+      if (m < 1) { m = 12; y -= 1; }
+      if (m > 12) { m = 1; y += 1; }
+    }
+    state.year = y; state.month = m;
+    document.getElementById('jm-label').textContent = monthKey();
+    var loading = document.getElementById('journal-loading');
+    loading.style.display = 'block';
+    fetchJson('/api/journal?month=' + monthKey()).then(function (r) {
+      loading.style.display = 'none';
+      if (r.ok) renderList(r.data.entries || []);
+      else hint((r.data && r.data.msg) || 'Could not load entries.', true);
+    });
+  }
+
+  function startEdit(e) {
+    state.editingId = e.id;
+    document.getElementById('je-title').value = e.title || '';
+    document.getElementById('je-content').value = e.content || '';
+    document.getElementById('je-date').value = e.entry_date;
+    var saveBtn = document.getElementById('je-save');
+    saveBtn.textContent = 'Update Entry';
+    document.getElementById('je-cancel').style.display = 'inline-block';
+    document.getElementById('je-content').focus();
+  }
+
+  function resetEditor() {
+    state.editingId = null;
+    document.getElementById('je-title').value = '';
+    document.getElementById('je-content').value = '';
+    document.getElementById('je-date').value = '';
+    document.getElementById('je-save').textContent = 'Save Entry';
+    document.getElementById('je-cancel').style.display = 'none';
+  }
+
+  function deleteEntry(e) {
+    if (!window.confirm('Delete this journal entry of ' + e.entry_date + '?')) return;
+    fetchJson('/api/journal/' + e.id, { method: 'DELETE' }).then(function (r) {
+      if (r.ok) { loadMonth(0); hint('Entry deleted.'); }
+      else hint((r.data && r.data.msg) || 'Could not delete.', true);
+    });
+  }
+
+  document.getElementById('je-save').addEventListener('click', function () {
+    var title = document.getElementById('je-title').value.trim();
+    var content = document.getElementById('je-content').value.trim();
+    var date = document.getElementById('je-date').value;
+    if (!content) { hint('Entry text cannot be empty.', true); return; }
+    if (!date) { hint('Choose a date.', true); return; }
+
+    var body = JSON.stringify({ entry_date: date, title: title, content: content });
+    var url = state.editingId ? '/api/journal/' + state.editingId : '/api/journal';
+    var method = state.editingId ? 'PUT' : 'POST';
+    var btn = document.getElementById('je-save');
+    btn.disabled = true;
+    fetchJson(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: body })
+      .then(function (r) {
+        btn.disabled = false;
+        if (r.ok) {
+          resetEditor();
+          var parts = String(r.data.entry_date || date).split('-');
+          state.year = Number(parts[0]); state.month = Number(parts[1]);
+          loadMonth(0);
+          hint('Entry saved.');
+        } else {
+          hint((r.data && r.data.msg) || 'Could not save.', true);
+        }
+      });
+  });
+
+  document.getElementById('je-cancel').addEventListener('click', resetEditor);
+  document.getElementById('jm-prev').addEventListener('click', function () { loadMonth(-1); });
+  document.getElementById('jm-next').addEventListener('click', function () { loadMonth(1); });
+
+  var t = nowLocal();
+  state.year = t.year; state.month = t.month;
+  document.getElementById('je-date').value = t.year + '-' + pad(t.month) + '-' + pad(new Date().getDate());
+  loadMonth(0);
+})();
+</script>
 {% endblock %}

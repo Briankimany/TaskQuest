@@ -179,4 +179,28 @@
 
   /* ── Charts ── */
   --chart-grid: rgba(255,255,255,0.05);
+
+  /* ── Chat (Deep Chat + context side panel) ──
+     Graphite-teal family per the taskquest-chat-preview.document. */
+  --chat-page: #0d0f14;
+  --chat-panel: #151820;
+  --chat-panel-alt: #12141b;
+  --chat-border: #232733;
+  --chat-border-soft: #1c2029;
+  --chat-teal: #14b8c4;
+  --chat-teal-dim: #0ea5b8;
+  --chat-teal-soft: rgba(20, 184, 196, 0.12);
+  --chat-ai-bubble: #1e2230;
+  --chat-text: #e4e6eb;
+  --chat-text-dim: #9aa0ad;
+  --chat-text-faint: #6b7280;
+  --chat-input-bg: #1a1d26;
+  --chat-user-text: #06232a;
+  --chat-hover: #161922;
+  --chat-hover-strong: #191c25;
+  --chat-track: #0e1015;
+  --chat-scrollbar: #252a36;
+  --chat-scrollbar-hover: #2e3442;
+  --chat-danger: #e0674f;
+  --chat-gold: #e0b94f;
 }

@@ -148,6 +148,25 @@
       </div>
     </div>
   </section>
+
+  <!-- AI Chat consent -->
+  <section aria-labelledby="ai-chat-heading" class="mt-4">
+    <h3 id="ai-chat-heading" class="grpg-panel-title">AI Chat</h3>
+    <div class="grpg-panel">
+      <p class="text-muted-app" style="font-size:12px;margin:0 0 12px;">
+        Your AI companion can see the last 14 days of your tasks and judge verdicts, your recent
+        journal entries, and today's summary. This context is rebuilt for each message and never stored.
+        Revoking stops sending but keeps all chat history.
+      </p>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span id="ai-chat-state" class="text-muted-app" style="font-size:12px;margin-right:8px;"></span>
+        <button type="button" id="ai-chat-enable" class="btn-app btn-app-primary btn-app-sm"
+                {% if user.ai_chat_consented %}style="display:none;"{% endif %}>Enable AI Chat</button>
+        <button type="button" id="ai-chat-disable" class="btn-app btn-app-ghost btn-app-sm"
+                {% if not user.ai_chat_consented %}style="display:none;"{% endif %}>Revoke consent (keep history)</button>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -170,6 +189,40 @@
         })
         .catch(function (e) { feedback.textContent = 'Network error.'; feedback.style.color = 'var(--accent-danger)'; });
     });
+  })();
+</script>
+
+<script>
+  (function () {
+    var enableBtn = document.getElementById('ai-chat-enable');
+    var disableBtn = document.getElementById('ai-chat-disable');
+    var stateEl = document.getElementById('ai-chat-state');
+    if (!enableBtn || !disableBtn || !stateEl) return;
+
+    var consented = {{ 'true' if user.ai_chat_consented else 'false' }};
+    function render() {
+      stateEl.textContent = consented ? 'Consent granted — AI Chat is enabled.' : 'Consent not granted — AI Chat sends nothing.';
+    }
+    function setConsent(value, btn) {
+      btn.disabled = true;
+      fetch('/api/ai-consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ consented: value })
+      }).then(function (res) { return res.json().then(function (d) { return { ok: res.ok, d: d }; }); })
+        .then(function (r) {
+          btn.disabled = false;
+          if (!r.ok) return;
+          consented = value;
+          enableBtn.style.display = consented ? 'none' : 'inline-block';
+          disableBtn.style.display = consented ? 'inline-block' : 'none';
+          render();
+        })
+        .catch(function () { btn.disabled = false; });
+    }
+    enableBtn.addEventListener('click', function () { setConsent(true, enableBtn); });
+    disableBtn.addEventListener('click', function () { setConsent(false, disableBtn); });
+    render();
   })();
 </script>
 {% endblock %}

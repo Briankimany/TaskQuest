@@ -32,6 +32,12 @@ class User(db.Model):
     timezone = db.Column(db.String(64), nullable=False,
                          server_default='Africa/Nairobi', default='Africa/Nairobi')
 
+    # AI chat consent: while True, chat turns may be sent to the LLM provider.
+    # Revoking stops sends but keeps all stored history.
+    ai_chat_consented = db.Column(db.Boolean, nullable=False, default=False,
+                                  server_default='0')
+    ai_chat_consented_at = db.Column(db.DateTime, nullable=True)
+
     _password = db.Column('password',db.String(120), nullable=False)
 
     @property

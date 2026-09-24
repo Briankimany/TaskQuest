@@ -273,6 +273,15 @@ def journal():
     return render_template('journal.html', user=user)
 
 
+@views_bp.route('/chat')
+def chat():
+    """Render the AI chat page (consent-gated streaming chat)."""
+    user = _get_current_user()
+    if user is None:
+        return redirect(url_for('auth.login'))
+    return render_template('chat.html', user=user)
+
+
 @views_bp.route('/shop')
 def shop():
     """Render the shop page."""

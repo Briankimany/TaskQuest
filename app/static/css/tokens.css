@@ -45,6 +45,29 @@
   --badge-cha: #7B5EA7;
   --badge-dsc: #A65D57;
   --chart-grid: rgba(0,0,0,0.06);
+
+  /* ── Chat (fallback values for the default theme) ── */
+  --chat-page: #FAF9F6;
+  --chat-panel: #FFFFFF;
+  --chat-panel-alt: #F0EDE8;
+  --chat-border: #D0CCC5;
+  --chat-border-soft: #E5E2DC;
+  --chat-teal: #4A6741;
+  --chat-teal-dim: #3D5636;
+  --chat-teal-soft: rgba(74, 103, 65, 0.10);
+  --chat-ai-bubble: #F0EDE8;
+  --chat-text: #2D2D2D;
+  --chat-text-dim: #6B6B6B;
+  --chat-text-faint: #9E9E9E;
+  --chat-input-bg: #FFFFFF;
+  --chat-user-text: #FFFFFF;
+  --chat-hover: #E8E5DF;
+  --chat-hover-strong: #E8E5DF;
+  --chat-track: #E5E2DC;
+  --chat-scrollbar: #D0CCC5;
+  --chat-scrollbar-hover: #B5B0A8;
+  --chat-danger: #A65D57;
+  --chat-gold: #8B6F47;
 }
 
 [data-theme="default"][data-scheme="dark"] {
@@ -85,4 +108,27 @@
   --badge-cha: #B8A0D8;
   --badge-dsc: #E07070;
   --chart-grid: rgba(255,255,255,0.06);
+
+  /* ── Chat (fallback values for the default dark theme) ── */
+  --chat-page: #1A1A2E;
+  --chat-panel: #16213E;
+  --chat-panel-alt: #0F3460;
+  --chat-border: #3A3A5A;
+  --chat-border-soft: #2A2A4A;
+  --chat-teal: #7EC8A0;
+  --chat-teal-dim: #6BB890;
+  --chat-teal-soft: rgba(126, 200, 160, 0.12);
+  --chat-ai-bubble: #1E2D50;
+  --chat-text: #E8E6E3;
+  --chat-text-dim: #A0A0A0;
+  --chat-text-faint: #6B6B6B;
+  --chat-input-bg: #0F3460;
+  --chat-user-text: #06232A;
+  --chat-hover: #2A2A4A;
+  --chat-hover-strong: #2A2A4A;
+  --chat-track: #0F3460;
+  --chat-scrollbar: #3A3A5A;
+  --chat-scrollbar-hover: #4A4A6A;
+  --chat-danger: #E07070;
+  --chat-gold: #E0C060;
 }

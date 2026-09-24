@@ -1,0 +1,103 @@
+{% extends "base2.html" %}
+
+{% block title %}AI Chat — {{ APP_NAME }}{% endblock %}
+
+{% block styles %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat-garden-rpg.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="grpg-chat" role="main">
+  <div id="grpg-consent" class="grpg-consent" style="display:none;">
+    <div class="grpg-panel">
+      <h2 class="grpg-panel-title">AI Chat needs your consent</h2>
+      <p style="font-size:13px;color:var(--text-secondary, #c6cdd8);line-height:1.5;">
+        To reply sensibly, your AI companion is sent a slice of <strong>your own data</strong> with every
+        message — the most recent slice of:
+      </p>
+      <ul>
+        <li><strong>Recent activity</strong> — tasks completed, skipped, or partially done in the last 14 days, including judge verdicts.</li>
+        <li><strong>Journal entries</strong> — the latest ones you have written.</li>
+        <li><strong>Today's summary</strong> — today's completions, XP, streak and level.</li>
+      </ul>
+      <p style="font-size:13px;color:var(--text-secondary, #c6cdd8);line-height:1.5;">
+        This context is <strong>not stored</strong> — it is rebuilt fresh for each message and only sent to your
+        configured LLM provider (OmniRoute). You can revoke consent at any time from your profile or the chat
+        page. Revoking <strong>stops sending</strong> but <strong>keeps your entire chat history</strong>.
+      </p>
+      <button type="button" id="grpg-consent-grant" class="grpg-solid-btn">I understand — enable AI Chat</button>
+    </div>
+  </div>
+
+  <div id="grpg-chat-shell" class="grpg-chat-shell" style="display:none;">
+    <aside class="grpg-chat-sidebar">
+      <button type="button" id="grpg-new-thread" class="grpg-new-chat">New Chat</button>
+      <div id="grpg-threads" class="grpg-chat-threads" aria-label="Conversations"></div>
+      <div class="grpg-chat-sidebar-actions">
+        <span class="grpg-chat-hint" id="grpg-hint"></span>
+        <button type="button" id="grpg-provider" class="btn-app btn-app-ghost btn-app-sm" title="Check provider reachability">Check provider</button>
+        <button type="button" id="grpg-revoke" class="btn-app btn-app-ghost btn-app-sm">Disable AI Chat (keep history)</button>
+      </div>
+    </aside>
+
+    <section class="grpg-chat-main" aria-label="Chat">
+      <div class="grpg-chat-header">
+        <h1>Discipline Companion</h1>
+        <p>Streaming replies over your discipline RPG history.</p>
+      </div>
+      <deep-chat
+        id="grpg-deep-chat"
+        data-consented="{{ 'true' if user.ai_chat_consented else 'false' }}"
+        data-username="{{ user.username }}"
+        data-ai-avatar="{{ url_for('static', filename='assets/img/favicon.jpg') }}">
+      </deep-chat>
+    </section>
+
+    <aside class="grpg-chat-panel" aria-label="Today's context">
+      <section class="grpg-cp-section">
+        <h2>Today</h2>
+        <div class="grpg-cp-xp-card">
+          <div class="grpg-cp-xp-top">
+            <div class="grpg-cp-level" id="grpg-cp-level">Level <b>–</b></div>
+            <div class="grpg-cp-streak" id="grpg-cp-streak">–</div>
+          </div>
+          <div class="grpg-cp-xp-track"><div class="grpg-cp-xp-fill" id="grpg-cp-xp-fill"></div></div>
+          <div class="grpg-cp-xp-label" id="grpg-cp-xp-label">–</div>
+        </div>
+      </section>
+
+      <section class="grpg-cp-section">
+        <h2>Active Quests</h2>
+        <div class="grpg-cp-quests" id="grpg-cp-quests"></div>
+      </section>
+
+      <section class="grpg-cp-section">
+        <h2>Stats snapshot</h2>
+        <div class="grpg-cp-stats">
+          <div class="grpg-cp-stat">
+            <div class="grpg-cp-stat-num good" id="grpg-cp-done">–</div>
+            <div class="grpg-cp-stat-lbl">Tasks done today</div>
+          </div>
+          <div class="grpg-cp-stat">
+            <div class="grpg-cp-stat-num warn" id="grpg-cp-missed">–</div>
+            <div class="grpg-cp-stat-lbl">Overdue / missed</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grpg-cp-section">
+        <h2>Rest of your day</h2>
+        <div class="grpg-cp-tt" id="grpg-cp-tt"></div>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='vendor/deep-chat/deepChat.bundle.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/chat-garden-rpg.js') }}"></script>
+{% endblock %}

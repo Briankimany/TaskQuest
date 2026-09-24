@@ -16,7 +16,9 @@ valid ``Authorization: Bearer`` key. The key is read platform-aware so the same
 config works on both machines:
   - Windows/dev box   -> ``OMNIROUTE_API_KEY``            (local ``.env``)
   - Linux/homelab     -> ``OMNIROUTE_TASKQUEST_API_KEY``  (server ``.env``)
-A session id header is neither required nor sent.
+``complete()`` sends no session id; ``chat_stream()`` optionally sends
+``X-OmniRoute-Session-Id`` so the gateway's memory store can scope facts per
+conversation.
 """
 from pathlib import Path
 import os
@@ -226,3 +228,73 @@ class AIAssistant:
         if decode_error is not None:
             raise decode_error
         return None
+
+    def chat_stream(self, messages, model=None, temperature=0.7, session_id=None, retries=None):
+        """Stream a free-form chat completion.
+
+        ``messages`` is the full OpenAI-style list already assembled by the
+        caller (system context block + persisted history + newest user turn).
+        Returns a generator yielding content deltas; raises ``AssistantError``
+        if the provider is unreachable after all attempts.
+
+        Optional ``session_id`` is sent as ``X-OmniRoute-Session-Id`` so
+        OmniRoute's memory store scopes injected facts per conversation.
+        """
+        if retries is None:
+            retries = int(self.config.get("retries", 3))
+        model = model or os.getenv("OMNIROUTE_MODEL") or self.config.get("default_model")
+
+        extra_headers = {}
+        if session_id:
+            extra_headers["X-OmniRoute-Session-Id"] = str(session_id)
+
+        self.logger.debug("LLM chat stream - model=%s session=%s", model, session_id)
+
+        def _stream():
+            for attempt in range(max(1, retries)):
+                if attempt:
+                    time.sleep(0.5)
+                try:
+                    stream = self.client.chat.completions.create(
+                        messages=messages,
+                        model=model,
+                        temperature=temperature,
+                        stream=True,
+                        extra_headers=extra_headers or None,
+                    )
+                    for chunk in stream:
+                        delta = chunk.choices[0].delta if chunk.choices else None
+                        content = getattr(delta, "content", None)
+                        if content:
+                            yield content
+                    return
+
+                except (APIConnectionError, APITimeoutError) as e:
+                    self.logger.warning("LLM chat connection issue (model=%s): %s", model, e)
+                    continue
+                except APIStatusError as e:
+                    if e.status_code == 429 or e.status_code >= 500:
+                        self.logger.warning("LLM chat transient status %s (model=%s): %s", e.status_code, model, e)
+                        continue
+                    error = AssistantError(
+                        message=f"LLM chat request failed: {e}",
+                        status_code=e.status_code,
+                    )
+                    self.logger.error("LLM chat request failed: %s", e)
+                    raise error
+                except APIError as e:
+                    error = AssistantError(
+                        message=f"LLM chat request failed: {e}",
+                        status_code=getattr(e, "status_code", 500),
+                    )
+                    self.logger.error("LLM chat request failed: %s", e)
+                    raise error
+
+            self.logger.error("LLM chat unreachable after %s attempts (model=%s)", retries, model)
+            raise AssistantError(
+                message="LLM provider unreachable during chat",
+                status_code=502,
+                model=model,
+            )
+
+        return _stream()

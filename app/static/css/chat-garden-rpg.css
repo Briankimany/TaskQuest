@@ -1,0 +1,290 @@
+/* ── Chat page (Deep Chat thrift + right context panel) ─────────────────────
+   The chat always uses the preview's graphite-teal palette, regardless of the
+   app theme selected (garden-rpg / default). The tokens are re-declared on
+   .grpg-chat / .grpg-consent so light "default" themes can NOT wash the page
+   out; Deep Chat's JS props use the same var(--chat-*) and inherit them
+   through its shadow root. */
+
+.grpg-chat,
+.grpg-consent {
+  --chat-page: #0d0f14;
+  --chat-panel: #151820;
+  --chat-panel-alt: #12141b;
+  --chat-border: #232733;
+  --chat-border-soft: #1c2029;
+  --chat-teal: #14b8c4;
+  --chat-teal-dim: #0ea5b8;
+  --chat-teal-soft: rgba(20, 184, 196, 0.12);
+  --chat-ai-bubble: #1e2230;
+  --chat-text: #e4e6eb;
+  --chat-text-dim: #9aa0ad;
+  --chat-text-faint: #6b7280;
+  --chat-input-bg: #1a1d26;
+  --chat-user-text: #06232a;
+  --chat-hover: #161922;
+  --chat-hover-strong: #191c25;
+  --chat-track: #0e1015;
+  --chat-scrollbar: #252a36;
+  --chat-scrollbar-hover: #2e3442;
+  --chat-danger: #e0674f;
+  --chat-gold: #e0b94f;
+}
+
+main.container:has(.grpg-chat) {
+  max-width: none;
+  width: 100%;
+  padding-left: 20px;
+  padding-right: 20px;
+  background: var(--chat-page, #0d0f14);
+}
+
+.grpg-chat {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 96px);
+  min-height: 460px;
+  margin: 0 auto;
+  max-width: 1440px;
+  overflow: hidden;
+}
+
+.grpg-chat-shell {
+  display: grid;
+  grid-template-columns: 250px 1fr 320px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--chat-border-soft, #1c2029);
+  border-radius: var(--radius-sm, 12px);
+  background: var(--chat-panel, #151820);
+}
+
+/* ── Left: chat history rail ─────────────────────────────────────────────── */
+.grpg-chat-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 12px;
+  border-right: 1px solid var(--chat-border-soft, #1c2029);
+  background: var(--chat-page, #0d0f14);
+  min-width: 0;
+  overflow: hidden;
+}
+.grpg-new-chat {
+  flex: none;
+  width: 100%;
+  background: var(--chat-teal, #14b8c4);
+  color: var(--chat-user-text, #06232a);
+  border: none;
+  border-radius: 9px;
+  padding: 11px 14px;
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 0.15s;
+  margin-bottom: 10px;
+}
+.grpg-new-chat:hover { filter: brightness(1.08); }
+.grpg-chat-threads {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+}
+.grpg-chat-thread {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  font-size: 13.5px;
+  color: var(--chat-text-dim, #9aa0ad);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  background: none;
+  transition: background 0.15s, color 0.15s;
+}
+.grpg-chat-thread:hover { background: var(--chat-hover, #161922); color: var(--chat-text, #e4e6eb); }
+.grpg-chat-thread.active {
+  background: var(--chat-teal-soft, rgba(20, 184, 196, 0.12));
+  border-color: rgba(20, 184, 196, 0.3);
+  color: var(--chat-text, #e4e6eb);
+}
+.grpg-chat-thread-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grpg-chat-thread-count {
+  font-size: 11.5px;
+  color: var(--chat-text-faint, #6b7280);
+  background: var(--chat-input-bg, #1a1d26);
+  padding: 1px 7px;
+  border-radius: 10px;
+  flex: none;
+}
+.grpg-chat-sidebar-empty { font-size: 12px; color: var(--chat-text-faint, #6b7280); padding: 8px; text-align: center; }
+.grpg-chat-sidebar-actions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--chat-border-soft, #1c2029);
+  padding-top: 10px;
+}
+.grpg-chat-sidebar-actions button { width: 100%; font-size: 12.5px; text-align: left; }
+.grpg-chat-hint { font-size: 11px; color: var(--chat-text-faint, #6b7280); min-height: 14px; }
+
+/* ── Center: chat column ─────────────────────────────────────────────────── */
+.grpg-chat-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--chat-panel, #151820);
+}
+.grpg-chat-header {
+  flex: none;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--chat-border-soft, #1c2029);
+}
+.grpg-chat-header h1 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 3px;
+  color: var(--chat-text, #e4e6eb);
+}
+.grpg-chat-header p { margin: 0; font-size: 13px; color: var(--chat-text-faint, #6b7280); }
+
+/* Fill the column — Deep Chat content sizing is applied from JS. */
+.grpg-chat-main deep-chat {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+/* ── Right: context side panel ───────────────────────────────────────────── */
+.grpg-chat-panel {
+  width: 320px;
+  flex: none;
+  overflow-y: auto;
+  padding: 22px 20px;
+  background: var(--chat-panel-alt, #12141b);
+  border-left: 1px solid var(--chat-border-soft, #1c2029);
+}
+.grpg-chat-panel h2 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--chat-text-faint, #6b7280);
+  margin: 0 0 14px;
+}
+.grpg-cp-section { margin-bottom: 26px; }
+.grpg-cp-section:last-child { margin-bottom: 0; }
+
+.grpg-cp-xp-card {
+  background: var(--chat-panel, #151820);
+  border: 1px solid var(--chat-border-soft, #1c2029);
+  border-radius: 12px;
+  padding: 16px;
+}
+.grpg-cp-xp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.grpg-cp-level {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--chat-text, #e4e6eb);
+}
+.grpg-cp-level b { color: var(--chat-teal, #14b8c4); }
+.grpg-cp-streak { font-size: 12.5px; color: var(--chat-gold, #e0b94f); display: flex; align-items: center; gap: 4px; }
+.grpg-cp-xp-track { height: 8px; background: var(--chat-track, #0e1015); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+.grpg-cp-xp-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--chat-teal-dim, #0ea5b8), var(--chat-teal, #14b8c4));
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+.grpg-cp-xp-label { font-size: 11.5px; color: var(--chat-text-faint, #6b7280); }
+
+.grpg-cp-quests { display: flex; flex-direction: column; gap: 8px; }
+.grpg-cp-quest {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  background: var(--chat-panel, #151820);
+  border: 1px solid var(--chat-border-soft, #1c2029);
+  border-radius: 10px;
+}
+.grpg-cp-check {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid var(--chat-border, #232733);
+  flex: none;
+  margin-top: 1px;
+  position: relative;
+}
+.grpg-cp-check.done { background: var(--chat-teal, #14b8c4); border-color: var(--chat-teal, #14b8c4); }
+.grpg-cp-check.done::after {
+  content: "";
+  position: absolute;
+  left: 4px; top: 1px;
+  width: 5px; height: 9px;
+  border: solid var(--chat-user-text, #06232a);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.grpg-cp-quest-text { flex: 1; min-width: 0; }
+.grpg-cp-quest-title { font-size: 13.5px; color: var(--chat-text, #e4e6eb); margin-bottom: 2px; }
+.grpg-cp-quest-title.done { color: var(--chat-text-faint, #6b7280); text-decoration: line-through; }
+.grpg-cp-quest-meta { font-size: 11.5px; color: var(--chat-text-faint, #6b7280); }
+.grpg-cp-empty { font-size: 12px; color: var(--chat-text-faint, #6b7280); }
+
+.grpg-cp-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grpg-cp-stat {
+  background: var(--chat-panel, #151820);
+  border: 1px solid var(--chat-border-soft, #1c2029);
+  border-radius: 10px;
+  padding: 12px;
+}
+.grpg-cp-stat-num { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 700; font-size: 19px; color: var(--chat-text, #e4e6eb); }
+.grpg-cp-stat-num.warn { color: var(--chat-danger, #e0674f); }
+.grpg-cp-stat-num.good { color: var(--chat-teal, #14b8c4); }
+.grpg-cp-stat-lbl { font-size: 11.5px; color: var(--chat-text-faint, #6b7280); margin-top: 2px; }
+
+.grpg-cp-tt { display: flex; flex-direction: column; gap: 7px; }
+.grpg-cp-tt-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+.grpg-cp-tt-time { width: 48px; flex: none; color: var(--chat-text-faint, #6b7280); }
+.grpg-cp-tt-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--chat-teal, #14b8c4); flex: none; }
+.grpg-cp-tt-label { color: var(--chat-text-dim, #9aa0ad); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Consent ── */
+.grpg-consent { max-width: 620px; margin: 40px auto 0; text-align: left; }
+.grpg-consent ul { margin: 10px 0 16px; padding-left: 20px; font-size: 13px; color: var(--text-secondary, #c6cdd8); }
+.grpg-consent li { margin-bottom: 4px; }
+
+/* ── Responsive ── */
+@media (max-width: 1280px) {
+  .grpg-chat-shell { grid-template-columns: 230px 1fr 280px; }
+  .grpg-chat-panel { width: 280px; }
+}
+@media (max-width: 980px) {
+  .grpg-chat-shell { grid-template-columns: 230px 1fr; }
+  .grpg-chat-panel { display: none; }
+}
+@media (max-width: 680px) {
+  .grpg-chat { height: calc(100dvh - 84px); }
+  .grpg-chat-shell { grid-template-columns: 1fr; }
+  .grpg-chat-sidebar { display: none; }
+}

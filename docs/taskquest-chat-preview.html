@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskQuest — Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f14;
+    --panel:#151820;
+    --panel-alt:#12141b;
+    --border:#232733;
+    --border-soft:#1c2029;
+    --teal:#14b8c4;
+    --teal-dim:#0ea5b8;
+    --teal-soft:rgba(20,184,196,0.12);
+    --text:#e4e6eb;
+    --text-dim:#9aa0ad;
+    --text-faint:#6b7280;
+    --ai-bubble:#1e2230;
+    --danger:#e0674f;
+    --gold:#e0b94f;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+
+  /* ---------- Top nav ---------- */
+  .topnav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 28px;
+    border-bottom:1px solid var(--border-soft);
+    background:var(--bg);
+  }
+  .brand{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:-0.01em;
+    color:var(--text);
+  }
+  .nav-links{
+    display:flex;
+    gap:6px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:14px;
+    font-weight:500;
+  }
+  .nav-links a{
+    color:var(--text-dim);
+    text-decoration:none;
+    padding:8px 14px;
+    border-radius:7px;
+    transition:background 0.15s, color 0.15s;
+  }
+  .nav-links a:hover{ color:var(--text); background:#191c25; }
+  .nav-links a.active{ color:var(--bg); background:var(--teal); }
+  .nav-right{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    font-size:13.5px;
+    color:var(--text-dim);
+  }
+  .nav-right .garden{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:6px 12px;
+    border:1px solid var(--border);
+    border-radius:20px;
+  }
+  .nav-right a{ color:var(--teal); text-decoration:none; }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:flex;
+    height:calc(100vh - 61px);
+  }
+
+  /* ---------- Sidebar (chat history) ---------- */
+  .sidebar{
+    width:250px;
+    flex:none;
+    border-right:1px solid var(--border-soft);
+    padding:18px 14px;
+    display:flex;
+    flex-direction:column;
+    background:var(--bg);
+    overflow-y:auto;
+  }
+  .new-chat-btn{
+    background:var(--teal);
+    color:#06232a;
+    border:none;
+    border-radius:9px;
+    padding:11px 14px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    margin-bottom:16px;
+    transition:filter 0.15s;
+  }
+  .new-chat-btn:hover{ filter:brightness(1.08); }
+  .history-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:9px 11px;
+    border-radius:7px;
+    font-size:13.5px;
+    color:var(--text-dim);
+    cursor:pointer;
+    margin-bottom:2px;
+    border:1px solid transparent;
+  }
+  .history-item:hover{ background:#161922; }
+  .history-item.active{
+    background:var(--teal-soft);
+    border-color:rgba(20,184,196,0.3);
+    color:var(--text);
+  }
+  .history-count{
+    font-size:11.5px;
+    color:var(--text-faint);
+    background:#1a1d26;
+    padding:1px 7px;
+    border-radius:10px;
+  }
+  .sidebar-footer{
+    margin-top:auto;
+    padding-top:14px;
+    border-top:1px solid var(--border-soft);
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .sidebar-footer button{
+    background:none;
+    border:none;
+    text-align:left;
+    color:var(--text-faint);
+    font-size:12.5px;
+    padding:8px 11px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .sidebar-footer button:hover{ background:#161922; color:var(--text-dim); }
+
+  /* ---------- Chat column ---------- */
+  .chat-col{
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    background:var(--panel);
+  }
+  .chat-header{
+    padding:16px 28px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .chat-header h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:16px;
+    font-weight:600;
+    margin:0 0 3px;
+  }
+  .chat-header p{
+    margin:0;
+    font-size:13px;
+    color:var(--text-faint);
+  }
+
+  .messages{
+    flex:1;
+    overflow-y:auto;
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .msg-row{
+    display:flex;
+    max-width:100%;
+  }
+  .msg-row.user{ justify-content:flex-end; }
+  .msg-row.ai{ justify-content:flex-start; }
+  .bubble{
+    max-width:640px;
+    padding:13px 16px;
+    border-radius:14px;
+    font-size:14.5px;
+    line-height:1.55;
+  }
+  .msg-row.ai .bubble{
+    background:var(--ai-bubble);
+    color:var(--text);
+    border:1px solid var(--border-soft);
+    border-bottom-left-radius:4px;
+  }
+  .msg-row.user .bubble{
+    background:var(--teal);
+    color:#06232a;
+    font-weight:500;
+    border-bottom-right-radius:4px;
+  }
+  .bubble p{ margin:0 0 8px; }
+  .bubble p:last-child{ margin-bottom:0; }
+
+  .composer{
+    padding:18px 28px 24px;
+    border-top:1px solid var(--border-soft);
+  }
+  .composer-inner{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#1a1d26;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:6px 6px 6px 16px;
+    transition:border-color 0.15s;
+  }
+  .composer-inner:focus-within{ border-color:var(--teal); }
+  .composer-inner input{
+    flex:1;
+    background:none;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-family:inherit;
+    font-size:14.5px;
+    padding:10px 0;
+  }
+  .composer-inner input::placeholder{ color:var(--text-faint); }
+  .send-btn{
+    width:36px;
+    height:36px;
+    flex:none;
+    border-radius:9px;
+    background:var(--teal);
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:filter 0.15s;
+  }
+  .send-btn:hover{ filter:brightness(1.08); }
+  .send-btn svg{ width:16px; height:16px; }
+
+  /* ---------- Side context panel ---------- */
+  .side-panel{
+    width:320px;
+    flex:none;
+    border-left:1px solid var(--border-soft);
+    padding:22px 20px;
+    overflow-y:auto;
+    background:var(--panel-alt);
+  }
+  .side-panel h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-faint);
+    margin:0 0 14px;
+    text-transform:none;
+    letter-spacing:0.02em;
+  }
+  .xp-card{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:22px;
+  }
+  .xp-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .xp-level{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:15px;
+  }
+  .xp-level span{ color:var(--teal); }
+  .xp-streak{
+    font-size:12.5px;
+    color:var(--gold);
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .xp-bar-track{
+    height:8px;
+    background:#0e1015;
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:6px;
+  }
+  .xp-bar-fill{
+    height:100%;
+    width:64%;
+    background:linear-gradient(90deg, var(--teal-dim), var(--teal));
+    border-radius:6px;
+  }
+  .xp-label{
+    font-size:11.5px;
+    color:var(--text-faint);
+  }
+
+  .quest-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:24px;
+  }
+  .quest{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:11px 12px;
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+  }
+  .quest-check{
+    width:17px;
+    height:17px;
+    border-radius:5px;
+    border:1.5px solid var(--border);
+    flex:none;
+    margin-top:1px;
+  }
+  .quest-check.done{
+    background:var(--teal);
+    border-color:var(--teal);
+    position:relative;
+  }
+  .quest-check.done::after{
+    content:"";
+    position:absolute;
+    left:4px; top:1px;
+    width:5px; height:9px;
+    border:solid #06232a;
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg);
+  }
+  .quest-text{ flex:1; min-width:0; }
+  .quest-title{
+    font-size:13.5px;
+    color:var(--text);
+    margin-bottom:2px;
+  }
+  .quest-title.done{ color:var(--text-faint); text-decoration:line-through; }
+  .quest-meta{
+    font-size:11.5px;
+    color:var(--text-faint);
+  }
+
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .stat-box{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    padding:12px;
+  }
+  .stat-num{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:19px;
+  }
+  .stat-num.warn{ color:var(--danger); }
+  .stat-num.good{ color:var(--teal); }
+  .stat-lbl{
+    font-size:11.5px;
+    color:var(--text-faint);
+    margin-top:2px;
+  }
+
+  .timetable-mini{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+  }
+  .tt-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12.5px;
+  }
+  .tt-time{
+    width:48px;
+    flex:none;
+    color:var(--text-faint);
+  }
+  .tt-dot{
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--teal);
+    flex:none;
+  }
+  .tt-label{ color:var(--text-dim); }
+
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  ::-webkit-scrollbar-thumb{ background:#252a36; border-radius:5px; }
+  ::-webkit-scrollbar-thumb:hover{ background:#2e3442; }
+
+  @media (max-width:980px){
+    .side-panel{ display:none; }
+  }
+  @media (max-width:680px){
+    .sidebar{ display:none; }
+    .nav-links{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="brand">TaskQuest</div>
+  <div class="nav-links">
+    <a href="#">Dashboard</a>
+    <a href="#">Activities</a>
+    <a href="#">Timetable</a>
+    <a href="#">Stats</a>
+    <a href="#" class="active">Chat</a>
+  </div>
+  <div class="nav-right">
+    <div class="garden">🌱 Garden RPG</div>
+    <a href="#">Logout</a>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Chat history sidebar -->
+  <div class="sidebar">
+    <button class="new-chat-btn">New Chat</button>
+    <div class="history-item">
+      <span>Chat — 2026-09-23</span>
+      <span class="history-count">16</span>
+    </div>
+    <div class="history-item active">
+      <span>Chat — 2026-09-23</span>
+      <span class="history-count">10</span>
+    </div>
+    <div class="history-item">
+      <span>Chat — 2026-09-22</span>
+      <span class="history-count">8</span>
+    </div>
+    <div class="history-item">
+      <span>Chat — 2026-09-21</span>
+      <span class="history-count">14</span>
+    </div>
+    <div class="sidebar-footer">
+      <button>Check provider</button>
+      <button>Disable AI Chat (keep history)</button>
+    </div>
+  </div>
+
+  <!-- Main chat -->
+  <div class="chat-col">
+    <div class="chat-header">
+      <h1>Discipline Companion</h1>
+      <p>Streaming replies over your discipline RPG history.</p>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="msg-row ai">
+        <div class="bubble"><p>What's been getting in the way today?</p></div>
+      </div>
+      <div class="msg-row user">
+        <div class="bubble"><p>unfinished school assingments</p></div>
+      </div>
+      <div class="msg-row ai">
+        <div class="bubble">
+          <p>That kind of background stress can really drain you — hard to focus on anything when unfinished work is hanging over you.</p>
+          <p>What's the plan to tackle those assignments? Sometimes just starting small breaks the paralysis.</p>
+        </div>
+      </div>
+      <div class="msg-row user">
+        <div class="bubble"><p>can we switch to reflection</p></div>
+      </div>
+      <div class="msg-row ai">
+        <div class="bubble">
+          <p>Let's do it.</p>
+          <p>How would you rate today overall, and what's one thing you wish you'd done differently?</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-inner">
+        <input type="text" placeholder="Ask me anything!">
+        <button class="send-btn" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#06232a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right context panel -->
+  <div class="side-panel">
+    <h2>Today</h2>
+    <div class="xp-card">
+      <div class="xp-top">
+        <div class="xp-level">Level <span>12</span></div>
+        <div class="xp-streak">🔥 6 day streak</div>
+      </div>
+      <div class="xp-bar-track"><div class="xp-bar-fill"></div></div>
+      <div class="xp-label">640 / 1000 XP to Level 13</div>
+    </div>
+
+    <h2>Active Quests</h2>
+    <div class="quest-list">
+      <div class="quest">
+        <div class="quest-check done"></div>
+        <div class="quest-text">
+          <div class="quest-title done">Morning review</div>
+          <div class="quest-meta">+15 XP · completed 8:40am</div>
+        </div>
+      </div>
+      <div class="quest">
+        <div class="quest-check"></div>
+        <div class="quest-text">
+          <div class="quest-title">Finish history essay</div>
+          <div class="quest-meta">+40 XP · due tonight</div>
+        </div>
+      </div>
+      <div class="quest">
+        <div class="quest-check"></div>
+        <div class="quest-text">
+          <div class="quest-title">Water the garden</div>
+          <div class="quest-meta">+10 XP · daily</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Stats snapshot</h2>
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-num good">4/6</div>
+        <div class="stat-lbl">Tasks done today</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num warn">2</div>
+        <div class="stat-lbl">Overdue assignments</div>
+      </div>
+    </div>
+
+    <h2>Rest of your day</h2>
+    <div class="timetable-mini">
+      <div class="tt-row"><span class="tt-time">3:00p</span><span class="tt-dot"></span><span class="tt-label">Chemistry revision</span></div>
+      <div class="tt-row"><span class="tt-time">5:30p</span><span class="tt-dot"></span><span class="tt-label">Gym</span></div>
+      <div class="tt-row"><span class="tt-time">8:00p</span><span class="tt-dot"></span><span class="tt-label">History essay block</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Auto-scroll chat to latest message on load
+  const messages = document.getElementById('messages');
+  messages.scrollTop = messages.scrollHeight;
+
+  // Simple demo interaction: pressing Enter echoes a placeholder AI reply
+  const input = document.querySelector('.composer-inner input');
+  const sendBtn = document.querySelector('.send-btn');
+
+  function sendDemo(){
+    const val = input.value.trim();
+    if(!val) return;
+
+    const userRow = document.createElement('div');
+    userRow.className = 'msg-row user';
+    userRow.innerHTML = `<div class="bubble"><p></p></div>`;
+    userRow.querySelector('p').textContent = val;
+    messages.appendChild(userRow);
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+
+    setTimeout(() => {
+      const aiRow = document.createElement('div');
+      aiRow.className = 'msg-row ai';
+      aiRow.innerHTML = `<div class="bubble"><p>This is a static preview, so I can't reply for real — but this is roughly how a response would appear.</p></div>`;
+      messages.appendChild(aiRow);
+      messages.scrollTop = messages.scrollHeight;
+    }, 500);
+  }
+
+  sendBtn.addEventListener('click', sendDemo);
+  input.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') sendDemo();
+  });
+</script>
+
+</body>
+</html>

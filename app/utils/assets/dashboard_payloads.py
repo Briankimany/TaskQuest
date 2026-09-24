@@ -38,6 +38,52 @@ COLOR_OVERRIDES = {
 STATUS_OVERRIDE_RED = {"MISSED", "ABANDONED", "COMPLETED_LATE"}
 
 
+def build_level_progress(user, today):
+    """Level + streak + XP-to-next snapshot for the context side panel.
+
+    Mirrors the exact math in ``app/routes/views.py`` / ``app/routes/api.py``
+    (Level table + user.total_exp + streak helpers), so the chat side panel
+    and the dashboard's XP card can never drift from first paint.
+    """
+    from app.models import Level
+    from app.utils.managers import UserManager
+
+    user_id = user.id
+
+    current_level = Level.query.filter_by(level_number=user.level).first()
+    next_level = Level.query.filter(
+        Level.level_number > user.level
+    ).order_by(Level.level_number).first()
+
+    current_floor = current_level.required_exp if current_level else 0
+    next_floor = next_level.required_exp if next_level else None
+
+    streak = UserManager.get_streak(user_id, today=today)
+    best_streak = UserManager.get_best_streak(user_id, today=today)
+
+    if next_floor is not None:
+        exp_to_next = max(0, next_floor - user.total_exp)
+        span = max(1, next_floor - current_floor)
+        progress_pct = round(
+            max(0, min(100, (user.total_exp - current_floor) / span * 100)), 1,
+        )
+        next_level_num = next_level.level_number
+    else:
+        exp_to_next = 0
+        progress_pct = 100
+        next_level_num = None
+
+    return {
+        "level": user.level,
+        "total_exp": user.total_exp,
+        "streak": streak,
+        "best_streak": best_streak,
+        "next_level": next_level_num,
+        "exp_to_next": exp_to_next,
+        "xp_progress_pct": progress_pct,
+    }
+
+
 def mission_color(title, tag):
     """Resolve the stored/canonical accent color for a task.
 
